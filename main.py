@@ -7,25 +7,30 @@ from discord import app_commands
 import os
 token = 'NDY0MDk4MzA3MjcxMDMyODQy.GCLAvK.ByV_tr0qtC7vLvMQQRQxKtsHncttjUO0DlMeJ4'
 
-intents = discord.Intents.all()
-intents.members = True
-bot = commands.Bot(command_prefix="", intents=intents, help_command=None)
-extensions = ['cogs.func']
+class Nawa(commands.Bot):
+  def __init__(self):
+    super().__init__(
+        command_prefix="",
+        intents=discord.Intents.all(),
+        sync_command=True
+    )
+    
+  async def setup_hook(self):
+    for file in os.listdir('./cogs'):
+      if file.endswith('.py'):
+        await self.load_extension(f'cogs.{file[:-3]}')
+        print(f"{file[:-3]}을 불러왔느니라!")
+    synced = await bot.tree.sync()
+    print(f"{len(synced)}개의 커맨드를 sync했느니라!")
 
-@bot.event  
-async def on_ready():
-  print("준비됐느니라!", bot.user)
-
-async def loadCog():
-  for file in os.listdir('./cogs'):
-    if file.endswith('.py'):
-      await bot.load_extension(f'cogs.{file[:-3]}')
-      print(f"{file[:-3]} called")
+  async def on_ready(self):
+      print("준비되었느니라!")
       
-async def main():
-  async with bot:
-    await loadCog()
-    await bot.start(token)
+  async def reloadCog(self):
+    for file in os.listdir('./cogs'):
+      if file.endswith('.py'):
+        await self.load_extension(f'cogs.{file[:-3]}')
+        print(f"{file[:-3]}가 준비되었느니라!") 
 
-asyncio.run(main())
-   
+bot = Nawa()
+bot.run(token=token)
