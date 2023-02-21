@@ -35,7 +35,7 @@ class Moderator(commands.Cog):
         embed.set_author(name="관리자 세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
 
         await user.send(embed=embedUser)
-        await user.ban(reason=reason)
+        await user.ban(reason=reason, delete_message_days=delete_message_days)
         await interaction.response.send_message(embed=embedChannel)
 
     @commands.has_permissions(ban_members=True)
