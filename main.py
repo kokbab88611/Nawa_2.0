@@ -3,8 +3,8 @@ import asyncio
 from discord.ext import commands, tasks
 from discord.ext.commands import Context
 from discord import app_commands
-
 import os
+
 token = 'NDY0MDk4MzA3MjcxMDMyODQy.GCLAvK.ByV_tr0qtC7vLvMQQRQxKtsHncttjUO0DlMeJ4'
 
 class Nawa(commands.Bot):
