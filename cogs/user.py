@@ -18,29 +18,36 @@ class User(commands.Cog):
   async def on_ready(self):
     print("준비됨")
   
+  async def saveUser():
+    async def wrapper(ctx, func):
+      await func()
+      with open(os.path.join(__location__, 'users.json')) as f:
+        data = json.load(f)
+        keys = [users for users in data]
+        if ctx.author.id not in data:
+          data[ctx.author.id] = {
+          "level" : {
+            "main":0,
+            "rangi":0,
+            "cheeyi":0,
+            "saehee":0
+          },
+          "money" : 0,
+          "item": []
+          }
+          await json.dump(data, f)
+        else:
+          await data[ctx.author.id]
+      return wrapper
+        
+  def nextLevel(level):
+     return round( 0.04 * (level ** 3) + 0.8 * (level ** 2) + 2 * level)
+
+  #@saveUser()
   @commands.command(name="핑")
   async def ping(self, ctx):
     await ctx.send("퐁이니라!")
 
-  @commands.Cog.listener()
-  async def saveUser(self, ctx):
-    with open(os.path.join(__location__, 'users.json')) as f:
-      data = json.load(f)
-      keys = [users for users in data]
-      if ctx.author.id not in data:
-        data[ctx.author.id] = {
-        "level" : {
-          "main":0,
-          "rangi":0,
-          "cheeyi":0,
-          "saehee":0
-        },
-        "money" : 0,
-        "item": []
-        }
-        json.dump(data, f)
-  def nextLevel(level):
-     return round( 0.04 * (level ** 3) + 0.8 * (level ** 2) + 2 * level)
 
 async def setup(bot):
   await bot.add_cog(User(bot))

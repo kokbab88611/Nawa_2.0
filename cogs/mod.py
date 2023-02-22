@@ -90,18 +90,19 @@ class Moderator(commands.Cog):
 
     @commands.has_permissions(moderate_members=True)
     @app_commands.command(name="타임아웃", description="통화방 접속과 채팅을 특정 시간동안 금지 시킵니다 /타임아웃 (닉네임or맨션) (초) (사유)")
-    async def TimeOutUser(self, interaction: discord.Interaction, user: discord.Member, *, reason: str = "사유 없음", sec: int) -> None:
+    async def TimeOutUser(self, interaction: discord.Interaction, user: discord.Member, *, reason: str = "사유 없음", sec: int, min: int=0, hour: int=0, day: int=0) -> None:
+
         now = datetime.now().astimezone()
-        till = now + timedelta(seconds=sec)
-        embedChannel = discord.Embed(title=f"{user.name}가 {sec}초 동안 타임아웃 처리되었습니다", description=f"사유: {reason}",color=0xb0a7d3)
+        till = now + timedelta(seconds=sec, minutes=min)
+        embedChannel = discord.Embed(title=f"{user.name}이 {timedelta(seconds=sec, minutes=min)} 동안 타임아웃 처리되었습니다", description=f"사유: {reason}", color=0xb0a7d3)
         embedChannel.set_author(name="관리자 세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
-        embedUser = discord.Embed(title=f"{interaction.guild.name}에서 {sec}초 동안 타임아웃 처리되었습니다",description=f"사유: {reason}", color=0xb0a7d3)
+        embedUser = discord.Embed(title=f"{interaction.guild.name}에서 {timedelta(seconds=sec, minutes=min)} 동안 타임아웃 처리되었습니다", description=f"사유: {reason}", color=0xb0a7d3)
         embedUser.set_author(name="관리자 세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
 
         await user.send(embed=embedUser)
         await interaction.response.send_message(embed=embedChannel)
         await user.timeout(till, reason=reason)
-
+        
     @commands.has_permissions(moderate_members=True)
     @app_commands.command(name="사면", description="해당 유저의 타임아웃을 해제합니다 /차단 (닉네임or맨션) (사유)")
     async def unTimeout(self, interaction: discord.Interaction, user: discord.Member, *, reason: str = "사유 없음") -> None:
