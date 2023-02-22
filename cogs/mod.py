@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 from datetime import datetime,timedelta
+import math
 
 class Moderator(commands.Cog):
     def __init__(self, bot) -> None:
@@ -93,10 +94,13 @@ class Moderator(commands.Cog):
     async def TimeOutUser(self, interaction: discord.Interaction, user: discord.Member, *, reason: str = "사유 없음", sec: int, min: int=0, hour: int=0, day: int=0) -> None:
 
         now = datetime.now().astimezone()
-        till = now + timedelta(seconds=sec, minutes=min)
-        embedChannel = discord.Embed(title=f"{user.name}이 {timedelta(seconds=sec, minutes=min)} 동안 타임아웃 처리되었습니다", description=f"사유: {reason}", color=0xb0a7d3)
+        till = now + timedelta(seconds=sec, minutes=min,hours=hour)
+        bantime = timedelta(seconds=sec, minutes=min, hours=hour, days=day)
+        print(bantime.seconds)
+        
+        embedChannel = discord.Embed(title=f"{user.name}이 {bantime.days}일 {bantime.seconds//60//60}시간 {(bantime.seconds//60)%60}분 {bantime.seconds % 60}초 동안 타임아웃 처리되었습니다", description=f"사유: {reason}", color=0xb0a7d3)
         embedChannel.set_author(name="관리자 세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
-        embedUser = discord.Embed(title=f"{interaction.guild.name}에서 {timedelta(seconds=sec, minutes=min)} 동안 타임아웃 처리되었습니다", description=f"사유: {reason}", color=0xb0a7d3)
+        embedUser = discord.Embed(title=f"{interaction.guild.name}에서 {bantime.days}일 {bantime.seconds//60//60}시간 {(bantime.seconds//60)%60}분 {bantime.seconds % 60}초 동안 타임아웃 처리되었습니다", description=f"사유: {reason}", color=0xb0a7d3)
         embedUser.set_author(name="관리자 세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
 
         await user.send(embed=embedUser)
