@@ -5,13 +5,6 @@ from datetime import datetime, timedelta
 from discord.ext.commands import has_permissions, MissingPermissions
 
 
-
-def call_shout():
-    embedChannel = discord.Embed(title="텍스트 미정" , color=0xb0a7d3)
-    embedChannel.set_author(name="관리자 세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
-    embedChannel.set_footer(text="관리자 권한 필요")
-    return embedChannel
-
 class Moderator(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
@@ -112,8 +105,6 @@ class Moderator(commands.Cog):
     @app_commands.command(name="타임아웃", description="통화방 접속과 채팅을 특정 시간동안 금지 시킵니다 /타임아웃 (닉네임or맨션) (초) (사유)")
     @app_commands.checks.has_permissions(moderate_members=True)
     async def TimeOutUser(self, interaction: discord.Interaction, user: discord.Member, *, reason: str = "사유 없음",
-                          sec: int, min: int, hour: int, day: int) -> None:
-        async def TimeOutUser(self, interaction: discord.Interaction, user: discord.Member, *, reason: str = "사유 없음",
                               sec: int, min: int = 0, hour: int = 0, day: int = 0) -> None:
             now = datetime.now().astimezone()
             till = now + timedelta(seconds=sec, minutes=min, hours=hour)
@@ -153,47 +144,18 @@ class Moderator(commands.Cog):
 
     #ERROR
     @kickuser.error
-    async def kick_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.errors.MissingPermissions):
-            embedChannel = call_shout()
-            await interaction.response.send_message(embed=embedChannel)
     @banUser.error
-    async def ban_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.errors.MissingPermissions):
-            embedChannel = call_shout()
-            await interaction.response.send_message(embed=embedChannel)
     @unbanUser.error
-    async def ctext_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.errors.MissingPermissions):
-            embedChannel = call_shout()
-            await interaction.response.send_message(embed=embedChannel)
     @createCall.error
-    async def ccall_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.errors.MissingPermissions):
-            embedChannel = call_shout()
-            await interaction.response.send_message(embed=embedChannel)
     @createText.error
-    async def unban_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.errors.MissingPermissions):
-            embedChannel = call_shout()
-            await interaction.response.send_message(embed=embedChannel)
-
     @unTimeout.error
-    async def untime_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.errors.MissingPermissions):
-            embedChannel = call_shout()
-            await interaction.response.send_message(embed=embedChannel)
-
     @TimeOutUser.error
-    async def time_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.errors.MissingPermissions):
-            embedChannel = call_shout()
-            await interaction.response.send_message(embed=embedChannel)
     @deleteMessage.error
-    async def delmes_error(self, interaction: discord.Interaction, error):
+    async def error(self, interaction: discord.Interaction, error):
+        embed=discord.Embed(title="기어오르지 마시기 바랍니다...", description="관리자 권한을 들고 오십쇼", color=0xb0a7d3)
+        embed.set_author(name="관리자 세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
         if isinstance(error, app_commands.errors.MissingPermissions):
-            embedChannel = call_shout()
-            await interaction.response.send_message(embed=embedChannel)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 
