@@ -69,7 +69,7 @@ class User(commands.Cog):
             
       return wrapper
 
-
+"""
   @commands.command(name="핑")
   @saveUser
   async def ping(self, ctx):
@@ -80,6 +80,6 @@ class User(commands.Cog):
   @saveUser
   async def 아(self, ctx):
       await ctx.send("This is a hybrid command!")
-
+"""
 async def setup(bot):
   await bot.add_cog(User(bot))
