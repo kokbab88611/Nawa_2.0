@@ -40,9 +40,9 @@ class User(commands.Cog):
   async def on_ready(self):
     print("준비됨")
   
-  def saveUser(func):
-    def wrapper(ctx):
-      func()
+  async def saveUser(func):
+    async def wrapper(self, ctx):
+      await func()
       with open(os.path.join(__location__ , r'\json\users.json')) as f:
         data = json.load(f)
         keys = [users for users in data]
@@ -60,16 +60,24 @@ class User(commands.Cog):
           "attendence": False
           }
           json.dump(data, f)
-        
-        random_xp = random.randint(1,2)
+        else:
+          random_xp = random.randint(1,2) 
+          self.userData[ctx.author.id]["level"]["xp"] += random_xp
+          
+          if self.level_up(ctx.author.id):
+            await ctx.send("레벨업{}".format(self.userData[ctx.author.id]["level"]["xp"]))
+            
       return wrapper
 
+
   @commands.command(name="핑")
+  @saveUser
   async def ping(self, ctx):
     await ctx.send("퐁이니라!")
   
-  @saveUser
+
   @commands.hybrid_command(with_app_command=True)
+  @saveUser
   async def 아(self, ctx):
       await ctx.send("This is a hybrid command!")
 
