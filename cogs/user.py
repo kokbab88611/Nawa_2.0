@@ -7,6 +7,7 @@ import os
 import asyncio
 import random
 
+
 #client = pymongo.MongoClient("mongodb+srv://hyun88611:hyun@88611@cluster0.d0nl1ss.mongodb.net/?retryWrites=true&w=majority")
 #db = client.userInformation
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -31,7 +32,7 @@ class User(commands.Cog):
   async def save(self):
     await self.bot.wait_untill_ready()
     while not self.bot.is_close():
-      with open(os.path.join(__location__ + '/json', 'users.json')) as f:
+      with open(os.path.join(__location__ , r'\json\users.json')) as f:
         json.dump(self.userData, f)
       await asyncio.sleep(5)
 
@@ -39,10 +40,10 @@ class User(commands.Cog):
   async def on_ready(self):
     print("준비됨")
   
-  async def saveUser():
-    async def wrapper(ctx, func):
+  def saveUser(func):
+    def wrapper(ctx):
       func()
-      with open(os.path.join(__location__ + '/json', 'users.json')) as f:
+      with open(os.path.join(__location__ , r'\json\users.json')) as f:
         data = json.load(f)
         keys = [users for users in data]
         if ctx.author.id not in data:
@@ -61,17 +62,16 @@ class User(commands.Cog):
           json.dump(data, f)
         
         random_xp = random.randint(1,2)
-        userId
       return wrapper
-        
-  def nextLevel(level):
-     return round( 0.04 * (level ** 3) + 0.8 * (level ** 2) + 2 * level)
 
-  @saveUser()
   @commands.command(name="핑")
   async def ping(self, ctx):
     await ctx.send("퐁이니라!")
-
+  
+  @saveUser
+  @commands.hybrid_command(with_app_command=True)
+  async def 아(self, ctx):
+      await ctx.send("This is a hybrid command!")
 
 async def setup(bot):
   await bot.add_cog(User(bot))
