@@ -23,16 +23,14 @@ class UserData(commands.Cog):
             
             if current_xp >= round(0.04 * (current_lvl ** 3) + 0.8 * (current_lvl ** 2) + 2 * current_lvl):
                 return True
-            else: 
-                return False
+            return False
   
-    async def saveUser(self, ctx):
+    async def give_xp(self, ctx):
         #await ctx.invoke(self.bot.get_command('핑'))
         with open(os.path.join(__location__ + '\\json\\users.json'), "r+") as f:
             data = json.load(f)
             if str(ctx.author.id) not in data:
-                data[ctx.author.id] = \
-                    {
+                data[ctx.author.id] = {
                         "level": {
                             "main": 1,
                             "xp": 0,
@@ -54,8 +52,7 @@ class UserData(commands.Cog):
                 print("벌써 존재하는 유저입니다 {}".format(random_xp))
                 if self.level_up(str(ctx.author.id)):
                     data[str(ctx.author.id)]["level"]["main"] += 1
-                    await ctx.send(f"레벨업{data[str(ctx.author.id)]['level']['main']}")
-                    
+                    await ctx.send(f"레벨업{data[str(ctx.author.id)]['level']['main']}")   
         with open(os.path.join(__location__ + '\\json\\users.json'), "w+") as f:
             json.dump(data, f, indent=4)
 
@@ -65,7 +62,7 @@ class UserData(commands.Cog):
 
     @commands.command(name="아", pass_context=True)
     async def 아(self, ctx):
-        await self.saveUser(ctx)
+        await self.give_xp(ctx)
 
     @commands.command(name="인벤", pass_context=True)
     async def 인벤(self, ctx):

@@ -23,7 +23,6 @@ class Game(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
 
-
     @commands.Cog.listener()
     async def on_ready(self):
         print("준비됨")

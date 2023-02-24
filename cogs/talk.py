@@ -6,15 +6,14 @@ import json
 import os
 import random
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-class GuildData(commands.Cog):
+class Talk(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        print("준비됨")
-        
+    commands.command()
+    async def rangi_hi(ctx):
+        await ctx.send()
 
 async def setup(bot):
-    await bot.add_cog(GuildData(bot))
+    await bot.add_cog(Talk(bot))
     

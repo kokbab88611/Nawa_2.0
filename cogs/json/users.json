@@ -1,8 +1,24 @@
 {
     "339767912841871360": {
         "level": {
+            "main": 9,
+            "xp": 102,
+            "rangi": 0,
+            "cheeyi": 0,
+            "saehee": 0
+        },
+        "money": 0,
+        "item": {
+            "a": 1,
+            "b": 0,
+            "c": 99
+        },
+        "attendence": false
+    },
+    "474389454262370314": {
+        "level": {
             "main": 4,
-            "xp": 22,
+            "xp": 19,
             "rangi": 0,
             "cheeyi": 0,
             "saehee": 0
