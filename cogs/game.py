@@ -1,8 +1,22 @@
 import discord,random,string,array
 import asyncio
-from discord import app_commands,Interaction,Reaction
+from discord import app_commands,Interaction,Reaction,InteractionResponse
 from discord.ext import commands, tasks
+import time, math
 
+class RcpButton(discord.ui.View):
+        def __init__(self):
+            super().__init__()
+
+        new_embed = discord.Embed(title='embed 2')
+        @discord.ui.button(label='True')
+        async def true(self, interactionresponse: discord.InteractionResponse, button: discord.ui.Button):
+            await interactionresponse.response.edit_message(embed=discord.Embed(title='embed 2'))
+            self.stop()
+        @discord.ui.button(label='False')
+        async def false(self, interactionresponse: discord.InteractionResponse, button: discord.ui.Button):
+            await interactionresponse.response.edit_message(embed=discord.Embed(title='embed 3'))
+            self.stop()
 
 class Game(commands.Cog):
     channel_id:string
@@ -21,6 +35,24 @@ class Game(commands.Cog):
             f"Synced {len(synced)} commands to the current guild."
         )
         return
+
+    @app_commands.command(name="가위바위보", description="가위바위보를 합니다 페이랑")
+    async def rcp(self, interaction: discord.Interaction):
+        def rcpnum():
+            cur_time = str(time.perf_counter())
+            rnd = float(cur_time[::-1][:3:])/1000
+            return 0 + rnd*(3-0)
+        rcp_num = math.ceil(rcpnum())
+    
+
+    @app_commands.command(name="버튼", description="테스트")
+    async def button_test(self, interactionresponse: discord.InteractionResponse):
+        first_embed = discord.Embed(title='embed 1')
+
+        view = RcpButton()
+        await interactionresponse.response.send_message(embed=first_embed, view=view)
+        await view.wait()
+        #await interaction.message.edit()
 
     @app_commands.command(name="추첨", description="추첨기를 생성합니다")
     async def raname(self, interaction: discord.Interaction, join: int = 1, people: str = ""):
