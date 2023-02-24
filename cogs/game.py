@@ -2,20 +2,77 @@ import discord,random,string,array
 import asyncio
 from discord import app_commands,Interaction,Reaction,InteractionResponse
 from discord.ext import commands, tasks
-import time, math
 
 class RcpButton(discord.ui.View):
         def __init__(self):
             super().__init__()
 
-        new_embed = discord.Embed(title='embed 2')
-        @discord.ui.button(label='True')
-        async def true(self, interactionresponse: discord.InteractionResponse, button: discord.ui.Button):
-            await interactionresponse.response.edit_message(embed=discord.Embed(title='embed 2'))
+        async def rcp_result(usr_rcp_num):
+            rcp_num = random.randint(1,3)
+            if rcp_num == 1:
+                bot_rcp = "✌️가위"
+                if usr_rcp_num == 1:
+                    result = "비김"
+                elif usr_rcp_num == 2:
+                    result = "이김"
+                else:
+                    result = "짐"
+            elif rcp_num == 2:
+                bot_rcp = "✊바위"
+                if usr_rcp_num == 1:
+                    result = "짐"
+                elif usr_rcp_num == 2:
+                    result = "비김"
+                else:
+                    result = "이김"
+            else:
+                bot_rcp = "✋보"
+                if usr_rcp_num == 1:
+                    result = "이김"
+                elif usr_rcp_num == 2:
+                    result = "짐"
+                else:
+                    result = "비김"
+            return bot_rcp, result
+
+        @discord.ui.button(label='가위', style=discord.ButtonStyle.green, emoji = "✌️", custom_id="scissors")
+        async def scissors(self, interactionresponse: discord.InteractionResponse, button: discord.ui.Button):
+            button_scissors = [x for x in self.children if x.custom_id=="scissors"][0]
+            button_rock = [x for x in self.children if x.custom_id=="rock"][0]
+            button_paper = [x for x in self.children if x.custom_id=="paper"][0]
+            button_scissors.disabled = True
+            button_rock.disabled = True
+            button_paper.disabled = True
+            usr_rcp_num = 1
+            bot_rcp, result = await RcpButton.rcp_result(usr_rcp_num)
+            embed = discord.Embed(title=result, description=f'페이:{bot_rcp} \n 나:✌️가위', color=0xb0a7d3)
+            await interactionresponse.response.edit_message(embed=embed, view=self)
             self.stop()
-        @discord.ui.button(label='False')
-        async def false(self, interactionresponse: discord.InteractionResponse, button: discord.ui.Button):
-            await interactionresponse.response.edit_message(embed=discord.Embed(title='embed 3'))
+        @discord.ui.button(label='바위', style=discord.ButtonStyle.green, emoji = "✊", custom_id="rock")
+        async def rock(self, interactionresponse: discord.InteractionResponse, button: discord.ui.Button):
+            button_scissors = [x for x in self.children if x.custom_id=="scissors"][0]
+            button_rock = [x for x in self.children if x.custom_id=="rock"][0]
+            button_paper = [x for x in self.children if x.custom_id=="paper"][0]
+            button_scissors.disabled = True
+            button_rock.disabled = True
+            button_paper.disabled = True
+            usr_rcp_num = 2
+            bot_rcp, result = await RcpButton.rcp_result(usr_rcp_num)
+            embed = discord.Embed(title=result, description=f'페이:{bot_rcp} \n 나:✊바위', color=0xb0a7d3)
+            await interactionresponse.response.edit_message(embed=embed)
+            self.stop()
+        @discord.ui.button(label='보', style=discord.ButtonStyle.green, emoji = "✋", custom_id="paper")
+        async def paper(self, interactionresponse: discord.InteractionResponse, button: discord.ui.Button):
+            button_scissors = [x for x in self.children if x.custom_id=="scissors"][0]
+            button_rock = [x for x in self.children if x.custom_id=="rock"][0]
+            button_paper = [x for x in self.children if x.custom_id=="paper"][0]
+            button_scissors.disabled = True
+            button_rock.disabled = True
+            button_paper.disabled = True
+            usr_rcp_num = 3
+            bot_rcp, result = await RcpButton.rcp_result(usr_rcp_num)
+            embed = discord.Embed(title=result, description=f'페이:{bot_rcp} \n 나:✋보', color=0xb0a7d3)
+            await interactionresponse.response.edit_message(embed=embed)
             self.stop()
 
 class Game(commands.Cog):
@@ -27,23 +84,12 @@ class Game(commands.Cog):
     async def on_ready(self):
         print("준비됨")
 
-    @app_commands.command(name="가위바위보", description="가위바위보를 합니다 페이랑")
-    async def rcp(self, interaction: discord.Interaction):
-        def rcpnum():
-            cur_time = str(time.perf_counter())
-            rnd = float(cur_time[::-1][:3:])/1000
-            return 0 + rnd*(3-0)
-        rcp_num = math.ceil(rcpnum())
-    
-
-    @app_commands.command(name="버튼", description="테스트")
+    @app_commands.command(name="가위바위보", description="한다 가위바위보 페이랑!")
     async def button_test(self, interactionresponse: discord.InteractionResponse):
-        first_embed = discord.Embed(title='embed 1')
-
+        first_embed = discord.Embed(title='가위바위보중에 하나 골라')
         view = RcpButton()
         await interactionresponse.response.send_message(embed=first_embed, view=view)
         await view.wait()
-        #await interaction.message.edit()
 
     @app_commands.command(name="추첨", description="추첨기를 생성합니다")
     async def raname(self, interaction: discord.Interaction, join: int = 1, people: str = ""):
@@ -110,7 +156,6 @@ class Game(commands.Cog):
         embed.set_image(url=item_pic)
         embed.set_footer(text=f"총 보유량:{item}")
         await interaction.response.send_message(embed=embed)
-
 
 async def setup(bot):
     await bot.add_cog(Game(bot))
