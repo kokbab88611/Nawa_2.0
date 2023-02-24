@@ -7,8 +7,7 @@ import json
 import os
 import asyncio
 import random
-
-
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 class User(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
@@ -18,6 +17,50 @@ class User(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print("준비됨")
+        
+    def level_up(self, userId: str):
+        with open(os.path.join(__location__ + '\\json\\users.json'), "r+") as f:
+            data = json.load(f)
+            current_xp = data[userId]["level"]["xp"]
+            current_lvl = data[userId]["level"]["main"]
+            print(current_lvl , "렙")
+            
+            if current_xp >= round(0.04 * (current_lvl ** 3) + 0.8 * (current_lvl ** 2) + 2 * current_lvl):
+                return True
+            else: 
+                return False
+  
+    async def saveUser(self, ctx):
+        await ctx.invoke(self.bot.get_command('핑'))
+        with open(os.path.join(__location__ + '\\json\\users.json'), "r+") as f:
+            data = json.load(f)
+            if str(ctx.author.id) not in data:
+                data[ctx.author.id] = \
+                    {
+                        "level": {
+                            "main": 1,
+                            "xp": 0,
+                            "rangi": 0,
+                            "cheeyi": 0,
+                            "saehee": 0
+                        },
+                        "money": 0,
+                        "item": {
+                            "a": 1,
+                            "b": 0,
+                            "c": 99
+                        },
+                        "attendence": False
+                    }
+            else:
+                random_xp = random.randint(1, 2)
+                data[str(ctx.author.id)]["level"]["xp"] += random_xp
+                print("벌써 존재하는 유저입니다 {}".format(random_xp))
+                if self.level_up(str(ctx.author.id)):
+                    data[str(ctx.author.id)]["level"]["main"] += 1
+                    await ctx.send(f"레벨업{data[str(ctx.author.id)]['level']['main']}")
+        with open(os.path.join(__location__ + '\\json\\users.json'), "w+") as f:
+            json.dump(data, f, indent=4)
 
     @commands.command(name="핑")
     async def ping(self, ctx):
@@ -67,42 +110,6 @@ class User(commands.Cog):
         embed.add_field(name="호감도 레벨", value=f"랑이:{level_data['rangi']}\n 치이:{level_data['cheeyi']}\n세희:{level_data['saehee']}", inline=False)
         await interaction.response.send_message(embed=embed)
 
-
-
-    async def saveUser(self, ctx):
-        await ctx.invoke(self.bot.get_command('핑'))
-
-        with open(os.path.join(os.getcwd(), 'users.json'),'r+') as f:
-            data = json.load(f)
-            if str(ctx.author.id) not in data:
-                data[ctx.author.id] = \
-                    {
-                        "level": {
-                            "main": 1,
-                            "xp": 0,
-                            "rangi": 0,
-                            "cheeyi": 0,
-                            "saehee": 0
-                        },
-                        "money": 0,
-                        "item": {
-                            "a": 1,
-                            "b": 0,
-                            "c": 99
-                        },
-                        "attendence": False
-                    }
-
-
-            else:
-                #random_xp = random.randint(1, 2)
-                #self.userData[ctx.author.id]["level"]["xp"] += random_xp
-                print("벌써 존재하는 유저입니다")
-                #if self.level_up(ctx.author.id):
-                    #await ctx.send("레벨업{}".format(self.userData[ctx.author.id]["level"]["xp"]))
-        with open(os.path.join(os.getcwd(), 'users.json'),'w+') as f:
-            json.dump(data, f, indent=4)
-
-
 async def setup(bot):
     await bot.add_cog(User(bot))
+    
