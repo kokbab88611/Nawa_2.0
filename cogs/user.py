@@ -36,18 +36,36 @@ class User(commands.Cog):
                 return
             user_data=data[str(ctx.author.id)]
             await ctx.send(f"{user_data}")
-    """
+
     @app_commands.command(name="인벤토리", description="인벤토리를 불러옵니다")
-    async def 인벤토리(self,interaction:discord.Interaction):
+    async def 인벤토리(self, interaction: discord.Interaction):
         with open('users.json') as f:
             data = json.load(f)
 
-        embed = discord.Embed(title="인벤토리", color=0x0aa40f)
+        if str(interaction.user.id) not in data:
+            await interaction.response.send_message("등록되지 않은 유저입니다.")
+            return
+        user_data = data[str(interaction.user.id)]
+        item_info = "".join([f"{key}: {value}\n" for key, value in user_data["item"].items()])
+        embed = discord.Embed(title=f"{interaction.user.name}의 인벤토리", color=0x0aa40f)
         embed.set_author(name="치이", icon_url="https://i.imgur.com/7a4oeOi.jpg")
-        embed.add_field(name="호감도 레벨", value="테스트3,테스트4", inline=False)
-        embed.add_field(name="기타", value="테스트1, 테스트2", inline=False)
-        embed.set_footer(text="연관 검색어 결과는 위와 같습니다.")
-        """
+        embed.add_field(name="아이템 보유량", value=item_info)
+        await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name="정보", description="유저 정보를 불러옵니다")
+    async def 정보(self, interaction: discord.Interaction):
+        with open('users.json') as f:
+            data = json.load(f)
+
+        if str(interaction.user.id) not in data:
+            await interaction.response.send_message("등록되지 않은 유저입니다.")
+            return
+        user_data = data[str(interaction.user.id)]
+        level_data = user_data['level']
+        embed = discord.Embed(title=f"{interaction.user.name}의 프로필",description=f"Lv. {level_data['main']} \nExp: {level_data['xp']}/5000", color=0x0aa40f)
+        embed.set_author(name="치이", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+        embed.add_field(name="호감도 레벨", value=f"랑이:{level_data['rangi']}\n 치이:{level_data['cheeyi']}\n세희:{level_data['saehee']}", inline=False)
+        await interaction.response.send_message(embed=embed)
 
 
 
