@@ -28,14 +28,6 @@ class Game(commands.Cog):
     async def on_ready(self):
         print("준비됨")
 
-    @commands.guild_only()
-    async def sync(self, ctx):
-        synced = await ctx.bot.tree.sync()
-        await ctx.send(
-            f"Synced {len(synced)} commands to the current guild."
-        )
-        return
-
     @app_commands.command(name="가위바위보", description="가위바위보를 합니다 페이랑")
     async def rcp(self, interaction: discord.Interaction):
         def rcpnum():

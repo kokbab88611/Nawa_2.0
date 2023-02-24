@@ -14,15 +14,6 @@ class Moderator(commands.Cog):
     async def on_ready(self):
         print("준비됨")
 
-    @commands.command()
-    @commands.guild_only()
-    async def sync(self, ctx):
-        synced = await ctx.bot.tree.sync()
-        await ctx.send(
-            f"Synced {len(synced)} commands to the current guild."
-        )
-        return
-
     @app_commands.command(name="강퇴", description="강퇴할 유저를 선택합니다 /강퇴 (닉네임or맨션) (사유)")
     @app_commands.checks.has_permissions(kick_members=True)
     async def kickuser(self, interaction: discord.Interaction, user: discord.Member, *, reason: str = "사유 없음") -> None:
