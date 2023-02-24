@@ -4,11 +4,9 @@ from discord.ext import commands, tasks
 from datetime import datetime, timedelta
 from discord.ext.commands import has_permissions, MissingPermissions
 
-
 class Moderator(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
-
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -147,9 +145,6 @@ class Moderator(commands.Cog):
         embed.set_author(name="관리자 세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
         if isinstance(error, app_commands.errors.MissingPermissions):
             await interaction.response.send_message(embed=embed, ephemeral=True)
-
-
-
 
 async def setup(bot):
     await bot.add_cog(Moderator(bot))
