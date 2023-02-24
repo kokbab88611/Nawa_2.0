@@ -11,8 +11,6 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 class User(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
-        with open(os.path.join(os.getcwd(), 'users.json')) as f:
-            self.userData = json.load(f)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -31,7 +29,7 @@ class User(commands.Cog):
                 return False
   
     async def saveUser(self, ctx):
-        await ctx.invoke(self.bot.get_command('핑'))
+        #await ctx.invoke(self.bot.get_command('핑'))
         with open(os.path.join(__location__ + '\\json\\users.json'), "r+") as f:
             data = json.load(f)
             if str(ctx.author.id) not in data:
@@ -59,6 +57,7 @@ class User(commands.Cog):
                 if self.level_up(str(ctx.author.id)):
                     data[str(ctx.author.id)]["level"]["main"] += 1
                     await ctx.send(f"레벨업{data[str(ctx.author.id)]['level']['main']}")
+                    
         with open(os.path.join(__location__ + '\\json\\users.json'), "w+") as f:
             json.dump(data, f, indent=4)
 
