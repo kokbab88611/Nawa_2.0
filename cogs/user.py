@@ -2,13 +2,11 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import pymongo
-import urllib.parse
 import json
 import os
-import asyncio
 import random
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-class User(commands.Cog):
+class UserData(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
 
@@ -110,5 +108,5 @@ class User(commands.Cog):
         await interaction.response.send_message(embed=embed)
 
 async def setup(bot):
-    await bot.add_cog(User(bot))
+    await bot.add_cog(UserData(bot))
     
