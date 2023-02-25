@@ -57,7 +57,7 @@ class Game(commands.Cog):
     async def on_ready(self):
         print("준비됨")
 
-    @app_commands.command(name="버튼", description="테스트")
+    @app_commands.command(name="가위바위보", description="합니다 가위바위보를 페이랑")
     async def buttontest(self, interaction: discord.Interaction):
         command_usrid = interaction.user.id
         scissors_button = RcpButtons('가위', "✌️", "scissors", command_usrid)
