@@ -43,7 +43,7 @@ class RcpButtons(Button):
         button_usrid = interaction.user.id
         if button_usrid == self.command_usrid:
             bot_rcp, result = await RcpButtons.rcp_result(self.custom_id)
-            embed = discord.Embed(title=result, description=f'페이:{bot_rcp} \n 나:{self.usr_rcp}', color=0xb0a7d3)
+            embed = discord.Embed(title=result, description=f'페이:{bot_rcp}\n나:{self.usr_rcp}', color=0xb0a7d3)
             await interaction.response.edit_message(content="", embed=embed, view=None)
         else:
             await interaction.response.send_message(content="너 이거 못눌러", ephemeral=True)
@@ -60,13 +60,10 @@ class Game(commands.Cog):
     @app_commands.command(name="가위바위보", description="합니다 가위바위보를 페이랑")
     async def buttontest(self, interaction: discord.Interaction):
         command_usrid = interaction.user.id
-        scissors_button = RcpButtons('가위', "✌️", "scissors", command_usrid)
-        rock_button = RcpButtons('바위', "✊", "rock", command_usrid)
-        paper_button = RcpButtons('보', "✋", "paper", command_usrid)
         view = View()
-        view.add_item(scissors_button)
-        view.add_item(rock_button)
-        view.add_item(paper_button)
+        view.add_item(RcpButtons('가위', "✌️", "scissors", command_usrid))
+        view.add_item(RcpButtons('바위', "✊", "rock", command_usrid))
+        view.add_item(RcpButtons('보', "✋", "paper", command_usrid))
         first_embed = discord.Embed(title='가위바위보중에 하나 골라')
         await interaction.response.send_message(embed=first_embed, view=view)
 
