@@ -14,25 +14,13 @@ class UserData(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print("준비됨")
-        
-    def level_up(self, userId: str):
+    
+    def check_user(self, user_id: str):
         with open(os.path.join(__location__ + '\\json\\users.json'), "r+") as f:
             data = json.load(f)
-            current_xp = data[userId]["level"]["xp"]
-            current_lvl = data[userId]["level"]["main"]
-            print(current_lvl , "렙")
-            
-            if current_xp >= round(0.04 * (current_lvl ** 3) + 0.8 * (current_lvl ** 2) + 2 * current_lvl):
-                return True
-            return False
-  
-    async def give_xp(self, ctx):
-        #await ctx.invoke(self.bot.get_command('핑'))
-        with open(os.path.join(__location__ + '\\json\\users.json'), "r+") as f:
-            data = json.load(f)
-            if str(ctx.author.id) not in data:
-                data[ctx.author.id] = {
-                        "level": {
+            if str(user_id) not in data:
+                data[user_id]["warned"][user_id] = {
+                      "level": {
                             "main": 1,
                             "xp": 0,
                             "rangi": 0,
@@ -47,13 +35,34 @@ class UserData(commands.Cog):
                         },
                         "attendence": False
                     }
+                print("유저 없었어")
+                with open(os.path.join(__location__ + '\\json\\users.json'), "w+") as f:
+                    json.dump(data, f, indent=4)
             else:
-                random_xp = random.randint(1, 2)
-                data[str(ctx.author.id)]["level"]["xp"] += random_xp
-                print("벌써 존재하는 유저입니다 {}".format(random_xp))
-                if self.level_up(str(ctx.author.id)):
-                    data[str(ctx.author.id)]["level"]["main"] += 1
-                    await ctx.send(f"레벨업{data[str(ctx.author.id)]['level']['main']}")   
+                pass
+
+    def level_up(self, user_id: str):
+        with open(os.path.join(__location__ + '\\json\\users.json'), "r+") as f:
+            data = json.load(f)
+            current_xp = data[user_id]["level"]["xp"]
+            current_lvl = data[user_id]["level"]["main"]
+            print(current_lvl , "렙")
+            
+            if current_xp >= round(0.04 * (current_lvl ** 3) + 0.8 * (current_lvl ** 2) + 2 * current_lvl):
+                return True
+            return False
+  
+    async def give_xp(self, ctx):
+        #await ctx.invoke(self.bot.get_command('핑'))
+        self.check_user(str(ctx.author.id))
+        with open(os.path.join(__location__ + '\\json\\users.json'), "r+") as f:
+            data = json.load(f)
+            random_xp = random.randint(1, 2)
+            data[str(ctx.author.id)]["level"]["xp"] += random_xp
+            print("벌써 존재하는 유저입니다 {}".format(random_xp))
+            if self.level_up(str(ctx.author.id)):
+                data[str(ctx.author.id)]["level"]["main"] += 1
+                await ctx.send(f"레벨업{data[str(ctx.author.id)]['level']['main']}")   
         with open(os.path.join(__location__ + '\\json\\users.json'), "w+") as f:
             json.dump(data, f, indent=4)
 
@@ -77,6 +86,7 @@ class UserData(commands.Cog):
 
     @app_commands.command(name="인벤토리", description="인벤토리를 불러옵니다")
     async def 인벤토리(self, interaction: discord.Interaction):
+        self.check_user(str(interaction.user.id))
         with open('users.json') as f:
             data = json.load(f)
 
@@ -92,6 +102,7 @@ class UserData(commands.Cog):
 
     @app_commands.command(name="정보", description="유저 정보를 불러옵니다")
     async def 정보(self, interaction: discord.Interaction):
+        self.check_user(str(interaction.user.id))
         with open('users.json') as f:
             data = json.load(f)
 
