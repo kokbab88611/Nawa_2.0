@@ -1,10 +1,14 @@
 {
     "536172962051784744": {
-        "warnLimit": 3,
+        "warnLimit": 5,
         "warned": {
             "339767912841871360": {
                 "user_name": "\ub791\uc774\ud280\uae40",
-                "warning": 2
+                "warning": 3
+            },
+            "474389454262370314": {
+                "user_name": "\uc601\ud6c4",
+                "warning": 1
             }
         }
     }
