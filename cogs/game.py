@@ -5,45 +5,45 @@ from discord.ui import Button, View
 from discord.ext import commands, tasks
 
 class RcpButtons(Button):
-    def __init__(self, label, emoji, custom_id, command_usrid):
+    def __init__(self, label, emoji, custom_id, command_userid):
         super().__init__(label=label, style=discord.ButtonStyle.green, emoji=emoji, custom_id=custom_id)
         self.custom_id = str(custom_id)
-        self.usr_rcp = emoji + label
-        self.command_usrid = command_usrid
+        self.user_rcp = emoji + label
+        self.command_userid = command_userid
 
-    async def rcp_result(usr_rcp):
+    async def rcp_result(user_rcp):
             rcp_num = random.randint(1,3)
             if rcp_num == 1:
                 bot_rcp = "✌️가위"
-                if usr_rcp == "scissors":
+                if user_rcp == "scissors":
                     result = "비김"
-                elif usr_rcp == "rock":
+                elif user_rcp == "rock":
                     result = "이김"
                 else:
                     result = "짐"
             elif rcp_num == 2:
                 bot_rcp = "✊바위"
-                if usr_rcp == "scissors":
+                if user_rcp == "scissors":
                     result = "짐"
-                elif usr_rcp == "rock":
+                elif user_rcp == "rock":
                     result = "비김"
                 else:
                     result = "이김"
             else:
                 bot_rcp = "✋보"
-                if usr_rcp == "scissors":
+                if user_rcp == "scissors":
                     result = "이김"
-                elif usr_rcp == "rock":
+                elif user_rcp == "rock":
                     result = "짐"
                 else:
                     result = "비김"
             return bot_rcp, result
 
     async def callback(self, interaction):
-        button_usrid = interaction.user.id
-        if button_usrid == self.command_usrid:
+        button_userid = interaction.user.id
+        if button_userid == self.command_userid:
             bot_rcp, result = await RcpButtons.rcp_result(self.custom_id)
-            embed = discord.Embed(title=result, description=f'페이:{bot_rcp}\n나:{self.usr_rcp}', color=0xb0a7d3)
+            embed = discord.Embed(title=result, description=f'페이:{bot_rcp}\n나:{self.user_rcp}', color=0xb0a7d3)
             await interaction.response.edit_message(content="", embed=embed, view=None)
         else:
             await interaction.response.send_message(content="너 이거 못눌러", ephemeral=True)
@@ -57,18 +57,18 @@ class Game(commands.Cog):
     async def on_ready(self):
         print("준비됨")
 
-    @app_commands.command(name="가위바위보", description="합니다 가위바위보를 페이랑")
+    @app_commands.command(name="가위바위보", description="폐이와 가위바위보를 합니다")
     async def buttontest(self, interaction: discord.Interaction):
-        command_usrid = interaction.user.id
+        command_userid = interaction.user.id
         view = View()
-        view.add_item(RcpButtons('가위', "✌️", "scissors", command_usrid))
-        view.add_item(RcpButtons('바위', "✊", "rock", command_usrid))
-        view.add_item(RcpButtons('보', "✋", "paper", command_usrid))
+        view.add_item(RcpButtons('가위', "✌️", "scissors", command_userid))
+        view.add_item(RcpButtons('바위', "✊", "rock", command_userid))
+        view.add_item(RcpButtons('보', "✋", "paper", command_userid))
         first_embed = discord.Embed(title='가위바위보중에 하나 골라')
         await interaction.response.send_message(embed=first_embed, view=view)
 
     @app_commands.command(name="추첨", description="추첨기를 생성합니다")
-    async def raname(self, interaction: discord.Interaction, join: int = 1, people: str = ""):
+    async def raname(self, interaction: discord.Interaction, people: str, join: int = 1):
         if people:
             arr = people.split(",")
             if len(arr) < join:
