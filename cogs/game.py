@@ -11,7 +11,7 @@ class RcpButtons(Button):
         self.usr_rcp = emoji + label
         self.command_usrid = command_usrid
 
-    async def rcp_result(usr_rcp):###
+    async def rcp_result(usr_rcp):
             rcp_num = random.randint(1,3)
             if rcp_num == 1:
                 bot_rcp = "✌️가위"
@@ -46,8 +46,8 @@ class RcpButtons(Button):
             embed = discord.Embed(title=result, description=f'페이:{bot_rcp} \n 나:{self.usr_rcp}', color=0xb0a7d3)
             await interaction.response.edit_message(content="", embed=embed, view=None)
         else:
-            pass
-            
+            await interaction.response.send_message(content="너 이거 못눌러", ephemeral=True)
+
 class Game(commands.Cog):
     channel_id:string
     def __init__(self, bot) -> None:
