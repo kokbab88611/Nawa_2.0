@@ -13,6 +13,7 @@ class GuildData(commands.Cog):
         self.data = self.get_json()
         self.repeatsave.start()
 
+
     @commands.Cog.listener()
     async def on_ready(self):
         print("준비됨")
@@ -27,26 +28,27 @@ class GuildData(commands.Cog):
             print(self.data)
             return file.read()
 
+
     def check_guild(self, guild_id: str):
-            if guild_id not in self.data:
-                self.data[guild_id] = {
-                        "warnLimit": 3,
-                        "warned": {   
-                        }
+        if guild_id not in self.data:
+            self.data[guild_id] = {
+                    "warnLimit": 3,
+                    "warned": {   
                     }
-                print("길드 없었어")
-            else:
-                pass
-    
+                }
+            print("길드 없었어")
+        else:
+            pass
+
     def check_user(self, guild_id: str ,user_id: str, user_name: str):
-            if user_id not in self.data[guild_id]["warned"]:
-                self.data[guild_id]["warned"][user_id] = {
-                        "user_name": user_name,
-                        "warning": 0
-                    }
-                print("유저 없었어")
-            else:
-                pass
+        if user_id not in self.data[guild_id]["warned"]:
+            self.data[guild_id]["warned"][user_id] = {
+                    "user_name": user_name,
+                    "warning": 0
+                }
+            print("유저 없었어")
+        else:
+            pass
     
     @app_commands.command(name="경고한도", description="경고 한도를 설정합니다, 경고한도 초과시 관리자에게 알림 /경고한도 (경고 수)")
     @app_commands.checks.has_permissions(kick_members=True)
@@ -77,7 +79,6 @@ class GuildData(commands.Cog):
         self.set_json()
         await ctx.send("저장되었습니다.")
         
-
     @commands.Cog.listener()
     async def on_disconnect(self):
         self.set_json()
@@ -89,6 +90,7 @@ class GuildData(commands.Cog):
     @tasks.loop(seconds=30)
     async def repeatsave(self):
         self.set_json()
+
 
 async def setup(bot):
     await bot.add_cog(GuildData(bot))
