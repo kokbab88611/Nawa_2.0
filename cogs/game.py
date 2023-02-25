@@ -7,9 +7,7 @@ from discord.ext import commands, tasks
 class RcpButtons(Button):
     def __init__(self, label, emoji, custom_id, command_userid):
         super().__init__(label=label, style=discord.ButtonStyle.green, emoji=emoji, custom_id=custom_id)
-        self.custom_id = str(custom_id)
-        self.user_rcp = emoji + label
-        self.command_userid = command_userid
+        self.custom_id, self.user_rcp, self.command_userid = str(custom_id), emoji + label, command_userid
 
     async def rcp_result(user_rcp):
             rcp_num = random.randint(1,3)
@@ -40,8 +38,7 @@ class RcpButtons(Button):
             return bot_rcp, result
 
     async def callback(self, interaction):
-        button_userid = interaction.user.id
-        if button_userid == self.command_userid:
+        if interaction.user.id == self.command_userid:
             bot_rcp, result = await RcpButtons.rcp_result(self.custom_id)
             embed = discord.Embed(title=result, description=f'페이:{bot_rcp}\n나:{self.user_rcp}', color=0xb0a7d3)
             await interaction.response.edit_message(content="", embed=embed, view=None)
@@ -59,13 +56,12 @@ class Game(commands.Cog):
 
     @app_commands.command(name="가위바위보", description="폐이와 가위바위보를 합니다")
     async def buttontest(self, interaction: discord.Interaction):
-        command_userid = interaction.user.id
         view = View()
-        view.add_item(RcpButtons('가위', "✌️", "scissors", command_userid))
-        view.add_item(RcpButtons('바위', "✊", "rock", command_userid))
-        view.add_item(RcpButtons('보', "✋", "paper", command_userid))
-        first_embed = discord.Embed(title='가위바위보중에 하나 골라')
-        await interaction.response.send_message(embed=first_embed, view=view)
+        view.add_item(RcpButtons('가위', "✌️", "scissors", interaction.user.id))
+        view.add_item(RcpButtons('바위', "✊", "rock", interaction.user.id))
+        view.add_item(RcpButtons('보', "✋", "paper", interaction.user.id))
+        embed = discord.Embed(title='가위바위보중에 하나 골라')
+        await interaction.response.send_message(embed=embed, view=view)
 
     @app_commands.command(name="추첨", description="추첨기를 생성합니다")
     async def raname(self, interaction: discord.Interaction, people: str, join: int = 1):
