@@ -27,7 +27,7 @@ class UserData(commands.Cog):
     def getjson(self):
         self.f = open(os.path.join(__location__ + '\\json\\users.json'))
         self.data = json.load(self.f)
-        print("저장됨")
+        print("유저 저장됨")
         print(self.data)
     
     def check_user(self, user_id: str):
@@ -133,7 +133,7 @@ class UserData(commands.Cog):
     async def repeat_save_guild(self):
         self.setjson()
         self.getjson()
-        
+
     @commands.Cog.listener()
     async def on_disconnect(self):
         self.setjson()

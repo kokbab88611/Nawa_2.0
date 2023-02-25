@@ -26,7 +26,7 @@ class GuildData(commands.Cog):
     def getjson(self):
         self.f = open(os.path.join(__location__ + '\\json\\guilds.json'))
         self.data = json.load(self.f)
-        print("저장됨")
+        print("길드 저장됨")
         print(self.data)
 
     def check_guild(self, guild_id: str):
