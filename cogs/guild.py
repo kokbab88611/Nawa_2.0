@@ -10,24 +10,24 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 class GuildData(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
-        self.f = open(os.path.join(__location__ + '\\json\\guilds.json'))
-        self.data = json.load(self.f)
-        print(self.data)
-        self.repeat_save_guild.start()
+        self.data = self.get_json()
+        self.repeatsave.start()
+
 
     @commands.Cog.listener()
     async def on_ready(self):
         print("준비됨")
 
-    def setjson(self):
-        with open(os.path.join(__location__ + '\\json\\guilds.json'), "w") as f:
-            json.dump(self.data, f, indent=4)
+    def set_json(self):
+        with open(os.path.join(__location__ + '\\json\\guilds.json'), "w") as file:
+            file.write(json.dump(self.data, file, indent=4))
 
-    def getjson(self):
-        self.f = open(os.path.join(__location__ + '\\json\\guilds.json'))
-        self.data = json.load(self.f)
-        print("길드 저장됨")
-        print(self.data)
+    def get_json(self):
+        with open(os.path.join(f"{__location__}\json\guilds.json"),'r',encoding='utf-8')as file:
+            print("저장됨")
+            print(self.data)
+            return file.read()
+
 
     def check_guild(self, guild_id: str):
         if guild_id not in self.data:
@@ -76,21 +76,20 @@ class GuildData(commands.Cog):
 
     @commands.command(name="저장혀")
     async def savecommand(self, ctx):
-        self.setjson()
+        self.set_json()
         await ctx.send("저장되었습니다.")
         
     @commands.Cog.listener()
     async def on_disconnect(self):
-        self.setjson()
+        self.set_json()
 
     @commands.Cog.listener()
     async def on_disconnect(self):
-        self.setjson()
+        self.set_json()
 
     @tasks.loop(seconds=30)
-    async def repeat_save_guild(self):
-        self.setjson()
-        self.getjson()
+    async def repeatsave(self):
+        self.set_json()
 
 
 async def setup(bot):
