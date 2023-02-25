@@ -4,6 +4,18 @@ from discord import app_commands,Interaction,Reaction,InteractionResponse
 from discord.ui import Button, View
 from discord.ext import commands, tasks
 
+class BlackJackButtons(Button):
+    def __init__(self, label, button_style, emoji, custom_id, command_userid, bet_money):
+        super().__init__(label=label, style=button_style, emoji=emoji, custom_id=custom_id)
+        self.custom_id, self.user_rcp, self.command_userid, self.bet_money = str(custom_id), emoji + label, command_userid, bet_money
+
+    async def callback(self, interaction):
+        if interaction.user.id == self.command_userid:
+            embed = discord.Embed(title=result, description=f'페이:{bot_rcp}\n나:{self.user_rcp}\n{message}', color=0xb0a7d3)
+            await interaction.response.edit_message(content="", embed=embed, view=None)
+        else:
+            await interaction.response.send_message(content="너 이거 못눌러", ephemeral=True)
+
 class RcpButtons(Button):
     def __init__(self, label, emoji, custom_id, command_userid, bet_money):
         super().__init__(label=label, style=discord.ButtonStyle.green, emoji=emoji, custom_id=custom_id)
@@ -67,6 +79,27 @@ class Game(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print("준비됨")
+
+    @app_commands.command(name="블랙잭", description="폐이와 블랙잭을 합니다")
+    async def blackjack(self, interaction: discord.Interaction, bet_money: int = 0):
+        owned_money = 0
+        if bet_money >= owned_money:
+            cards = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 'sJ', 'sK', 'sQ', 'sA', 
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'hJ', 'hK', 'hQ', 'hA', 
+            'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'dJ', 'dK', 'dQ', 'dA', 
+            'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'cJ', 'cK', 'cQ', 'cA']
+            user_deck = []
+            bot_deck = []
+
+            user_deck.append(cards.pop(random.randrange(len(cards))))
+            view = View()
+            view.add_item(BlackJackButtons('히트', discord.ButtonStyle.green, "🃏", "hit", interaction.user.id, bet_money))
+            view.add_item(BlackJackButtons('스탠드', discord.ButtonStyle.red, "🖐🏻", "stand", interaction.user.id, bet_money))
+            view.add_item(BlackJackButtons('더블다운', discord.ButtonStyle.blurple, "💸", "double", interaction.user.id, bet_money))
+            embed = discord.Embed(title='블랙잭')
+            await interaction.response.send_message(embed=embed, view=view)
+        else:
+            await interaction.response.send_message(content="돈 부족. 너 돈 필요.", ephemeral=True)
 
     @app_commands.command(name="가위바위보", description="폐이와 가위바위보를 합니다")
     async def buttontest(self, interaction: discord.Interaction, bet_money: int = 0):
