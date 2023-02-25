@@ -43,7 +43,7 @@ class RcpButtons(Button):
             if result == "win":
                 result = "이김"
                 message = f'{self.bet_money} 얻음'
-                #money_increase(self.bet_money, user)
+                #money_increase(int(round(self.bet_money * 0.5, 0)), user)
             elif result == "draw":
                 result = "비김"
                 message = f'{int(round(self.bet_money * 0.5, 0))} 잃음'
@@ -52,6 +52,8 @@ class RcpButtons(Button):
                 result = "짐"
                 message = f'{self.bet_money} 잃음'
                 #money_decrease(self.bet_money, user)
+            if self.bet_money == 0:
+                message = "재미용 가위바위보가 좋냐?"
             embed = discord.Embed(title=result, description=f'페이:{bot_rcp}\n나:{self.user_rcp}\n{message}', color=0xb0a7d3)
             await interaction.response.edit_message(content="", embed=embed, view=None)
         else:
@@ -67,9 +69,9 @@ class Game(commands.Cog):
         print("준비됨")
 
     @app_commands.command(name="가위바위보", description="폐이와 가위바위보를 합니다")
-    async def buttontest(self, interaction: discord.Interaction, bet_money: int):
-        #if bet_money > owned_money:
-        if bet_money:
+    async def buttontest(self, interaction: discord.Interaction, bet_money: int = 0):
+        owned_money = 0
+        if bet_money >= owned_money:
             view = View()
             view.add_item(RcpButtons('가위', "✌️", "scissors", interaction.user.id, bet_money))
             view.add_item(RcpButtons('바위', "✊", "rock", interaction.user.id, bet_money))
