@@ -11,7 +11,7 @@ class GuildData(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
         self.data = self.get_json()
-        self.repeatsave.start()
+        self.repeat_save_guild.start()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -27,7 +27,7 @@ class GuildData(commands.Cog):
 
     def get_json(self):
         try:
-            with open(os.path.join(f"{__location__}\json\guilds.json"),'r',encoding='utf-8') as file:
+            with open(os.path.join(f"{__location__}\\json\\guilds.json"),'r',encoding='utf-8') as file:
                 print("저장됨")
                 print(json.load(file))
                 return json.load(file)
@@ -95,7 +95,7 @@ class GuildData(commands.Cog):
         self.set_json()
 
     @tasks.loop(seconds=30)
-    async def repeatsave(self):
+    async def repeat_save_guild(self):
         self.set_json()
 
 
