@@ -19,14 +19,16 @@ class UserData(commands.Cog):
         print("준비됨")
 
     def set_json(self):
-        with open(os.path.join(__location__ + '\\json\\users.json'), "w") as file:
-            print(self.data)
-            file.write(json.dump(self.data, file, indent=4))
-
+        try:
+            with open(os.path.join(__location__ + '\\json\\users.json'), "w") as file:
+                print(self.data)
+                file.write(json.dump(self.data, file, indent=4))
+        except TypeError:
+            pass
+        
     def get_json(self):
         with open(os.path.join(f"{__location__}\\json\\users.json"),'r',encoding='utf-8') as file:
             print("저장됨")
-            print(json.load(file))
             return json.load(file)
 
     def check_user(self, user_id: str):
@@ -113,11 +115,6 @@ class UserData(commands.Cog):
         embed.add_field(name="호감도 레벨", value=f"랑이:{level_data['rangi']}\n 치이:{level_data['cheeyi']}\n세희:{level_data['saehee']}", inline=False)
         await interaction.response.send_message(embed=embed)
 
-    @tasks.loop(seconds=30)
-    async def repeat_save_guild(self):
-        self.set_json()
-        self.get_json()
-
     @commands.Cog.listener()
     async def on_disconnect(self):
         self.set_json()
@@ -126,6 +123,7 @@ class UserData(commands.Cog):
     async def repeat_save_user(self):
         self.set_json()
         self.get_json()
+        print("저장됨")
 
 async def setup(bot):
     await bot.add_cog(UserData(bot))
