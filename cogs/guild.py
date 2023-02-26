@@ -31,8 +31,6 @@ class GuildData(commands.Cog):
             print("저장됨")
             return json.load(file)
             
-
-        
     def check_guild(self, guild_id: str):
         if guild_id not in self.data:
             self.data[guild_id] = {

@@ -5,7 +5,7 @@ import pymongo
 import json
 import os
 import random
-
+list_dev_id = ["339767912841871360", "474389454262370314", "393932860597338123", "185181025104560128"]
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 class UserData(commands.Cog):
     def __init__(self, bot) -> None:
@@ -25,7 +25,7 @@ class UserData(commands.Cog):
                 file.write(json.dump(self.data, file, indent=4))
         except TypeError:
             pass
-        
+
     def get_json(self):
         with open(os.path.join(f"{__location__}\\json\\users.json"),'r',encoding='utf-8') as file:
             print("저장됨")
@@ -75,6 +75,29 @@ class UserData(commands.Cog):
             self.data[str(ctx.author.id)]["level"]["main"] += 1
             await ctx.send(f"레벨업{self.data[str(ctx.author.id)]['level']['main']}")   
 
+    @commands.command(name=";지급", pass_context=True)
+    async def give_money(self, ctx, user, money: int):
+        if str(ctx.author.id) in list_dev_id:
+            if user == "전체":
+                for x in self.data.items():
+                    self.data[x[0]]["money"] += money
+            else:  
+                self.check_user(str(ctx.author.id))
+                self.data[str(user)]["money"] += money
+        else:
+            pass
+    @commands.command(name=";징수", pass_context=True)
+    async def take_money(self, ctx, user, money: int):
+        if str(ctx.author.id) in list_dev_id:
+            if user == "전체":
+                for x in self.data.items():
+                    self.data[x[0]]["money"] -= money
+            else:  
+                self.check_user(str(ctx.author.id))
+                self.data[str(user)]["money"] -= money
+        else:
+            pass
+
     @commands.command(name="핑")
     async def ping(self, ctx):
         await ctx.send("퐁이니라!")
@@ -114,6 +137,8 @@ class UserData(commands.Cog):
         embed.set_author(name="치이", icon_url="https://i.imgur.com/7a4oeOi.jpg")
         embed.add_field(name="호감도 레벨", value=f"랑이:{level_data['rangi']}\n 치이:{level_data['cheeyi']}\n세희:{level_data['saehee']}", inline=False)
         await interaction.response.send_message(embed=embed)
+
+
 
     @commands.Cog.listener()
     async def on_disconnect(self):

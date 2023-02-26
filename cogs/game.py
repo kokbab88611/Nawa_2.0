@@ -102,6 +102,7 @@ class RcpButtons(Button):
             if self.bet_money == 0:
                 message = "재미용 가위바위보가 좋냐?"
             embed = discord.Embed(title=result, description=f'페이:{bot_rcp}\n나:{self.user_rcp}\n{message}', color=0xb0a7d3)
+            embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
             await interaction.response.edit_message(content="", embed=embed, view=None)
         else:
             await interaction.response.send_message(content="너 이거 못눌러", ephemeral=True)
