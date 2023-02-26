@@ -20,20 +20,14 @@ class UserData(commands.Cog):
 
     def set_json(self):
         with open(os.path.join(__location__ + '\\json\\users.json'), "w") as file:
-            try:
-                file.write(json.dump(self.data, file, indent=4))
-            except TypeError:
-                pass
+            print(self.data)
+            file.write(json.dump(self.data, file, indent=4))
 
     def get_json(self):
-        try:
-            with open(os.path.join(f"{__location__}\\json\\users.json"),'r',encoding='utf-8') as file:
-                print("저장됨")
-                print(json.load(file))
-                return json.load(file)
-        except json.decoder.JSONDecodeError:
-            return {}
-
+        with open(os.path.join(f"{__location__}\\json\\users.json"),'r',encoding='utf-8') as file:
+            print("저장됨")
+            print(json.load(file))
+            return json.load(file)
 
     def check_user(self, user_id: str):
         if str(user_id) not in self.data:

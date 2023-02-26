@@ -19,20 +19,15 @@ class GuildData(commands.Cog):
 
     def set_json(self):
         with open(os.path.join(__location__ + '\\json\\guilds.json'), "w") as file:
-            try:
-                file.write(json.dump(self.data, file, indent=4))
-            except TypeError:
-                pass
-
+            file.write(json.dump(self.data, file, indent=4))
 
     def get_json(self):
-        try:
-            with open(os.path.join(f"{__location__}\\json\\guilds.json"),'r',encoding='utf-8') as file:
-                print("저장됨")
-                print(json.load(file))
-                return json.load(file)
-        except json.decoder.JSONDecodeError:
-            return {}
+ 
+        with open(os.path.join(f"{__location__}\\json\\guilds.json"),'r',encoding='utf-8') as file:
+            print("저장됨")
+            print(json.load(file))
+            return json.load(file)
+
         
     def check_guild(self, guild_id: str):
         if guild_id not in self.data:
