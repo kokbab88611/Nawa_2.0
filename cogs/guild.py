@@ -13,22 +13,27 @@ class GuildData(commands.Cog):
         self.data = self.get_json()
         self.repeatsave.start()
 
-
     @commands.Cog.listener()
     async def on_ready(self):
         print("준비됨")
 
     def set_json(self):
         with open(os.path.join(__location__ + '\\json\\guilds.json'), "w") as file:
-            file.write(json.dump(self.data, file, indent=4))
+            try:
+                file.write(json.dump(self.data, file, indent=4))
+            except TypeError:
+                pass
+
 
     def get_json(self):
-        with open(os.path.join(f"{__location__}\json\guilds.json"),'r',encoding='utf-8')as file:
-            print("저장됨")
-            print(self.data)
-            return file.read()
-
-
+        try:
+            with open(os.path.join(f"{__location__}\json\guilds.json"),'r',encoding='utf-8') as file:
+                print("저장됨")
+                print(json.load(file))
+                return json.load(file)
+        except json.decoder.JSONDecodeError:
+            return {}
+        
     def check_guild(self, guild_id: str):
         if guild_id not in self.data:
             self.data[guild_id] = {
@@ -37,6 +42,7 @@ class GuildData(commands.Cog):
                     }
                 }
             print("길드 없었어")
+            print(self.data)
         else:
             pass
 
@@ -47,6 +53,7 @@ class GuildData(commands.Cog):
                     "warning": 0
                 }
             print("유저 없었어")
+            print(self.data)
         else:
             pass
     
