@@ -4,28 +4,26 @@ from discord import app_commands,Interaction,Reaction,InteractionResponse
 from discord.ui import Button, View
 from discord.ext import commands, tasks
 
-blackjack_dict = {'s1': 1, 's2': 2, 's3': 3, 's4': 4, 's5': 5, 's6': 6, 's7': 7, 's8': 8, 's9': 9, 'sJ': 10, 'sK': 10, 'sQ': 10, 
-            'h1': 1, 'h2': 2, 'h3': 3, 'h4': 4, 'h5': 5, 'h6': 6, 'h7': 7, 'h8': 8, 'h9': 9, 'hJ': 10, 'hK': 10, 'hQ': 10, 
-            'd1': 1, 'd2': 2, 'd3': 3, 'd4': 4, 'd5': 5, 'd6': 6, 'd7': 7, 'd8': 8, 'd9': 9, 'dJ': 10, 'dK': 10, 'dQ': 10, 
-            'c1': 1, 'c2': 2, 'c3': 3, 'c4': 4, 'c5': 5, 'c6': 6, 'c7': 7, 'c8': 8, 'c9': 9, 'cJ': 10, 'cK': 10, 'cQ': 10
-}
+blackjack_dict = {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, 'J': 10, 'K': 10, 'Q': 10}
 
 class BlackJackButtons(Button):
-    def __init__(self, label, button_style, emoji, custom_id, command_userid, bet_money, user_deck, bot_deck, cards):
+    def __init__(self, label, button_style, emoji, custom_id, command_userid, bet_money, user_deck, bot_deck, cards, owned_money):
         super().__init__(label=label, style=button_style, emoji=emoji, custom_id=custom_id)
         self.custom_id, self.user_rcp, self.command_userid, self.bet_money = str(custom_id), emoji + label, command_userid, bet_money
         self.user_deck = user_deck
         self.bot_deck = bot_deck
         self.cards = cards
+        self.owned_money = owned_money
 
     async def create_msg(deck):
         num_ace = 0
         cards_msg = ""
         total = 0
-        for i in range(len(deck)):
-            cards_msg += f'{deck[i]}, '
+        for i in deck:
+            cards_msg += f'{i}, '
+            #print(blackjack_dict[i[1]])
             try:
-                total += blackjack_dict[deck[i]]
+                total += blackjack_dict[i[1]]
             except:
                 num_ace += 1
         for i in range(num_ace):
@@ -39,17 +37,19 @@ class BlackJackButtons(Button):
         if interaction.user.id == self.command_userid:
             if self.custom_id == "hit":
                 self.user_deck.append(self.cards.pop(random.randrange(len(self.cards))))
-            elif self.custom_id == "stand":
-                d1
             else:
                 d1
 
             user_total, user_cards_msg = await BlackJackButtons.create_msg(self.user_deck)
             bot_total, bot_cards_msg = await BlackJackButtons.create_msg(self.bot_deck)
-            msg = user_cards_msg + f'유저: {user_total}' + "\n" + bot_cards_msg + f'봇: {bot_total}'
-            embed = discord.Embed(title='블랙잭', description=msg)
-
-            await interaction.response.edit_message(embed=embed)
+            if user_total < 22:
+                msg = user_cards_msg + f'유저: {user_total}' + "\n" + bot_cards_msg + f'봇: {bot_total}' + f'\n 베팅: {self.bet_money}'
+                embed = discord.Embed(title='블랙잭', description=msg)
+                await interaction.response.edit_message(embed=embed)
+            else:
+                msg = user_cards_msg + f'유저: {user_total}' + "\n" + bot_cards_msg + f'봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 너 짐  ㅅㄱ"
+                embed = discord.Embed(title='블랙잭', description=msg)
+                await interaction.response.edit_message(embed=embed, view=None)
         else:
             await interaction.response.send_message(content="너 이거 못눌러", ephemeral=True)
 
@@ -120,12 +120,16 @@ class Game(commands.Cog):
 
     @app_commands.command(name="블랙잭", description="폐이와 블랙잭을 합니다")
     async def blackjack(self, interaction: discord.Interaction, bet_money: int = 0):
-        owned_money = 0
+        owned_money = 1000
         if bet_money <= owned_money:
+            """
             cards = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 'sJ', 'sK', 'sQ', 'sA', 
             'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'hJ', 'hK', 'hQ', 'hA', 
             'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'dJ', 'dK', 'dQ', 'dA', 
-            'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'cJ', 'cK', 'cQ', 'cA']
+            'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'cJ', 'cK', 'cQ', 'cA']"""
+
+            cards = ['sJ', 'sK', 'sQ', 'sA', 'hJ', 'hK', 'hQ', 'hA', 'dJ', 'dK', 'dQ', 'dA', 'cJ', 'cK', 'cQ', 'cA']
+
             user_deck = []
             bot_deck = []
             user_total = 0
@@ -133,27 +137,13 @@ class Game(commands.Cog):
             for i in range(2):
                 user_deck.append(cards.pop(random.randrange(len(cards))))
                 bot_deck.append(cards.pop(random.randrange(len(cards))))
-            for i in range(len(user_deck)):
-                try:
-                    user_total += blackjack_dict[user_deck[i]]
-                    bot_total += blackjack_dict[bot_deck[i]]
-                except:
-                    if user_total + 11 < 22:
-                        user_total += 11
-                    else:
-                        user_total += 1
-                    if bot_total + 11 < 22:
-                        bot_total += 11
-                    else:
-                        bot_total += 1
-            user_cards_msg = user_deck[0] + "," + user_deck[1]
-            bot_cards_msg = bot_deck[0] + "," + bot_deck[1]
-            msg = user_cards_msg + f'유저: {user_total}' + "\n" + bot_cards_msg + f'봇: {bot_total}' 
+            user_total, user_cards_msg = await BlackJackButtons.create_msg(user_deck)
+            bot_total, bot_cards_msg = await BlackJackButtons.create_msg(bot_deck)
+            msg = user_cards_msg + f'유저: {user_total}' + "\n" + bot_cards_msg + f'봇: {bot_total}' + f'\n 베팅: {bet_money}'
             
             view = View()
-            view.add_item(BlackJackButtons('히트', discord.ButtonStyle.green, "🃏", "hit", interaction.user.id, bet_money, user_deck, bot_deck, cards))
-            view.add_item(BlackJackButtons('스탠드', discord.ButtonStyle.red, "🖐🏻", "stand", interaction.user.id, bet_money, user_deck, bot_deck, cards))
-            view.add_item(BlackJackButtons('더블다운', discord.ButtonStyle.blurple, "💸", "double", interaction.user.id, bet_money, user_deck, bot_deck, cards))
+            view.add_item(BlackJackButtons('히트', discord.ButtonStyle.green, "🃏", "hit", interaction.user.id, bet_money, user_deck, bot_deck, cards, owned_money))
+            view.add_item(BlackJackButtons('스탠드', discord.ButtonStyle.red, "🖐🏻", "stand", interaction.user.id, bet_money, user_deck, bot_deck, cards, owned_money))
             embed = discord.Embed(title='블랙잭', description=msg)
             await interaction.response.send_message(embed=embed, view=view)
         else:
