@@ -19,6 +19,9 @@ class UserData(commands.Cog):
         print("준비됨")
 
     def set_json(self):
+        """_summary_
+            users JSON 에 self.data를 덮어씌움.
+        """
         try:
             with open(os.path.join(__location__ + '\\json\\users.json'), "w") as file:
                 print(self.data)
@@ -26,12 +29,21 @@ class UserData(commands.Cog):
         except TypeError:
             pass
 
-    def get_json(self):
+    def get_json(self) -> dict:
+        """_summary_
+            users JSON 파일을 불러와서 return함
+        return Dict
+        """
         with open(os.path.join(f"{__location__}\\json\\users.json"),'r',encoding='utf-8') as file:
             print("저장됨")
             return json.load(file)
 
     def check_user(self, user_id: str):
+        """_summary_
+            만약 해당 str(user.id)가 self.data에 없다면 추가함.
+        Args:
+            user_id (str, 필수): 해당 user의 id
+        """
         if str(user_id) not in self.data:
             self.data[user_id] = {
                     "level": {
@@ -49,25 +61,30 @@ class UserData(commands.Cog):
                     },
                     "attendence": False
                 }
-            print("유저 없었어")
         else:
             pass
 
-    def level_up(self, user_id: str):
-            current_xp = self.data[user_id]["level"]["xp"]
-            current_lvl = self.data[user_id]["level"]["main"]
+    def level_up(self, user_id: str) -> bool:
+        """_summary_
+            유저가 레벨업 했는지 확인함.
+        Args:
+            user_id (str,필수): 메세지를 보낸 해당 유저의 id
+        Returns:
+            _type_: 레벨업을 했다면 true를 return함
+        """
+        current_xp = self.data[user_id]["level"]["xp"]
+        current_lvl = self.data[user_id]["level"]["main"]
 
-            if current_xp >= round(0.04 * (current_lvl ** 3) + 0.8 * (current_lvl ** 2) + 2 * current_lvl):
-                return True
-
-            return False
+        if current_xp >= round(0.04 * (current_lvl ** 3) + 0.8 * (current_lvl ** 2) + 2 * current_lvl):
+            return True
+        return False
     
-    async def give_money(self, money: int, user: discord.Member = "다"):
-        if user == None:
-            pass
-
     async def give_xp(self, ctx):
-        #await ctx.invoke(self.bot.get_command('핑'))
+        """_summary_
+            매세지를 보낸 유저에게 xp를 1~2사이로 랜덤 부여. 레벨업을 했는지 확인하여 True를 받으면 self.data레벨을 올림
+        Args:
+            ctx (_type_): 메세지 Context
+        """
         self.check_user(str(ctx.author.id))
         random_xp = random.randint(1, 2)
         self.data[str(ctx.author.id)]["level"]["xp"] += random_xp
@@ -77,6 +94,14 @@ class UserData(commands.Cog):
 
     @commands.command(name=";지급", pass_context=True)
     async def give_money(self, ctx, user, money: int):
+        """_summary_
+            user가 전체가 아니라면 해당 user.id에게 돈 지급. 전체라면 self.data에 있는 모든 유저에게 돈 지급.
+            *개발자 전용
+        Args:
+            ctx (_type_): 메세지 Context
+            user (_type_, 옵션): user.id 혹은 "전체"
+            money (int, 옵션): 지급할 돈 액수
+        """
         if str(ctx.author.id) in list_dev_id:
             if user == "전체":
                 for x in self.data.items():
@@ -88,6 +113,14 @@ class UserData(commands.Cog):
             pass
     @commands.command(name=";징수", pass_context=True)
     async def take_money(self, ctx, user, money: int):
+        """_summary_
+            user가 전체가 아니라면 해당 user.id에게 돈 징수. 전체라면 self.data에 있는 모든 유저에게 돈 징수.
+            *개발자 전용
+        Args:
+            ctx (_type_): 메세지 Context
+            user (_type_, 옵션): user.id 혹은 "전체"
+            money (int, 옵션): 징수할 돈 액수
+        """
         if str(ctx.author.id) in list_dev_id:
             if user == "전체":
                 for x in self.data.items():
@@ -100,10 +133,20 @@ class UserData(commands.Cog):
 
     @commands.command(name="핑")
     async def ping(self, ctx):
+        """_summary_
+            테스트용 핑퐁
+        Args:
+            ctx (_type_): 메세지 Context
+        """
         await ctx.send("퐁이니라!")
 
     @commands.command(name="아", pass_context=True)
     async def test(self, ctx):
+        """_summary_
+        레벨기능 테스트 ***임시***
+        Args:
+            ctx (_type_): 메세지 Context
+        """
         await self.give_xp(ctx)
 
     @commands.command(name="인벤", pass_context=True)
@@ -137,8 +180,6 @@ class UserData(commands.Cog):
         embed.set_author(name="치이", icon_url="https://i.imgur.com/7a4oeOi.jpg")
         embed.add_field(name="호감도 레벨", value=f"랑이:{level_data['rangi']}\n 치이:{level_data['cheeyi']}\n세희:{level_data['saehee']}", inline=False)
         await interaction.response.send_message(embed=embed)
-
-
 
     @commands.Cog.listener()
     async def on_disconnect(self):
