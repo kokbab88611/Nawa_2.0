@@ -54,31 +54,31 @@ class BlackJackButtons(Button):
 class RcpButtons(Button): #가위바위보 메시지 버튼 생성 오브젝트
     def __init__(self, label, emoji, custom_id, command_userid, bet_money):
         """
-    _summary_
-    클래스 안으로 값 받아옴
-    Args:
-        self (obj, 필수): 오브젝트
-        label (str, 필수): 버튼이 보여줄 글
-        emoji (str, 필수): 버튼에 있을 이모지
-        custom_id (str, 필수): 버튼 고유 id
-        command_userid (str, 필수): 커맨드 사용한 유저 고유 id
-        bet_money (int, 필수): 베팅한 돈
-    Return
-        N/A
+        _summary_
+        클래스 안으로 값 받아옴
+        Args:
+            self (obj, 필수): 오브젝트
+            label (str, 필수): 버튼이 보여줄 글
+            emoji (str, 필수): 버튼에 있을 이모지
+            custom_id (str, 필수): 버튼 고유 id
+            command_userid (str, 필수): 커맨드 사용한 유저 고유 id
+            bet_money (int, 필수): 베팅한 돈
+        Return
+            N/A
         """
         super().__init__(label=label, style=discord.ButtonStyle.green, emoji=emoji, custom_id=custom_id)
         self.custom_id, self.user_rcp, self.command_userid, self.bet_money = str(custom_id), emoji + label, command_userid, bet_money
     
     async def rcp_result(user_rcp):
-    """
-    _summary_
-    가위바위보 결과 계산함
-    Args:
-        user_rcp (str, 필수): 무슨 버튼이 눌렸는지 버튼 고유 id 불러온거임
-    Return
-        bot_rcp (str, 필수): 봇이 뭐냈는지
-        result (str, 필수): 이겼는지 졌는지
-    """
+        """
+        _summary_
+        가위바위보 결과 계산함
+        Args:
+            user_rcp (str, 필수): 무슨 버튼이 눌렸는지 버튼 고유 id 불러온거임
+        Return
+            bot_rcp (str, 필수): 봇이 뭐냈는지
+            result (str, 필수): 이겼는지 졌는지
+        """
         rcp_num = random.randint(1,3)
         if rcp_num == 1:
             bot_rcp = "✌️가위"
@@ -108,15 +108,15 @@ class RcpButtons(Button): #가위바위보 메시지 버튼 생성 오브젝트
     
     async def callback(self, interaction):
         """
-    _summary_
-    버튼 눌렀을 때 반응 구분/실행
-    이겼으면 돈줌
-    비기면 돈 뺏음
-    지면 돈 뺏음
-    Args:
-        interaction (discord.interaction, 필수): 버튼 누른 사람 & interaction
-    Return
-        N/A
+        _summary_
+        버튼 눌렀을 때 반응 구분/실행
+        이겼으면 돈줌
+        비기면 돈 뺏음
+        지면 돈 뺏음
+        Args:
+            interaction (discord.interaction, 필수): 버튼 누른 사람 & interaction
+        Return
+            N/A
         """
         if interaction.user.id == self.command_userid:
             bot_rcp, result = await RcpButtons.rcp_result(self.custom_id)
@@ -188,17 +188,17 @@ class Game(commands.Cog):
 
     @app_commands.command(name="가위바위보", description="폐이와 가위바위보를 합니다")
     async def buttontest(self, interaction: discord.Interaction, bet_money: int = 0):
-    """
-    _summary_
-    View obj 생성
-    view 오브젝트에 버튼 3개 가위바위보 추가
-    돈 충분한지 확인
-    Args:
-        interaction (discord.interaction, 필수): 커맨드 쓴 사람 & interaction
-        bet_money (int, 옵션): 돈 걸고싶은만큼
-    Return
-        N/A
-    """
+        """
+        _summary_
+        View obj 생성
+        view 오브젝트에 버튼 3개 가위바위보 추가
+        돈 충분한지 확인
+        Args:
+            interaction (discord.interaction, 필수): 커맨드 쓴 사람 & interaction
+            bet_money (int, 옵션): 돈 걸고싶은만큼
+        Return
+            N/A
+        """
         owned_money = 0
         if bet_money >= owned_money:
             view = View()
