@@ -37,7 +37,7 @@ class BlackJackButtons(Button):
             if self.custom_id == "hit":
                 self.user_deck.append(self.cards.pop(random.randrange(len(self.cards))))
             else:
-                
+                pass
             user_total, user_cards_msg = await BlackJackButtons.create_msg(self.user_deck)
             bot_total, bot_cards_msg = await BlackJackButtons.create_msg(self.bot_deck)
             if user_total < 22:
@@ -51,7 +51,7 @@ class BlackJackButtons(Button):
         else:
             await interaction.response.send_message(content="너 이거 못눌러", ephemeral=True)
 
-class RcpButtons(Button): #락시저페이퍼 클래스: 버튼 오브젝트 불러와서 값 박아넣는데 편해서 쓰는거임
+class RcpButtons(Button): #가위바위보 메시지 버튼 생성 오브젝트
     def __init__(self, label, emoji, custom_id, command_userid, bet_money):
         """
     _summary_
