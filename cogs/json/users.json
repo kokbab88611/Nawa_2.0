@@ -1,45 +1,13 @@
 {
     "339767912841871360": {
         "level": {
-            "main": 2,
-            "xp": 5,
+            "main": 1,
+            "xp": 2,
             "rangi": 0,
             "cheeyi": 0,
             "saehee": 0
         },
-        "money": -2,
-        "item": {
-            "a": 1,
-            "b": 0,
-            "c": 99
-        },
-        "attendence": false
-    },
-    "12341232131": {
-        "level": {
-            "main": 2,
-            "xp": 5,
-            "rangi": 0,
-            "cheeyi": 0,
-            "saehee": 0
-        },
-        "money": 3,
-        "item": {
-            "a": 1,
-            "b": 0,
-            "c": 99
-        },
-        "attendence": false
-    },
-    "3423424": {
-        "level": {
-            "main": 2,
-            "xp": 5,
-            "rangi": 0,
-            "cheeyi": 0,
-            "saehee": 0
-        },
-        "money": 3,
+        "money": 30000,
         "item": {
             "a": 1,
             "b": 0,

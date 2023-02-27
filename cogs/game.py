@@ -63,8 +63,6 @@ class RcpButtons(Button): #가위바위보 메시지 버튼 생성 오브젝트
             custom_id (str, 필수): 버튼 고유 id
             command_userid (str, 필수): 커맨드 사용한 유저 고유 id
             bet_money (int, 필수): 베팅한 돈
-        Return
-            N/A
         """
         super().__init__(label=label, style=discord.ButtonStyle.green, emoji=emoji, custom_id=custom_id)
         self.custom_id, self.user_rcp, self.command_userid, self.bet_money = str(custom_id), emoji + label, command_userid, bet_money
@@ -74,7 +72,7 @@ class RcpButtons(Button): #가위바위보 메시지 버튼 생성 오브젝트
         _summary_
         가위바위보 결과 계산함
         Args:
-            user_rcp (str, 필수): 무슨 버튼이 눌렸는지 버튼 고유 id 불러온거임
+            user_rcp (str, 필수): 무슨 버튼이 눌렸는지 버튼 고유 id 불러옴
         Return
             bot_rcp (str, 필수): 봇이 뭐냈는지
             result (str, 필수): 이겼는지 졌는지
@@ -110,13 +108,11 @@ class RcpButtons(Button): #가위바위보 메시지 버튼 생성 오브젝트
         """
         _summary_
         버튼 눌렀을 때 반응 구분/실행
-        이겼으면 돈줌
+        이겼으면 돈 지급
         비기면 돈 뺏음
         지면 돈 뺏음
         Args:
             interaction (discord.interaction, 필수): 버튼 누른 사람 & interaction
-        Return
-            N/A
         """
         if interaction.user.id == self.command_userid:
             bot_rcp, result = await RcpButtons.rcp_result(self.custom_id)
@@ -195,9 +191,7 @@ class Game(commands.Cog):
         돈 충분한지 확인
         Args:
             interaction (discord.interaction, 필수): 커맨드 쓴 사람 & interaction
-            bet_money (int, 옵션): 돈 걸고싶은만큼
-        Return
-            N/A
+            bet_money (int, 옵션): 돈 걸고 싶은만큼
         """
         owned_money = 0
         if bet_money >= owned_money:
