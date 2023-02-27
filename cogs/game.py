@@ -21,7 +21,6 @@ class BlackJackButtons(Button):
         total = 0
         for i in deck:
             cards_msg += f'{i}, '
-            #print(blackjack_dict[i[1]])
             try:
                 total += blackjack_dict[i[1]]
             except:
@@ -122,13 +121,10 @@ class Game(commands.Cog):
     async def blackjack(self, interaction: discord.Interaction, bet_money: int = 0):
         owned_money = 1000
         if bet_money <= owned_money:
-            """
             cards = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 'sJ', 'sK', 'sQ', 'sA', 
             'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'hJ', 'hK', 'hQ', 'hA', 
             'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'dJ', 'dK', 'dQ', 'dA', 
-            'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'cJ', 'cK', 'cQ', 'cA']"""
-
-            cards = ['sJ', 'sK', 'sQ', 'sA', 'hJ', 'hK', 'hQ', 'hA', 'dJ', 'dK', 'dQ', 'dA', 'cJ', 'cK', 'cQ', 'cA']
+            'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'cJ', 'cK', 'cQ', 'cA']
 
             user_deck = []
             bot_deck = []
