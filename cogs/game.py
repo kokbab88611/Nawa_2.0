@@ -44,7 +44,9 @@ class BlackJackButtons(Button):
             else:
                 d1
 
-            msg = await BlackJackButtons.create_msg(self.user_deck, self.bot_deck)
+            user_total, user_cards_msg = await BlackJackButtons.create_msg(self.user_deck)
+            bot_total, bot_cards_msg = await BlackJackButtons.create_msg(self.bot_deck)
+            msg = user_cards_msg + f'유저: {user_total}' + "\n" + bot_cards_msg + f'봇: {bot_total}'
             embed = discord.Embed(title='블랙잭', description=msg)
 
             await interaction.response.edit_message(embed=embed)
