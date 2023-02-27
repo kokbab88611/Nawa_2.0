@@ -54,15 +54,15 @@ class BlackJackButtons(Button):
 class RcpButtons(Button): #가위바위보 메시지 버튼 생성 오브젝트
     def __init__(self, label, emoji, custom_id, command_userid, bet_money):
         """
-    _summary_
-    클래스 안으로 값 받아옴
-    Args:
-        self (obj, 필수): 오브젝트
-        label (str, 필수): 버튼이 보여줄 글
-        emoji (str, 필수): 버튼에 있을 이모지
-        custom_id (str, 필수): 버튼 고유 id
-        command_userid (str, 필수): 커맨드 사용한 유저 고유 id
-        bet_money (int, 필수): 베팅한 돈
+        _summary_
+        클래스 안으로 값 받아옴
+        Args:
+            self (obj, 필수): 오브젝트
+            label (str, 필수): 버튼이 보여줄 글
+            emoji (str, 필수): 버튼에 있을 이모지
+            custom_id (str, 필수): 버튼 고유 id
+            command_userid (str, 필수): 커맨드 사용한 유저 고유 id
+            bet_money (int, 필수): 베팅한 돈
         """
         super().__init__(label=label, style=discord.ButtonStyle.green, emoji=emoji, custom_id=custom_id)
         self.custom_id, self.user_rcp, self.command_userid, self.bet_money = str(custom_id), emoji + label, command_userid, bet_money
@@ -72,7 +72,7 @@ class RcpButtons(Button): #가위바위보 메시지 버튼 생성 오브젝트
         _summary_
         가위바위보 결과 계산함
         Args:
-            user_rcp (str, 필수): 무슨 버튼이 눌렸는지 버튼 고유 id 불러온거임
+            user_rcp (str, 필수): 무슨 버튼이 눌렸는지 버튼 고유 id 불러옴
         Return
             bot_rcp (str, 필수): 봇이 뭐냈는지
             result (str, 필수): 이겼는지 졌는지
@@ -106,13 +106,13 @@ class RcpButtons(Button): #가위바위보 메시지 버튼 생성 오브젝트
     
     async def callback(self, interaction):
         """
-    _summary_
-    버튼 눌렀을 때 반응 구분/실행
-    이겼으면 돈 지금
-    비기면 돈 뺏음
-    지면 돈 뺏음
-    Args:
-        interaction (discord.interaction, 필수): 버튼 누른 사람 & interaction
+        _summary_
+        버튼 눌렀을 때 반응 구분/실행
+        이겼으면 돈 지급
+        비기면 돈 뺏음
+        지면 돈 뺏음
+        Args:
+            interaction (discord.interaction, 필수): 버튼 누른 사람 & interaction
         """
         if interaction.user.id == self.command_userid:
             bot_rcp, result = await RcpButtons.rcp_result(self.custom_id)
@@ -191,7 +191,7 @@ class Game(commands.Cog):
         돈 충분한지 확인
         Args:
             interaction (discord.interaction, 필수): 커맨드 쓴 사람 & interaction
-            bet_money (int, 옵션): 돈 걸고싶은만큼
+            bet_money (int, 옵션): 돈 걸고 싶은만큼
         """
         owned_money = 0
         if bet_money >= owned_money:
