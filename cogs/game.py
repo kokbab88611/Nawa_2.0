@@ -7,13 +7,12 @@ from discord.ext import commands, tasks
 blackjack_dict = {'1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, 'J': 10, 'K': 10, 'Q': 10}
 
 class BlackJackButtons(Button):
-    def __init__(self, label, button_style, emoji, custom_id, command_userid, bet_money, user_deck, bot_deck, cards, owned_money):
+    def __init__(self, label, button_style, emoji, custom_id, command_userid, bet_money, user_deck, bot_deck, cards):
         super().__init__(label=label, style=button_style, emoji=emoji, custom_id=custom_id)
         self.custom_id, self.user_rcp, self.command_userid, self.bet_money = str(custom_id), emoji + label, command_userid, bet_money
         self.user_deck = user_deck
         self.bot_deck = bot_deck
         self.cards = cards
-        self.owned_money = owned_money
 
     async def create_msg(deck):
         num_ace = 0
@@ -25,6 +24,7 @@ class BlackJackButtons(Button):
                 total += blackjack_dict[i[1]]
             except:
                 num_ace += 1
+        
         for i in range(num_ace):
             if total + 11 < 22:
                 total += 11
@@ -37,7 +37,7 @@ class BlackJackButtons(Button):
             if self.custom_id == "hit":
                 self.user_deck.append(self.cards.pop(random.randrange(len(self.cards))))
             else:
-                d1
+                
 
             user_total, user_cards_msg = await BlackJackButtons.create_msg(self.user_deck)
             bot_total, bot_cards_msg = await BlackJackButtons.create_msg(self.bot_deck)
@@ -46,7 +46,7 @@ class BlackJackButtons(Button):
                 embed = discord.Embed(title='블랙잭', description=msg)
                 await interaction.response.edit_message(embed=embed)
             else:
-                msg = user_cards_msg + f'유저: {user_total}' + "\n" + bot_cards_msg + f'봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 너 짐  ㅅㄱ"
+                msg = user_cards_msg + f'유저: {user_total}' + "\n" + bot_cards_msg + f'봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 너 짐  ㅅㄱ 이돈 내꺼ㅋ"
                 embed = discord.Embed(title='블랙잭', description=msg)
                 await interaction.response.edit_message(embed=embed, view=None)
         else:
@@ -136,12 +136,21 @@ class Game(commands.Cog):
             user_total, user_cards_msg = await BlackJackButtons.create_msg(user_deck)
             bot_total, bot_cards_msg = await BlackJackButtons.create_msg(bot_deck)
             msg = user_cards_msg + f'유저: {user_total}' + "\n" + bot_cards_msg + f'봇: {bot_total}' + f'\n 베팅: {bet_money}'
-            
-            view = View()
-            view.add_item(BlackJackButtons('히트', discord.ButtonStyle.green, "🃏", "hit", interaction.user.id, bet_money, user_deck, bot_deck, cards, owned_money))
-            view.add_item(BlackJackButtons('스탠드', discord.ButtonStyle.red, "🖐🏻", "stand", interaction.user.id, bet_money, user_deck, bot_deck, cards, owned_money))
-            embed = discord.Embed(title='블랙잭', description=msg)
-            await interaction.response.send_message(embed=embed, view=view)
+            if user_total != 21:
+                view = View()
+                view.add_item(BlackJackButtons('히트', discord.ButtonStyle.green, "🃏", "hit", interaction.user.id, bet_money, user_deck, bot_deck, cards))
+                view.add_item(BlackJackButtons('스탠드', discord.ButtonStyle.red, "🖐🏻", "stand", interaction.user.id, bet_money, user_deck, bot_deck, cards))
+                embed = discord.Embed(title='블랙잭', description=msg)
+                await interaction.response.send_message(embed=embed, view=view)
+            else:
+                if bot_total != 21:
+                    msg += f'\n 축하해 ㅋ 블랙잭이농. 옜다 {bet_money * 1.5}'
+                    embed = discord.Embed(title='블랙잭', description=msg)
+                    await interaction.response.send_message(embed=embed)
+                else:
+                    msg += f'\n 축하해 ㅋ 블랙잭이농. 근데 비겼쥬 ㅋ'
+                    embed = discord.Embed(title='블랙잭', description=msg)
+                    await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message(content="돈 부족. 너 돈 필요.", ephemeral=True)
 
