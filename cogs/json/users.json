@@ -1,29 +1,13 @@
 {
     "339767912841871360": {
         "level": {
-            "main": 1,
-            "xp": 2,
+            "main": 3,
+            "xp": 15,
             "rangi": 0,
             "cheeyi": 0,
             "saehee": 0
         },
-        "money": 50000,
-        "item": {
-            "a": 1,
-            "b": 0,
-            "c": 99
-        },
-        "attendence": false
-    },
-    "474389454262370314": {
-        "level": {
-            "main": 2,
-            "xp": 3,
-            "rangi": 0,
-            "cheeyi": 0,
-            "saehee": 0
-        },
-        "money": 20000,
+        "money": 30000,
         "item": {
             "a": 1,
             "b": 0,

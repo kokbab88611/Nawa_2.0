@@ -6,6 +6,9 @@ import json
 import os
 import random
 list_dev_id = ["339767912841871360", "474389454262370314", "393932860597338123", "185181025104560128"]
+all_hi = ["안녀", "안녕", "안뇽", "안뇨", "어서와", "히사시부리", "하이", "반가워", "오랜만이야", "나 또 왔", 
+        "좋은 아침", "잘 잤어", "좋은 밤", "좋은 저녁", "좋은 점심", "여기야", "반갑다", 
+        "돌아왔", "나 왔어", "나 왔", "갔다 왔어", "다녀왔"]
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 class UserData(commands.Cog):
     def __init__(self, bot) -> None:
@@ -44,7 +47,7 @@ class UserData(commands.Cog):
         Args:
             user_id (str, 필수): 해당 user의 id
         """
-        if str(user_id) not in self.data:
+        if user_id not in self.data:
             self.data[user_id] = {
                     "level": {
                         "main": 1,
@@ -75,22 +78,36 @@ class UserData(commands.Cog):
         current_xp = self.data[user_id]["level"]["xp"]
         current_lvl = self.data[user_id]["level"]["main"]
 
-        if current_xp >= round(0.04 * (current_lvl ** 3) + 0.8 * (current_lvl ** 2) + 2 * current_lvl):
+        if current_xp >= round((4 * (current_lvl ** 3)) / 5):
             return True
         return False
     
-    async def give_xp(self, ctx):
+    async def give_xp(self, username ,user_id: str, channel: discord.channel):
+
         """_summary_
             매세지를 보낸 유저에게 xp를 1~2사이로 랜덤 부여. 레벨업을 했는지 확인하여 True를 받으면 self.data레벨을 올림
         Args:
             ctx (_type_): 메세지 Context
         """
-        self.check_user(str(ctx.author.id))
+        embed=discord.Embed(title="아우우! {}(으)로 레벨 업 하신거예요!!", description="{}")
+        embed.set_author(name="치이", icon_url="https://i.imgur.com/m4rkhda.jpg")
+
+        self.check_user(user_id)
         random_xp = random.randint(1, 2)
-        self.data[str(ctx.author.id)]["level"]["xp"] += random_xp
-        if self.level_up(str(ctx.author.id)):
-            self.data[str(ctx.author.id)]["level"]["main"] += 1
-            await ctx.send(f"레벨업{self.data[str(ctx.author.id)]['level']['main']}")   
+        self.data[user_id]["level"]["xp"] += random_xp
+        if self.level_up(user_id):
+            self.data[user_id]["level"]["main"] += 1
+            congrats = [f"축하드리는거 예요 {username} 오라버니!!",
+                        f"{username} 오라버니 고생이 많으신거예요!",
+                        f"아우우!! 벌써 {self.data[user_id]['level']['main']}레벨인 거에요 오라버니!",
+                        f"아우? 엄청 빠르신거예요! 축하드려요 {username} 오라버니!",
+                        f"아우우우! {self.data[user_id]['level']['main']}레벨 달성은 축하드리지만.. 오라버니도 현생을 사셔야 하는 거예요... ",
+                        f"랑이님! 아무리 그래도 이런 축하는 제가 하고 싶은 거예요! 아우우우!!! 헤헤 {username}아! {self.data[user_id]['level']['main']}레벨 축하하느니라!!"
+                        ]
+            embed=discord.Embed(title=f"아우우! {self.data[user_id]['level']['main']}(으)로 레벨 업 하신거예요!!", description=f"{random.choice(congrats)}", color=0x7a90e1)
+            embed.set_author(name="치이", icon_url="https://i.imgur.com/m4rkhda.jpg")
+            
+            await channel.send(embed=embed)   
 
     @commands.command(name=";지급", pass_context=True)
     async def give_money(self, ctx, user, money: int):
@@ -111,6 +128,7 @@ class UserData(commands.Cog):
                 self.data[str(user)]["money"] += money
         else:
             pass
+        
     @commands.command(name=";징수", pass_context=True)
     async def take_money(self, ctx, user, money: int):
         """_summary_
@@ -147,7 +165,7 @@ class UserData(commands.Cog):
         Args:
             ctx (_type_): 메세지 Context
         """
-        await self.give_xp(ctx)
+        await self.give_xp(ctx.author.name , str(ctx.author.id), ctx.channel)
 
     @commands.command(name="인벤", pass_context=True)
     async def inven(self, ctx):
@@ -185,12 +203,38 @@ class UserData(commands.Cog):
     async def on_disconnect(self):
         self.set_json()
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=5)
     async def repeat_save_user(self):
         self.set_json()
         self.get_json()
         print("저장됨")
 
+############################################ 대화 기능 ###########################################################
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author.bot: 
+            return None
+        if any(x in message.content for x in all_hi) and "랑이야" in message.content:
+            rangi_hi = [f"헤헤 안녕 하느냐! {message.author.name}아!",
+            f"{message.author.name}아! 안녕하느냐!",
+            "반갑느니라!!",
+            f"흐냐앗! 왔느냐 {message.author.name}(아)야!",
+            "돌아왔구나! 보고싶었느니라!",
+            "너가 없는 동안.. 나는 심심했느니라...ㅠㅠ",
+            "헤헤 왔으니 이제 놀아주는 것이느냐!",
+            "오늘 하루는 어떠하였느냐!? 평화롭지 않느냐! 헤헤",
+            f"{message.author.name}(이)가 왔으니 같이 놀아주거라아아!! 놀아주거라!!!! 심심하니라!!"
+            "너의 하루는 어땠느냐? 나는 낭군님만 기다리고 있었느니라!"
+            f"흐냐아앗!! 내가 얼마나 기다렸는지 알고있느냐!! 하루종일 {message.author.name}(이)만 기다렸느니라!"
+            ]
+            embed=discord.Embed(title=f"{random.choice(rangi_hi)}", color=0xebe6e6)
+            embed.set_author(name="랑이", icon_url="https://i.imgur.com/10PqwRq.jpg")
+            contents = message.content.split(" ")
+            await message.channel.send(embed=embed)
+            await self.give_xp(message.author.name, str(message.author.id), message.channel)
+            
+            
+            
 async def setup(bot):
     await bot.add_cog(UserData(bot))
     

@@ -15,7 +15,7 @@ class Talk(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
 
-    commands.command()
+"""    commands.command()
     async def rangi_hi(ctx):
         await ctx.send()
 
@@ -31,7 +31,7 @@ class Talk(commands.Cog):
         if any(x in message.content for x in all_hi) and "랑이야" in message.content:
                 print(message.content)
                 await message.channel.send("안녕하느냐!")
-
+"""
 async def setup(bot):
     await bot.add_cog(Talk(bot))
     
