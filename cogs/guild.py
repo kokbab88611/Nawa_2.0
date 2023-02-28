@@ -99,11 +99,68 @@ class GuildData(commands.Cog):
             reason (str, 옵션): 경고 받은 사유 Defaults to "사유 없음".
         """
         self.check_guild(str(interaction.guild.id))
-        self.check_user(str(interaction.guild.id), str(user.id), str(user.name))
+        self.check_user(str(interaction.guild.id), str(user.id))
         self.data[str(interaction.guild.id)]["warned"][str(user.id)]["warning"] += 1
 
         embed=discord.Embed(title=f"{user.name} (이)에게 경고 1회를 부여 하였느니라", description=f"사유: {reason}", color=0xb0a7d3)
         embed.set_author(name="냥이", icon_url="https://i.imgur.com/ORq6ORB.jpg")
+
+        await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name="경고경감", description="해당 유저의 경고 1회를 경감하는 것 이니라 /경고경감 (멘션or닉네임) (사유)")
+    @app_commands.checks.has_permissions(kick_members=True)
+    async def warn_reduce(self, interaction: discord.Interaction, user: discord.Member, reason: str = "사유 없음") -> None: 
+        """_summary_
+            해당 유저의 경고를 1회 줄여주고 self.data에 이를 저장함 (*사유는 저장되지 않음)
+            kick_member 권한을 갖고 있거나 그 상위 권한을 갖은 관리자만 실행 가능
+        Args:
+            interaction (discord.Interaction): interaction 생성
+            user (discord.Member, 필수): 해당 유저
+            reason (str, 옵션): 경고 경감 사유 Defaults to "사유 없음".
+        """
+        self.check_guild(str(interaction.guild.id))
+        self.check_user(str(interaction.guild.id), str(user.id))
+        self.data[str(interaction.guild.id)]["warned"][str(user.id)]["warning"] -= 1
+
+        embed=discord.Embed(title=f"{user.name} (이)의 경고 1회를 줄였느니라", description=f"사유: {reason}", color=0xb0a7d3)
+        embed.set_author(name="냥이", icon_url="https://i.imgur.com/ORq6ORB.jpg")
+
+        await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name="경고확인", description="경고 받은 유저 확인 /경고확인 유저 멘션")
+    async def checkwarn(self, interaction: discord.Interaction, user: discord.Member) -> None:
+        """_summary_
+        해당 유저 혹은 전체 유저 경고 확인
+        Args:
+            interaction (discord.Interaction): interaction
+            user (discord.Member, 옵션): user멘션 혹은 닉네임
+        """
+        warned_num = self.data[str(interaction.guild.id)]["warned"][str(user.id)]["warning"]
+        embed = discord.Embed(title=f"{user.name}(이)는 {warned_num}번 경고를 받았느니라", description="조심하거라 찌든 때 같은 것아",color=0xb0a7d3)
+        embed.set_author(name="냥이", icon_url="https://i.imgur.com/ORq6ORB.jpg")
+
+        await interaction.response.send_message(embed=embed)
+
+
+    @app_commands.command(name="경고목록", description="경고 받은 유저들 목록 /경고목록 (유저 멘션/ 없을시 전체)")
+    @app_commands.checks.has_permissions(moderate_members=True)
+    async def check_all_warn(self, interaction: discord.Interaction) -> None:
+        """_summary_
+        모든 유저 경고 확인
+        Args:
+            interaction (discord.Interaction): interaction
+        """
+        warned_list = {}
+        for user_id in self.data[str(interaction.guild.id)]["warned"].items():
+            user_call = await self.bot.fetch_user(user_id[0])
+            user_name = user_call.name
+            user_warned = self.data[str(interaction.guild.id)]["warned"][user_id[0]]["warning"]
+            warned_list[user_name]= user_warned
+
+        embed = discord.Embed(title="경고를 받은 모든 멤버이니라", color=0xb0a7d3)
+        embed.set_author(name="냥이", icon_url="https://i.imgur.com/ORq6ORB.jpg")
+        for id, warned in warned_list.items():
+            embed.add_field(name=id, value=warned)
 
         await interaction.response.send_message(embed=embed)
 

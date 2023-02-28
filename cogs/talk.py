@@ -25,7 +25,7 @@ class Talk(commands.Cog):
         if message.author.bot: 
             return None
 
-        print("인사", any(x in all_hi for x in message.content))
+        print("인사", any(x in all_hi for x in message.content))     
         print("랑이", ("랑이야" in contents))
 
         if any(x in message.content for x in all_hi) and "랑이야" in message.content:

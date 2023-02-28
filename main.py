@@ -39,3 +39,4 @@ class Nawa(commands.Bot):
 
 bot = Nawa()     
 bot.run(token=token)
+w

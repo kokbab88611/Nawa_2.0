@@ -165,7 +165,7 @@ class Moderator(commands.Cog):
         await interaction.response.send_message(embed=embedChannel)
         await user.timeout(till, reason=reason)
 
-    @app_commands.command(name="사면", description="해당 유저의 타임아웃을 해제합니다 /차단 (닉네임or맨션) (사유)")
+    @app_commands.command(name="사면", description="해당 유저의 타임아웃을 해제합니다 /사면 (닉네임or맨션) (사유)")
     @app_commands.checks.has_permissions(moderate_members=True)
     async def unTimeout(self, interaction: discord.Interaction, user: discord.Member, *, reason: str = "사유 없음") -> None:
         """_summary_
