@@ -8,6 +8,21 @@ blackjack_dict = {'1':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9,
 
 class BlackJackButtons(Button):
     def __init__(self, label, button_style, emoji, custom_id, command_userid, bet_money, user_deck, bot_deck, cards):
+        """
+        _summary_
+        클래스 안으로 값 받아옴
+        Args:
+            self (obj, 필수): 오브젝트
+            label (str, 필수): 버튼이 보여줄 글
+            button_style (str, 필수): 버튼 색
+            emoji (str, 필수): 버튼에 있을 이모지
+            custom_id (str, 필수): 버튼 고유 id
+            command_userid (str, 필수): 커맨드 사용한 유저 고유 id
+            bet_money (int, 필수): 베팅한 돈
+            user_deck (list, 필수): 유저의 덱 정보
+            bot_deck (list, 필수): 봇의 덱 정보
+            cards (list, 필수): 남은 카드 정보
+        """
         super().__init__(label=label, style=button_style, emoji=emoji, custom_id=custom_id)
         self.custom_id, self.user_rcp, self.command_userid, self.bet_money = str(custom_id), emoji + label, command_userid, bet_money
         self.user_deck = user_deck
@@ -15,6 +30,17 @@ class BlackJackButtons(Button):
         self.cards = cards
 
     async def create_msg(deck, bot):
+        """
+        _summary_
+        받은 덱 값 합산
+        덱 메시지 생성
+        Args:
+            deck (list, 필수): 결과 계산을 위한 덱
+            bot (boolean, 필수): 봇인지 아닌지에 따라 용도에 맞는 메시지 형태 리턴
+        Returns:
+            total: 받은 덱 값 합산
+            cards_msg: 덱 메시지 생성
+        """
         num_ace = 0
         cards_msg = ""
         total = 0
@@ -37,37 +63,56 @@ class BlackJackButtons(Button):
             cards_msg = cards_msg[0:2]
         return total, cards_msg
 
-    async def stand(interaction, bot_deck, user_deck, cards, bet_money):
-        bot_total, bot_cards_msg = await BlackJackButtons.create_msg(bot_deck, False)
+    async def stand(self, interaction):
+        """
+        _summary_
+        stand 버튼 누르면 작동
+        봇의 덱 채우기
+        봇의 덱 합산이 16이 넘을때까지 hit
+        봇의 덱 결과에 따른 답변/결과
+        Args:
+            self (obj, 필수): 버튼에 대한 정보를 담는 오브젝트
+            interaction (discord.interaction, 필수): interaction에 대한 정보를 담는 오브젝트
+        """
+        bot_total, bot_cards_msg = await BlackJackButtons.create_msg(self.bot_deck, False)
         while bot_total < 17:
-            bot_deck.append(cards.pop(random.randrange(len(cards))))
-            bot_total, bot_cards_msg = await BlackJackButtons.create_msg(bot_deck, False)
-        user_total, user_cards_msg = await BlackJackButtons.create_msg(user_deck, False)
+            self.bot_deck.append(self.cards.pop(random.randrange(len(self.cards))))
+            bot_total, bot_cards_msg = await BlackJackButtons.create_msg(self.bot_deck, False)
+        user_total, user_cards_msg = await BlackJackButtons.create_msg(self.user_deck, False)
 
         if bot_total < 22:
             if user_total > bot_total:
-                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {bet_money}' + "\n 당신이 이겼습니다!"
+                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 당신이 이겼습니다!"
                 embed = discord.Embed(title='블랙잭', description=msg)
                 await interaction.response.edit_message(embed=embed, view=None)
             elif user_total == bot_total:
-                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {bet_money}' + "\n 동점이네요!"
+                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 동점이네요!"
                 embed = discord.Embed(title='블랙잭', description=msg)
                 await interaction.response.edit_message(embed=embed, view=None)
             else:
-                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {bet_money}' + "\n 제가 이겼군요!"
+                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 제가 이겼군요!"
                 embed = discord.Embed(title='블랙잭', description=msg)
                 await interaction.response.edit_message(embed=embed, view=None)
         else:
-            msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {bet_money}' + "\n 제 버스트네요!"
+            msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 제 버스트네요!"
             embed = discord.Embed(title='블랙잭', description=msg)
             await interaction.response.edit_message(embed=embed, view=None)
 
     async def hit(self, interaction):
+        """
+        _summary_
+        hit 버튼 누르면 작동
+        유저의 덱 채우기
+        유저의 덱 결과에 따른 답변/결과
+        Args:
+            self (obj, 필수): 버튼에 대한 정보를 담는 오브젝트
+            interaction (discord.interaction, 필수): interaction에 대한 정보를 담는 오브젝트
+        """
         self.user_deck.append(self.cards.pop(random.randrange(len(self.cards))))
         user_total, user_cards_msg = await BlackJackButtons.create_msg(self.user_deck, False)
         bot_total, bot_cards_msg = await BlackJackButtons.create_msg(self.bot_deck, True)
         if user_total == 21:
-            await BlackJackButtons.stand(interaction, self.bot_deck, self.user_deck, self.cards, self.bet_money)
+            await BlackJackButtons.stand(self, interaction)
         elif user_total < 22:
             msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: ...' + f'\n 베팅: {self.bet_money}'
             embed = discord.Embed(title='블랙잭', description=msg)
@@ -78,11 +123,20 @@ class BlackJackButtons(Button):
             await interaction.response.edit_message(embed=embed, view=None)
 
     async def callback(self, interaction):
+        """
+        _summary_
+        어떤 버튼이든 누르면 작동
+        누른 버튼에 맞는 기능(function)으로 연결
+        명령어 사용자 외 사용자의 버튼 사용 방지
+        Args:
+            self (obj, 필수): 버튼에 대한 정보를 담는 오브젝트
+            interaction (discord.interaction, 필수): interaction에 대한 정보를 담는 오브젝트
+        """
         if interaction.user.id == self.command_userid:
             if self.custom_id == "hit":
                 await BlackJackButtons.hit(self, interaction)
             else:
-                await BlackJackButtons.stand(interaction, self.bot_deck, self.user_deck, self.cards, self.bet_money)
+                await BlackJackButtons.stand(self, interaction)
         else:
             await interaction.response.send_message(content="너 이거 못눌러", ephemeral=True)
 
@@ -182,6 +236,17 @@ class Game(commands.Cog):
 
     @app_commands.command(name="블랙잭", description="폐이와 블랙잭을 합니다")
     async def blackjack(self, interaction: discord.Interaction, bet_money: int = 0):
+        """
+        _summary_
+        View obj 생성
+        view 오브젝트에 버튼 2개 hit, stand 추가
+        돈 충분한지 확인
+        카드 덱 정의
+        유저, 봇 각각 카드 2장씩 할당, 이에 따른 조건부 결과(블랙잭 등)
+        Args:
+            interaction (discord.interaction, 필수): 커맨드 쓴 사람 & interaction
+            bet_money (int, 옵션): 돈 걸고 싶은만큼
+        """
         owned_money = 1000
         if bet_money <= owned_money:
             cards = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 'sJ', 'sK', 'sQ', 'sA', 
