@@ -218,6 +218,7 @@ class UserData(commands.Cog):
 ############################################ 대화 기능 ###############################################
     @commands.Cog.listener()
     async def on_message(self, message):
+        contents = message.content.split(" ")
         if message.author.bot: 
             return None
         if any(x in message.content for x in all_hi) and "랑이야" in message.content:
@@ -231,17 +232,48 @@ class UserData(commands.Cog):
             "오늘 하루는 어떠하였느냐!? 평화롭지 않느냐! 헤헤",
             f"{message.author.name}(이)가 왔으니 같이 놀아주거라아아!! 놀아주거라!!!! 심심하니라!!",
             "너의 하루는 어땠느냐? 나는 낭군님만 기다리고 있었느니라!",
-            f"흐냐아앗!! 내가 얼마나 기다렸는지 알고있느냐!! 하루종일 {message.author.name}(이)만 기다렸느니라!"
+            f"흐냐아앗!! 내가 얼마나 기다렸는지 알고있느냐!! 하루종일 {message.author.name}(이)만 기다렸느니라!",
+            "사랑 하나 주면 안 잡아 먹느니라-♡ 헤헤"
             ]
             embed=discord.Embed(title=f"{random.choice(rangi_hi)}", color=0xebe6e6)
-            embed.set_author(name="랑이", icon_url="https://i.imgur.com/10PqwRq.jpg")
-            contents = message.content.split(" ")
+            embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
             await message.channel.send(embed=embed)
             await self.give_xp(message)
-            print(message)
+        elif any(x in message.content for x in all_hi) and "치이야" in message.content:
+            cheeyi_hi = [f"헤헤 안녕 하느냐! {message.author.name}(야)아!",
+            "안녕한거예요!!!",
+            "꺄우우?! 오신거예요?!",
+            "아우우! 반가운거예요!",
+            "오라버니!! 아우우우!! 보고싶었던 거예요! 꺄우우..",
+            "필요한거 있으시면 말씀하시는 거예요!",
+            f"아우우! 저는 잘지내고 있는거예요! {message.author.name} 오라버니는 잘 지내고 계신가요?",
+            f"부르신 건가요! {message.author.name} 오라버니!",
+            f"아우우! {message.author.name} 오라버니가 인사 해준거예요! 그런거예요!"
+            ]
+            embed=discord.Embed(title=f"{random.choice(cheeyi_hi)}", color=0x4b84ce)
+            embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
+            await message.channel.send(embed=embed)
+            await self.give_xp(message)
+        elif any(x in message.content for x in all_hi) and "세희야" in message.content:
+            cheeyi_hi = ["같이 한잔 하시겠습니까?",
+            "인사는 생략 하시지요",
+            "안녕 하십니까 로리ㅋ... 크흠 아닙니다",
+            f"오셨습니까 {message.author.name} 도련님",
+            "인사할 시간 없습니다 ",
+            "왠일로 저한테 인사 하신겁니까?",
+            f"저 말고 랑이 님이나 찾으시지요...",
+            f"{message.author.name} 도련님이 저에게 인사를 다 하시고 세상 참 좋아졌군요"
             
+            ]
+            embed=discord.Embed(title=f"{random.choice(cheeyi_hi)}", color=0x666666)
+            embed.set_author(name="세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+            await message.channel.send(embed=embed)
+            await self.give_xp(message)
             
-            
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        pass
+
 async def setup(bot):
     await bot.add_cog(UserData(bot))
     
