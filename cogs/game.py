@@ -1,4 +1,4 @@
-import discord,random,string,array
+import discord,random,string,array,time
 import asyncio
 from discord import app_commands,Interaction,Reaction,InteractionResponse
 from discord.ui import Button, View
@@ -233,6 +233,19 @@ class Game(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print("준비됨")
+
+    async def slotmachine_display_message(self, interaction, A, B, C):
+        await asyncio.sleep(1)
+        await interaction.edit_original_response(content="ㅎㅎㅎㅎㅎㅎㅎㅎㅎㅎㅎ")
+
+    @app_commands.command(name="슬롯머신", description="폐이의 슬롯머신을 돌립니다")
+    async def slotmachine(self, interaction: discord.Interaction, bet_money: int):
+        owned_money = 100
+        if bet_money <= owned_money:
+            await interaction.response.send_message("hh")
+            await Game.slotmachine_display_message(self, interaction, 1, 2, 3)
+        else:
+            await interaction.response.send_message(content="돈 부족. 너 돈 필요.", ephemeral=True)
 
     @app_commands.command(name="블랙잭", description="폐이와 블랙잭을 합니다")
     async def blackjack(self, interaction: discord.Interaction, bet_money: int = 0):
