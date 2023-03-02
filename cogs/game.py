@@ -25,11 +25,15 @@ class BlackJackButtons(Button):
             except:
                 num_ace += 1
         
-        for i in range(num_ace):
-            if total + 11 < 22:
-                total += 11
-            else:
-                total += 1
+        if total + num_ace > 21:
+            total += num_ace
+        else:
+            for i in range(num_ace + 1):
+                num = (11 * (num_ace - i)) + (1 * i)
+                if num + total < 22:
+                    total += num
+                    break
+
         return total, cards_msg
 
     async def callback(self, interaction):
@@ -164,12 +168,18 @@ class Game(commands.Cog):
             user_total, user_cards_msg = await BlackJackButtons.create_msg(user_deck)
             bot_total, bot_cards_msg = await BlackJackButtons.create_msg(bot_deck)
             msg = user_cards_msg + f'유저: {user_total}' + "\n" + bot_cards_msg + f'봇: {bot_total}' + f'\n 베팅: {bet_money}'
+            
             if user_total != 21:
-                view = View()
-                view.add_item(BlackJackButtons('히트', discord.ButtonStyle.green, "🃏", "hit", interaction.user.id, bet_money, user_deck, bot_deck, cards))
-                view.add_item(BlackJackButtons('스탠드', discord.ButtonStyle.red, "🖐🏻", "stand", interaction.user.id, bet_money, user_deck, bot_deck, cards))
-                embed = discord.Embed(title='블랙잭', description=msg)
-                await interaction.response.send_message(embed=embed, view=view)
+                if bot_total == 21:
+                    msg += f'\n 너 짐. 나 블랙잭. 이거 내꺼{bet_money}'
+                    embed = discord.Embed(title='블랙잭', description=msg)
+                    await interaction.response.send_message(embed=embed)
+                else:
+                    view = View()
+                    view.add_item(BlackJackButtons('히트', discord.ButtonStyle.green, "🃏", "hit", interaction.user.id, bet_money, user_deck, bot_deck, cards))
+                    view.add_item(BlackJackButtons('스탠드', discord.ButtonStyle.red, "🖐🏻", "stand", interaction.user.id, bet_money, user_deck, bot_deck, cards))
+                    embed = discord.Embed(title='블랙잭', description=msg)
+                    await interaction.response.send_message(embed=embed, view=view)
             else:
                 if bot_total != 21:
                     msg += f'\n 축하해 ㅋ 블랙잭이농. 옜다 {bet_money * 1.5}'
