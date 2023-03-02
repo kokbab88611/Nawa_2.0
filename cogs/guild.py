@@ -46,6 +46,7 @@ class GuildData(commands.Cog):
         """
         if guild_id not in self.data:
             self.data[guild_id] = {
+                    "welcome" : None,
                     "warnLimit": 3,
                     "warned": {   
                     }
@@ -164,6 +165,45 @@ class GuildData(commands.Cog):
             embed.add_field(name=id, value=warned)
 
         await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name="환영켜기", description="해당 채널에 환영 인사를 합니다 /환영켜기")
+    async def welcome_activate(self, interaction: discord.Interaction) -> None:
+        """_summary_
+        해당 태널에 환영인사를 보내게 활성화
+        Args:
+            interaction (discord.Interaction): interaction
+        """
+        self.data[str(interaction.guild.id)]["welcome"] = str(interaction.channel.id)
+        embed=discord.Embed(title="해당 Text 채널에서 인사를 하겠느니라!", color=0xebe6e6)
+        embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
+        await interaction.response.send_message(embed=embed)
+        
+    @app_commands.command(name="환영끄기", description="환영 인삿말 끄기 /환영끄기")
+    async def welcome_deactivate(self, interaction: discord.Interaction) -> None:
+        """_summary_
+        해당 태널에  비활성화
+        Args:
+            interaction (discord.Interaction): interaction
+        """
+        self.data[str(interaction.guild.id)]["welcome"] = None
+        embed=discord.Embed(title="인사를 멈추도록 하겠느니라!", color=0xebe6e6)
+        embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
+        await interaction.response.send_message(embed=embed)
+        
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        channel=member.guild.get_channel(int(self.data[str(member.guild.id)]["welcome"]))
+        print(channel)
+        try:
+            embed=discord.Embed(title=f"{member.guild.name} 서버에 온걸 환영하느니라!", color=0xebe6e6)
+            embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
+            embed.add_field(name=f"{member.guild.name}", value=f"{member.name}(야) {member.guild.name} 서버에 온것을 환영하느니라!!", inline=False)
+            embed.add_field(name="서버 총괄", value=f"문의 또는 질문은 서버 총괄을 담당하는 {member.guild.owner.mention}에게 물어보거라!", inline=False)
+            embed.set_footer(text="나와 호랑이님")
+            await channel.send(embed=embed)
+        except:
+            pass
+
 
     @commands.command(name=";저장")
     async def savecommand(self, ctx):

@@ -58,9 +58,9 @@ class UserData(commands.Cog):
                     },
                     "money": 30000,
                     "item": {
-                        "a": 1,
-                        "b": 0,
-                        "c": 99
+                        "rangi_teeth":0, 
+                        "saehee_sotlid": 0,
+                        "chiyee_": 0
                     },
                     "attendence": False
                 }
