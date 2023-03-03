@@ -93,19 +93,23 @@ class BlackJackButtons(Button):
         if bot_total < 22:
             if user_total > bot_total:
                 msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 당신이 이겼습니다!"
-                embed = discord.Embed(title='블랙잭', description=msg)
+                embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+                embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                 await interaction.response.edit_message(embed=embed, view=None)
             elif user_total == bot_total:
                 msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 동점이네요!"
-                embed = discord.Embed(title='블랙잭', description=msg)
+                embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+                embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                 await interaction.response.edit_message(embed=embed, view=None)
             else:
                 msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 제가 이겼군요!"
-                embed = discord.Embed(title='블랙잭', description=msg)
+                embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+                embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                 await interaction.response.edit_message(embed=embed, view=None)
         else:
             msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 제 버스트네요!"
-            embed = discord.Embed(title='블랙잭', description=msg)
+            embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+            embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
             await interaction.response.edit_message(embed=embed, view=None)
 
     async def hit(self, interaction):
@@ -125,11 +129,13 @@ class BlackJackButtons(Button):
             await BlackJackButtons.stand(self, interaction)
         elif user_total < 22:
             msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: ...' + f'\n 베팅: {self.bet_money}'
-            embed = discord.Embed(title='블랙잭', description=msg)
+            embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+            embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
             await interaction.response.edit_message(embed=embed)
         else:
             msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: ...' + f'\n 베팅: {self.bet_money}' + "\n 버스트하셨습니다!"
-            embed = discord.Embed(title='블랙잭', description=msg)
+            embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+            embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
             await interaction.response.edit_message(embed=embed, view=None)
 
     async def callback(self, interaction):
@@ -245,6 +251,14 @@ class Game(commands.Cog):
         print("준비됨")
 
     async def embed_create_slotmachine(var_list, result, interaction):
+        """
+        _summary_
+        값들을 받아서 슬롯머신의 형태로 유저에게 보여주는 펑션
+        Args:
+            interaction (discord.interaction, 필수): 커맨드 쓴 사람 & interaction
+            var_list (list, 필수): 알맞은 상징 디스플레이를 위한 리스트
+            result (str, 필수): 계산된 결과 값 디스플레이
+        """
         embed = discord.Embed(title="🎰𝕊𝕃𝕆𝕋𝕊🎰", description=f'——————\n|{slotmachine_dict[var_list[0]]}|{slotmachine_dict[var_list[1]]}|{slotmachine_dict[var_list[2]]}|\n——————\n{result}', color=0xb0a7d3)
         embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
         try:
@@ -254,6 +268,15 @@ class Game(commands.Cog):
 
     @app_commands.command(name="슬롯머신", description="폐이의 슬롯머신을 돌립니다")
     async def slotmachine(self, interaction: discord.Interaction, bet_money: int):
+        """
+        _summary_
+        돈 충분한지 확인
+        임의의 값 3개 만들고 그에 맞는 결과 도출
+        유저에게 슬롯이 돌아가는 모습 디스플레이
+        Args:
+            interaction (discord.interaction, 필수): 커맨드 쓴 사람 & interaction
+            bet_money (int, 필수): 돈 걸고 싶은만큼
+        """
         owned_money = 100
         if bet_money <= owned_money:
             var1 = random.randint(1,9)
@@ -309,22 +332,26 @@ class Game(commands.Cog):
             if user_total != 21:
                 if bot_total == 21:
                     msg += f'\n 제가 블랙잭이군요!'
-                    embed = discord.Embed(title='블랙잭', description=msg)
+                    embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+                    embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                     await interaction.response.send_message(embed=embed)
                 else:
                     view = View()
                     view.add_item(BlackJackButtons('히트', discord.ButtonStyle.green, "🃏", "hit", interaction.user.id, bet_money, user_deck, bot_deck, cards))
                     view.add_item(BlackJackButtons('스탠드', discord.ButtonStyle.red, "🖐🏻", "stand", interaction.user.id, bet_money, user_deck, bot_deck, cards))
-                    embed = discord.Embed(title='블랙잭', description=msg)
+                    embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+                    embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                     await interaction.response.send_message(embed=embed, view=view)
             else:
                 if bot_total != 21:
                     msg += f'\n 블랙잭 축하드려요!'
-                    embed = discord.Embed(title='블랙잭', description=msg)
+                    embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+                    embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                     await interaction.response.send_message(embed=embed)
                 else:
                     msg += f'\n 저희 둘 다 블랙잭인가봅니다!'
-                    embed = discord.Embed(title='블랙잭', description=msg)
+                    embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+                    embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                     await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message(content="돈 부족. 너 돈 필요.", ephemeral=True)
