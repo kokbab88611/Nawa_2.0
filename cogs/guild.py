@@ -271,13 +271,14 @@ class GuildData(commands.Cog):
 
         embed=discord.Embed(title=f"{user.name} (이)에게 경고 1회를 부여 하였느니라", description=f"사유: {reason}", color=0x666666)
         embed.set_author(name="냥이", icon_url="https://i.imgur.com/ORq6ORB.jpg")
+        await interaction.response.send_message(embed=embed)
+
         if self.data[str(interaction.guild.id)]["warnLimit"] <= \
                 self.data[str(interaction.guild.id)]["warned"][str(user.id)]["warning"]:
             embed = discord.Embed(title=f"{user.name}의 처분 선택", description=f"사유: 경고 초과", color=0xb0a7d3)
             embed.set_author(name="냥이", icon_url="https://i.imgur.com/ORq6ORB.jpg")
             await interaction.followup.send(embed=embed, view=Warnview(user), ephemeral=True)
 
-        await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name="경고경감", description="해당 유저의 경고 1회를 경감하는 것 이니라 /경고경감 (멘션or닉네임) (사유)")
     @app_commands.checks.has_permissions(kick_members=True)
