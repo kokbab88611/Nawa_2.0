@@ -282,7 +282,7 @@ class Game(commands.Cog):
             var1 = random.randint(1,9)
             var2 = random.randint(1,9)
             var3 = random.randint(1,9)
-            var_list = [[11,11,11],[var1,11,11],[var1,var2,11],[var1,var2,var3]]
+            var_list = ([11,11,11],[var1,11,11],[var1,var2,11],[var1,var2,var3])
             for i in var_list:
                 embed = await Game.embed_create_slotmachine(i, "결과: ...", interaction)
                 await asyncio.sleep(1)
