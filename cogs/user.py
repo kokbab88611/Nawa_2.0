@@ -5,18 +5,23 @@ import pymongo
 import json
 import os
 import random
+import datetime
+from time import gmtime, strftime
 list_dev_id = ["339767912841871360", "474389454262370314", "393932860597338123", "185181025104560128"]
 all_hi = ["안녀", "안녕", "안뇽", "안뇨", "어서와", "히사시부리", "하이", "반가워", "오랜만이야", "나 또 왔", 
         "좋은 아침", "잘 잤어", "좋은 밤", "좋은 저녁", "좋은 점심", "여기야", "반갑다", 
         "돌아왔", "나 왔어", "나 왔", "갔다 왔어", "다녀왔"]
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+utc = datetime.timezone.utc
+rest_time = datetime.time(hour=19, minute=00, tzinfo=utc) #19 00 오전 4시 utf + 9 대한민국
+print(rest_time)
 class UserData(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
         self.data = self.get_json()
         print(self.data)
         self.repeat_save_user.start()
-
+        self.reset_attendence.start()
     @commands.Cog.listener()
     async def on_ready(self):
         print("준비됨")
@@ -27,7 +32,6 @@ class UserData(commands.Cog):
         """
         try:
             with open(os.path.join(__location__ + '\\json\\users.json'), "w") as file:
-                print(self.data)
                 file.write(json.dump(self.data, file, indent=4))
         except TypeError:
             pass
@@ -38,7 +42,6 @@ class UserData(commands.Cog):
         return Dict
         """
         with open(os.path.join(f"{__location__}\\json\\users.json"),'r',encoding='utf-8') as file:
-            print("저장됨")
             return json.load(file)
 
     def check_user(self, user_id: str):
@@ -189,6 +192,32 @@ class UserData(commands.Cog):
         embed.add_field(name="아이템 보유량", value=item_info)
         await interaction.response.send_message(embed=embed)
 
+    @app_commands.command(name="출석", description="출석체크")
+    async def attendence(self, interaction: discord.Interaction):
+        self.check_user(str(interaction.user.id))
+        attendence_bool = self.data[str(interaction.user.id)]["attendence"]
+
+        if attendence_bool == False:
+            self.data[str(interaction.user.id)]["money"] += 10000
+            self.data[str(interaction.user.id)]["attendence"] = True
+
+            embed_attendence = discord.Embed(title=f"출석체크 완료인 거예요!", description="만원 드린 거예요! 가챠에 다 쓰시면 안되는 거예요!!",color=0x0aa40f)
+            embed_attendence.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
+            embed_attendence.add_field(name="돈 보유량", value=f"{self.data[str(interaction.user.id)]['money']}원")
+            
+            await interaction.response.send_message(embed=embed_attendence)
+        else:
+            embed_reject = discord.Embed(title=f"아우우!! 욕심이 많으신 거예요!", description="이미 드린 거예요! 또 드릴 수는 없는 거예요!",color=0x0aa40f)
+            embed_reject.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
+            embed_reject.add_field(name="돈 보유량", value=f"{self.data[str(interaction.user.id)]['money']}원")
+
+            await interaction.response.send_message(embed=embed_reject)
+
+    @tasks.loop(time= rest_time)
+    async def reset_attendence(self):
+        for user_id in self.data.items():
+            self.data[user_id[0]]["attendence"] = False
+
     @app_commands.command(name="정보", description="유저 정보를 불러옵니다")
     async def user_information(self, interaction: discord.Interaction):
         self.check_user(str(interaction.user.id))
@@ -213,7 +242,6 @@ class UserData(commands.Cog):
     async def repeat_save_user(self):
         self.set_json()
         self.get_json()
-        print("저장됨")
 
 ############################################ 대화 기능 ###############################################
     @commands.Cog.listener()

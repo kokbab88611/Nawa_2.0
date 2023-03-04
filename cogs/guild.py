@@ -24,7 +24,6 @@ class GuildData(commands.Cog):
         """
         try:
             with open(os.path.join(__location__ + '\\json\\guilds.json'), "w") as file:
-                print(self.data)
                 file.write(json.dump(self.data, file, indent=4))
         except TypeError:
             pass
@@ -35,7 +34,6 @@ class GuildData(commands.Cog):
         return Dict
         """
         with open(os.path.join(f"{__location__}\\json\\guilds.json"),'r',encoding='utf-8') as file:
-            print("저장됨")
             return json.load(file)
             
     def check_guild(self, guild_id: str):
@@ -196,10 +194,11 @@ class GuildData(commands.Cog):
         print(channel)
         try:
             embed=discord.Embed(title=f"{member.guild.name} 서버에 온걸 환영하느니라!", color=0xebe6e6)
+            embed.set_thumbnail(url=member.avatar.url)
             embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
-            embed.add_field(name=f"{member.guild.name}", value=f"{member.name}(야) {member.guild.name} 서버에 온것을 환영하느니라!!", inline=False)
+            embed.add_field(name=f"{member.guild.name}", value=f"{member.mention}(야)아 {member.guild.name} 서버에 온것을 환영하느니라!!", inline=False)
             embed.add_field(name="서버 총괄", value=f"문의 또는 질문은 서버 총괄을 담당하는 {member.guild.owner.mention}에게 물어보거라!", inline=False)
-            embed.set_footer(text="나와 호랑이님")
+            embed.set_footer(text="나와 아해들 디스코드 봇")
             await channel.send(embed=embed)
         except:
             pass
