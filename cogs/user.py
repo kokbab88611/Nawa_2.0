@@ -61,9 +61,15 @@ class UserData(commands.Cog):
                     },
                     "money": 30000,
                     "item": {
-                        "rangi_teeth":0, 
+                        "rangi_teeth": 0, 
+                        "rangi_jeogorri": 0,
+                        "rangi_habok": 0,
                         "saehee_sotlid": 0,
-                        "chiyee_": 0
+                        "saehee_beenyo": 0,
+                        "saehee_shotglass": 0,
+                        "chiyee_hairband": 0,
+                        "chiyee_gookja": 0,
+                        "chiyee_julmuni" : 0
                     },
                     "attendence": False
                 }

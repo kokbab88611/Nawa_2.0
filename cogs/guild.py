@@ -1,12 +1,176 @@
+import os,re,json
 import discord
-from discord import app_commands
+from discord import app_commands,ui
 from discord.ext import commands, tasks
-import pymongo
-import json
-import os
-from discord.ext.commands import has_permissions, MissingPermissions
+from datetime import datetime, timedelta
+from discord.ui import Button, Select, View
+from cogs.mod import Moderator
 list_dev_id = ["339767912841871360", "474389454262370314", "393932860597338123", "185181025104560128"]
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+
+
+class WarnSelect(Select):
+    """_summary_
+        Select UI 사용
+        밴, 타임아웃, 킥 선택 할수 있고 선택에 따라서
+        설명용 더미 버튼과 킥,밴, 타임아웃을 할 수 있는 버튼 생성
+    """
+    def __init__(self, user: discord.Member):
+        """
+            _summary_
+                클래스 안으로 값 받아옴
+        Args:
+            self (obj, 필수): 오브젝트
+            user (discord.Member, 필수): 디코 유저
+        """
+        self.user = user
+        options = [
+            discord.SelectOption(label="밴", description="경고 한도를 넘은 유저를 밴 합니다", emoji="🚫", value=1),
+            discord.SelectOption(label="타임아웃", description="경고 한도를 넘은 유저를 타임아웃 시킵니다", emoji="🕰️", value=2),
+            discord.SelectOption(label="킥", description="경고 한도를 넘은 유저를 킥 합니다", emoji="❗", value=3)
+        ]
+        super().__init__(placeholder='Choose an option', options=options, min_values=1, max_values=1)
+
+    async def callback(self, interaction: discord.Interaction):
+        """
+        만약 WarnSelect가 Select가 되었다면 그에 따른 버튼을 만든 뒤
+        Warnview에서 Select view를 불러오고 거기에 더미 버튼인 버튼과 버튼1을
+        Select에 따라 add하고 message의 view를 edit함
+
+        :param interaction:
+        :return:
+        """
+        view = Warnview(self.user)
+        if self.values[0] == '1':
+            button = WarnButton(discord.ButtonStyle.grey, "현재 선택된 처분: 밴 ", 'dummy', True, self.user)
+            button1 = WarnButton(discord.ButtonStyle.green, "확인", '밴', False, self.user)
+
+        elif self.values[0] == '2':
+            button = WarnButton(discord.ButtonStyle.grey, "현재 선택된 처분: 타임아웃 ", 'dummy', True, self.user)
+            button1 = WarnButton(discord.ButtonStyle.green, "확인", '타임아웃', False, self.user)
+
+        elif self.values[0] == '3':
+            button = WarnButton(discord.ButtonStyle.grey, "현재 선택된 처분: 킥 ", 'dummy', True, self.user)
+            button1 = WarnButton(discord.ButtonStyle.green, "확인",'킥', False, self.user)
+
+        view.add_item(button)
+        view.add_item(button1)
+        await interaction.response.edit_message(view=view)
+
+class WarnModal(ui.Modal,title="타임아웃"):
+    """_summary_
+            Modal UI 사용
+            타임아웃에 form을 생성
+            이떄 sumbit되는 값은 5~12글자 이여야 하고
+            submit 된 값은 time에 저장
+            유저에게 (일,시,분)형식으로 적으라고 알려줌
+        """
+    def __init__(self, user:discord.Member):
+        """
+            _summary_
+                    클래스 안으로 값 받아옴
+            Args:
+                self (obj, 필수): 오브젝트
+                user (discord.Member, 필수): 디코 유저
+     """
+        super().__init__()
+        self.user = user
+    time = ui.TextInput(label="타임아웃할 시간을 적어주세요", style=discord.TextStyle.short, placeholder="(일,시,분)형식으로 적어 주세요",required=True,max_length=12,min_length=5)
+    async def on_submit(self,interaction:discord.Interaction):
+        """
+        만약 submit이 되었다면 일단 (일,시,분)형식인지 확인하고
+        만약 맞다면 day,hour,min으로 나누고 이 값이 int값이 면서 날이 20일 안넘어가지는지 확인
+        그후 mod.py에 있는 timeout과 똑같이 작동
+        :param interaction:
+        :return:
+        """
+        Time_check=str(self.time)
+        if re.match(r'^\d+,\d+,\d+$', Time_check):
+            day, hour, min = map(int, Time_check.split(","))
+            if isinstance(day, int) and isinstance(hour, int) and isinstance(min, int) and day<=20:
+                now = datetime.now().astimezone()
+                till = now + timedelta(minutes=min, hours=hour, days=day)
+                bantime = timedelta(minutes=min, hours=hour, days=day)
+            else:
+                return
+        else:
+            return
+        reason="경고 한도 초과"
+        embedChannel = discord.Embed(
+            title=f"{self.user.name}이 {bantime.days}일 {bantime.seconds // 60 // 60}시간 {(bantime.seconds // 60) % 60}분 {bantime.seconds % 60}초 동안 타임아웃 처리되었습니다",
+            description=f"사유: {reason}", color=0xb0a7d3)
+        embedChannel.set_author(name="관리자 세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+        embedUser = discord.Embed(
+            title=f"{interaction.guild.name}에서 {bantime.days}일 {bantime.seconds // 60 // 60}시간 {(bantime.seconds // 60) % 60}분 {bantime.seconds % 60}초 동안 타임아웃 처리되었습니다",
+            description=f"사유: {reason}", color=0xb0a7d3)
+        embedUser.set_author(name="관리자 세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+
+        await self.user.send(embed=embedUser)
+        await interaction.response.send_message(embed=embedChannel)
+        await self.user.timeout(till, reason=reason)
+
+class WarnButton(discord.ui.Button):
+    """
+    _summary_
+            Button UI 사용
+            버튼 생성 눌러지는 버튼에 따라서 밴, 타임아웃, 킥 중 하나를 실행
+            다만 타임아웃 같은 경우엔 WarnModal로 넘어가서 타임아웃 실행
+            그후 타임아웃이 아닌 버튼이라면  self.custom_id를 사용해서 유저 처분을 서버및 유저에게 알림
+    """
+    def __init__(self, button_style, label, custom_id, able, user) -> None:
+        """
+            _summary_
+            클래스 안으로 값 받아옴
+                Args:
+                    self (obj, 필수): 오브젝트
+                    button_style (style, 필수): 버튼 색상 지정
+                    label (str, 필수): 버튼이 보여줄 글
+                    custom_id (str, 필수): 버튼 고유 id
+                    able(bool,필수): 버튼 활성화 유무
+                    user (discord.Member, 필수): 디코 유저
+        """
+        super().__init__(style=button_style, label=label, custom_id=custom_id, disabled=able)
+        self.user = user
+
+    async def callback(self, interaction: discord.Interaction):
+        """
+        버튼 생성 눌러지는 버튼에 따라서 밴, 타임아웃, 킥 중 하나를 실행
+        다만 타임아웃 같은 경우엔 WarnModal로 넘어가서 타임아웃 실행
+        그후 타임아웃이 아닌 버튼이라면  self.custom_id를 사용해서 유저 처분을 서버및 유저에게 알림
+        :param interaction:
+        :return:
+        """
+        a=0
+        if self.custom_id == '밴':
+            await self.user.ban(reason="")
+        elif self.custom_id == '타임아웃':
+            a=1
+            await interaction.response.send_modal(WarnModal(self.user))
+        elif self.custom_id == '킥':
+            await self.user.kick(reason="")
+        if a==1:
+            return
+        embedChannel = discord.Embed(
+            title=f"{self.user.name}이 {self.custom_id} 처리되었습니다",
+            description=f"사유: 경고한도 초과", color=0xb0a7d3)
+        embedChannel.set_author(name="관리자 세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+        embedUser = discord.Embed(title=f"{interaction.guild.name}에서 {self.custom_id} 처리되었습니다",description=f"사유: 경고한도 초과", color=0xb0a7d3)
+        embedUser.set_author(name="관리자 세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+        await interaction.channel.send(embed=embedChannel)
+        await self.user.send(embed=embedUser)
+
+class Warnview(discord.ui.View):
+    """
+    _summary_
+        클래스 안으로 값 받아옴
+    Args:
+        self (obj, 필수): 오브젝트
+        user (discord.Member, 필수): 디코 유저
+    """
+    def __init__(self, user: discord.Member) -> None:
+        super().__init__()
+        self.add_item(WarnSelect(user))
+
 class GuildData(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
@@ -93,6 +257,7 @@ class GuildData(commands.Cog):
         """_summary_
             해당 유저에게 경고 1회 부여하고 self.data에 이를 저장함 (*사유는 저장되지 않음)
             kick_member 권한을 갖고 있거나 그 상위 권한을 갖은 관리자만 실행 가능
+            만약 경고가 경고 한도를 넘어가면 WarnSelect를 view를 통해 생성함으로서 천분 결정
         Args:
             interaction (discord.Interaction): interaction 생성
             user (discord.Member, 필수): 해당 유저
@@ -104,8 +269,14 @@ class GuildData(commands.Cog):
 
         embed=discord.Embed(title=f"{user.name} (이)에게 경고 1회를 부여 하였느니라", description=f"사유: {reason}", color=0x666666)
         embed.set_author(name="냥이", icon_url="https://i.imgur.com/ORq6ORB.jpg")
-
         await interaction.response.send_message(embed=embed)
+
+        if self.data[str(interaction.guild.id)]["warnLimit"] <= \
+                self.data[str(interaction.guild.id)]["warned"][str(user.id)]["warning"]:
+            embed = discord.Embed(title=f"{user.name}의 처분 선택", description=f"사유: 경고 초과", color=0xb0a7d3)
+            embed.set_author(name="냥이", icon_url="https://i.imgur.com/ORq6ORB.jpg")
+            await interaction.followup.send(embed=embed, view=Warnview(user), ephemeral=True)
+
 
     @app_commands.command(name="경고경감", description="해당 유저의 경고 1회를 경감하는 것 이니라 /경고경감 (멘션or닉네임) (사유)")
     @app_commands.checks.has_permissions(kick_members=True)
