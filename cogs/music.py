@@ -27,22 +27,27 @@ class Music(commands.Cog):
 
     @app_commands.command(name="재생", description="음악을 재생합니다")
     async def play(self, interaction: discord.Interaction, url: str):
-        await interaction.response.send_message(f'음악을 재생합니다')
-        self.voice_client = await interaction.user.voice.channel.connect()
-        self.queue.append(url)
+        try:
+            if self.voice_client.is_playing() or self.voice_client.is_paused():
+                self.queue.append(url)
+                await interaction.response.send_message(f'재생목록에 {url}을 추가했습니다')
+        except:
+            await interaction.response.send_message(f'음악을 재생합니다')
+            self.queue = []
+            self.voice_client = await interaction.user.voice.channel.connect()
+            self.queue.append(url)
 
-        while len(self.queue) > 0:
-            await Music.play_music(self)
-            print(self.queue)
-            while self.voice_client.is_playing() or self.voice_client.is_paused():
-                await asyncio.sleep(0.1)
-            self.queue.pop(0)
-        await self.bot.voice_clients[0].disconnect()
-
-    @app_commands.command(name="추가", description="재생목록에 곡을 추가합니다")
-    async def add_queue(self, interaction: discord.Interaction, url: str):
-        self.queue.append(url)
-        await interaction.response.send_message(f'재생목록에 {url}을 추가했습니다')
+            while len(self.queue) > 0:
+                await Music.play_music(self)
+                print(self.queue)
+                while self.voice_client.is_playing() or self.voice_client.is_paused():
+                    await asyncio.sleep(0.1)
+                self.queue.pop(0)
+            try:
+                await self.bot.voice_clients[0].disconnect()
+                self.voice_client = ""
+            except:
+                pass
         
     @app_commands.command(name="재생목록", description="재생목록을 불러옵니다")
     async def call_queue(self, interaction: discord.Interaction):
@@ -50,13 +55,16 @@ class Music(commands.Cog):
 
     @app_commands.command(name="일시정지", description="재생을 일시정지합니다")
     async def pause(self, interaction: discord.Interaction):
-        self.bot.voice_clients[0].pause()
-        await interaction.response.send_message("음악이 일시정지 되었습니다")
+        try:
+            self.bot.voice_clients[0].pause()
+            await interaction.response.send_message("음악이 일시정지 되었습니다")
+        except:
+            await interaction.response.send_message("봇이 통화방에 없습니다")
 
     @app_commands.command(name="스킵", description="현재 음악을 스킵합니다")
     async def skip(self, interaction: discord.Interaction):
         try:
-            if self.voice_client.is_playing():
+            if self.voice_client.is_playing() or self.voice_client.is_paused():
                 self.voice_client.stop()
                 await interaction.response.send_message("음악이 스킵되었습니다")
             else:
@@ -66,13 +74,20 @@ class Music(commands.Cog):
 
     @app_commands.command(name="재개", description="재생을 재개합니다")
     async def resume(self, interaction: discord.Interaction):
-        self.bot.voice_clients[0].resume()
-        await interaction.response.send_message("음악을 재개합니다")
+        try:
+            self.bot.voice_clients[0].resume()
+            await interaction.response.send_message("음악을 재개합니다")
+        except:
+            await interaction.response.send_message("봇이 통화방에 없습니다")
 
     @app_commands.command(name="퇴장", description="통화방에서 나갑니다")
     async def leave(self, interaction: discord.Interaction):
-        await self.bot.voice_clients[0].disconnect()
-        await interaction.response.send_message("퇴장합니다")
+        try:
+            await self.bot.voice_clients[0].disconnect()
+            await interaction.response.send_message("퇴장합니다")
+            self.voice_client = ""
+        except:
+            await interaction.response.send_message("봇이 통화방에 없습니다")
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
