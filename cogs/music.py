@@ -1,8 +1,8 @@
-import discord, nacl
+#import discord, nacl
 import asyncio
 from discord import app_commands
 from discord.ext import commands
-import yt_dlp
+#import yt_dlp
 import os
 import random
 import lavalink

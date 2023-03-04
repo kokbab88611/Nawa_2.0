@@ -56,8 +56,11 @@ class UserData(commands.Cog):
                         "main": 1,
                         "xp": 0,
                         "rangi": 0,
+                        "rangi_xp": 0,
                         "cheeyi": 0,
-                        "saehee": 0
+                        "cheeyi_xp": 0,
+                        "saehee": 0,
+                        "saehee_xp": 0,
                     },
                     "money": 30000,
                     "item": {
@@ -69,7 +72,8 @@ class UserData(commands.Cog):
                         "saehee_shotglass": 0,
                         "chiyee_hairband": 0,
                         "chiyee_gookja": 0,
-                        "chiyee_julmuni" : 0
+                        "chiyee_julmuni" : 0,
+                        "legendary_saliva" : 0
                     },
                     "attendence": False
                 }
@@ -306,6 +310,100 @@ class UserData(commands.Cog):
             
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
+        pass
+###################################### 가챠/호감도 ##################################################
+    @commands.command(name="핑")
+    async def ping(self, ctx):
+        """_summary_
+            테스트용 핑퐁
+        Args:
+            ctx (_type_): 메세지 Context
+        """
+        await ctx.send("퐁이니라!")
+
+    @app_commands.command(name="가챠", description="호감도템 가챠")
+    async def gacha(self, interaction: discord.Interaction):
+        pos = {"Common": 40, "Rare": 45, "Epic": 13, "Legendary": 2}
+
+        item_list = {
+            "개량한복": {
+                "name" :  "rangi_habok",
+                "rarity": "Common",
+                "image": "https://i.imgur.com/NHBALeB.png",
+            },
+            "술 잔": {
+                "name" :  "saehee_shotglass",   
+                "rarity": "Common",
+                "image": "https://i.imgur.com/NHBALeB.png",
+            },
+            "국자": {
+                "name" :  "chiyee_gookja",
+                "rarity": "Common",
+                "image": "https://i.imgur.com/NHBALeB.png",
+            },
+            "저고리": {
+                "name" :  "rangi_jeogorri",
+                "rarity": "Rare",
+                "image": "https://i.imgur.com/NHBALeB.png",
+            },
+            "깃털 머리띠": {
+                "name" :  "chiyee_hairband",
+                "rarity": "Rare",
+                "image": "https://i.imgur.com/NHBALeB.png",
+            },
+            "솥뚜껑": {
+                "name" :  "saehee_sotlid",
+                "rarity": "Rare",
+                "image": "https://i.imgur.com/NHBALeB.png",
+            },
+            "이빨": {
+                "name" :  "rangi_teeth",
+                "rarity": "Epic",
+                "image": "https://i.imgur.com/NHBALeB.png",
+            },
+            "비녀": {
+                "name" :  "saehee_beenyo",
+                "rarity": "Epic",
+                "image": "https://i.imgur.com/NHBALeB.png",
+            },
+            "줄무늬 그것": {
+                "name" :  "chiyee_julmuni",
+                "rarity": "Epic",
+                "image" : "https://i.imgur.com/NHBALeB.png",
+            },
+            "알 수 없는 용액": { #침
+                "name" :  "legendary_saliva",
+                "rarity": "Legendary", 
+                "image" : "https://i.imgur.com/NHBALeB.png", 
+            }
+        }
+        rarity = random.choices(list(pos.keys()), weights=list(pos.values()), k=1)[0]
+        item = random.choice([k for k, v in item_list.items() if v["rarity"] == rarity])
+
+        if rarity == "Legendary":
+            emcolor=0xe67e22
+        elif rarity == "Epic":
+            emcolor=0x71368a
+        elif rarity == "Rare":
+            emcolor=0x3498db
+        else:
+            emcolor=0x2ecc71
+
+        item_pic = item_list[item]["image"]
+        self.data[str(interaction.user.id)]["item"][item_list[item]["name"]] += 1
+        
+        embed = discord.Embed(
+            title="가챠 결과",
+            description=f"{rarity} \n {item}",
+            color=emcolor,
+        )
+
+        embed.set_image(url=item_pic)
+        embed.set_footer(text=f"총 보유량:{self.data[str(interaction.user.id)]['item'][item_list[item]['name']]}")
+        await interaction.response.send_message(embed=embed)
+        
+    @app_commands.command(name="선물", description= "선택한 아해에게 선물")
+    async def give_gift(self, interaction: discord.Interaction):
         pass
 
 async def setup(bot):
