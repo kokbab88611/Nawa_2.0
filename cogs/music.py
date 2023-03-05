@@ -15,6 +15,7 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 class Music(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
+        self.queue = []
         bot.loop.create_task(self.create_nodes())
 
     async def create_nodes(self):
@@ -48,19 +49,40 @@ class Music(commands.Cog):
             return await interaction.response.send_message("음악봇이 통화방에 없습니다")
         await player.disconnect()
         await interaction.response.send_message("음악봇이 퇴장하였습니다")
+        self.queue = []
 
     @app_commands.command(name="재생", description="음악을 재생합니다")
     async def play(self, interaction: discord.Interaction, search: str):
         search = await wavelink.YouTubeTrack.search(query=search, return_first=True)
         if not interaction.guild.voice_client:
-            vc: wavelink.Player = await interaction.user.voice.channel.connect(cls=wavelink.Player)
+            try:
+                vc: wavelink.Player = await interaction.user.voice.channel.connect(cls=wavelink.Player)
+            except:
+                return await interaction.response.send_message("먼저 통화방에 접속해 주십시오")
         else:
             vc: wavelink.Player = interaction.guild.voice_client
 
-        await vc.play(search)
-        await interaction.response.send_message(f'{search} 재생합니다')
+        self.queue.append(search)
+        await interaction.response.send_message(f'{search}이/가 재생목록에 추가되었습니다')
 
-    @app_commands.command(name="정지", description="음악 재생을 정지합니다")
+        if not vc.is_playing() and not vc.is_paused():
+            while len(self.queue) > 0:
+                await vc.play(self.queue[0])
+                while vc.is_playing() or vc.is_paused():
+                    await asyncio.sleep(0.1)
+                self.queue.pop(0)
+
+    @app_commands.command(name="재생목록", description="재생목록을 불러옵니다")
+    async def play_list(self, interaction: discord.Interaction):
+        msg = ""
+        if len(self.queue) > 0:
+            for num, title in enumerate(self.queue):
+               msg += f'{num}: {title}\n'
+            await interaction.response.send_message(msg)
+        else:
+            await interaction.response.send_message("재생목록이 비어있습니다")
+
+    @app_commands.command(name="스킵", description="재생중인 음악을 스킵합니다")
     async def stop(self, interaction: discord.Interaction):
         node = wavelink.NodePool.get_node()
         player = node.get_player(interaction.guild)
@@ -72,7 +94,7 @@ class Music(commands.Cog):
             if player.is_paused():
                 await player.resume()
             await player.stop()
-            return await interaction.response.send_message("재생이 정지되었습니다")
+            return await interaction.response.send_message("음악이 스킵되었습니다")
         else:
             return await interaction.response.send_message("재생되고 있는 음악이 없습니다")
 
@@ -108,7 +130,7 @@ class Music(commands.Cog):
             else:
                 return await interaction.response.send_message("재생중인 음악이 없습니다")
         else:
-            return await interaction.response.send_message("음악이 이미 재생중입니다")
+            return await interaction.response.send_message("음악이 이미 재생중이거나 재생중인 음악이 없습니다")
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
