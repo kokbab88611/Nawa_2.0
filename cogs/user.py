@@ -34,6 +34,72 @@ slotmachine_dict = {1:"<:slot_1:1081172877233102892>",
 9:"<:slot_9:1081172962411036753>",
 11:"<a:slot_fruits:1081172981620936734>"}
 
+class VerifyGUI(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+        self.add_item(GiftSelect())
+
+
+            
+class VerifyButton(discord.ui.Button):
+    def __init__(self, button_style, label, custom_id) -> None:
+
+        super().__init__(
+            style=button_style, label=label, custom_id=custom_id
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        view = VerifyGUI()
+        if self.custom_id == "랑이":
+            embed=discord.Embed(title="랑이에게 {}를 선물하시겠습니까?", description="흐냣?! 진짜 이걸 나에게 주는 것이느냐?")
+            embed.set_author(name="랑이 ", icon_url="https://i.imgur.com/huDPd5o.jpg")
+        elif self.custom_id == "치이":
+            embed=discord.Embed(title="치이에게 {}를 선물하시겠습니까?", description="아우우우?!! 제게 선물 하시는건가요? 그런건가요!")
+            embed.set_author(name="랑이 ", icon_url="https://i.imgur.com/aApUYMj.jpg")
+        elif self.custom_id == "세희":
+            embed=discord.Embed(title="세희에게 {}를 선물하시겠습니까?", description="지금 그거 주시려는 겁니까?")
+            embed.set_author(name="랑이 ", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+        button_rangi = VerifyButton(discord.ButtonStyle.green, "랑이")
+        button_chiyee = VerifyButton(discord.ButtonStyle.green, "치이")
+        button_saehee = VerifyButton(discord.ButtonStyle.green, "세희")
+
+        view.add_item(button_rangi)
+        view.add_item(button_chiyee)
+        view.add_item(button_saehee)
+
+        await interaction.response.edit_message(view=view, embed=embed)
+
+class GiftSelect(discord.ui.Select):
+
+    def __init__(self):
+
+        options=[
+            discord.SelectOption(label="개량한복", emoji= "✨", description="", value=1) ,
+            discord.SelectOption(label="술잔", emoji= "✨", description="", value=2) ,
+            discord.SelectOption(label="국자", emoji= "✨", description="", value=3) ,
+            discord.SelectOption(label="저고리", emoji= "✨", description="", value=4) ,
+            discord.SelectOption(label="깃털 머리띠", emoji= "✨", description="", value=5) ,
+            discord.SelectOption(label="솥뚜껑", emoji= "✨", description="", value=6) ,
+            discord.SelectOption(label="이빨", emoji= "✨", description="", value=7) ,
+            discord.SelectOption(label="비녀", emoji= "✨", description="", value=8) ,
+            discord.SelectOption(label="줄무늬 그것", emoji= "✨", description="", value=9) ,
+            discord.SelectOption(label="알 수 없는 용액", emoji= "✨", description="", value=10) ,
+        ] 
+        super().__init__(
+            placeholder="Choose an option", options=options, min_values=1, max_values=1
+        )
+
+    # async def select_gift(self, interaction: discord.Interaction, select: discord.ui.Select):
+    #     self.gift_select = select.values[0]
+    #     #await interaction.response.send_message(f"{self.gift_select}를 선택함")
+    
+    # async def interaction_check(self, interaction: discord.Interaction):
+    #     if interaction.user != self.interaction.user:
+    #         await interaction.response.send_message("뷁", ephemeral=True)
+    #     pass
+    
+    
+
 class BlackJackButtons(Button):
     def __init__(self, label, button_style, emoji, custom_id, command_userid, bet_money, user_deck, bot_deck, cards, self_):
         """
@@ -304,8 +370,8 @@ class UserData(commands.Cog):
                         "xp": 0,
                         "rangi": 0,
                         "rangi_xp": 0,
-                        "cheeyi": 0,
-                        "cheeyi_xp": 0,
+                        "chiyee": 0,
+                        "chiyee_xp": 0,
                         "saehee": 0,
                         "saehee_xp": 0,
                     },
@@ -478,7 +544,7 @@ class UserData(commands.Cog):
         level_data = user_data['level']
         embed = discord.Embed(title=f"{interaction.user.name}의 프로필",description=f"Lv. {level_data['main']} \nExp: {level_data['xp']}/5000", color=0x0aa40f)
         embed.set_author(name="치이", icon_url="https://i.imgur.com/7a4oeOi.jpg")
-        embed.add_field(name="호감도 레벨", value=f"랑이:{level_data['rangi']}\n 치이:{level_data['cheeyi']}\n세희:{level_data['saehee']}", inline=False)
+        embed.add_field(name="호감도 레벨", value=f"랑이:{level_data['rangi']}\n 치이:{level_data['chiyee']}\n세희:{level_data['saehee']}", inline=False)
         await interaction.response.send_message(embed=embed)
 
     @commands.Cog.listener()
@@ -515,7 +581,7 @@ class UserData(commands.Cog):
             await message.channel.send(embed=embed)
             await self.give_xp(message)
         elif any(x in message.content for x in all_hi) and "치이야" in message.content:
-            cheeyi_hi = [f"헤헤 안녕 하느냐! {message.author.name}(야)아!",
+            chiyee_hi = [f"헤헤 안녕 하느냐! {message.author.name}(야)아!",
             "안녕한거예요!!!",
             "꺄우우?! 오신거예요?!",
             "아우우! 반가운거예요!",
@@ -525,12 +591,12 @@ class UserData(commands.Cog):
             f"부르신 건가요! {message.author.name} 오라버니!",
             f"아우우! {message.author.name} 오라버니가 인사 해준거예요! 그런거예요!"
             ]
-            embed=discord.Embed(title=f"{random.choice(cheeyi_hi)}", color=0x4b84ce)
+            embed=discord.Embed(title=f"{random.choice(chiyee_hi)}", color=0x4b84ce)
             embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
             await message.channel.send(embed=embed)
             await self.give_xp(message)
         elif any(x in message.content for x in all_hi) and "세희야" in message.content:
-            cheeyi_hi = ["같이 한잔 하시겠습니까?",
+            chiyee_hi = ["같이 한잔 하시겠습니까?",
             "인사는 생략 하시지요",
             "안녕 하십니까 로리ㅋ... 크흠 아닙니다",
             f"오셨습니까 {message.author.name} 도련님",
@@ -540,7 +606,7 @@ class UserData(commands.Cog):
             f"{message.author.name} 도련님이 저에게 인사를 다 하시고 세상 참 좋아졌군요"
             
             ]
-            embed=discord.Embed(title=f"{random.choice(cheeyi_hi)}", color=0x666666)
+            embed=discord.Embed(title=f"{random.choice(chiyee_hi)}", color=0x666666)
             embed.set_author(name="세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
             await message.channel.send(embed=embed)
             await self.give_xp(message)
@@ -567,7 +633,7 @@ class UserData(commands.Cog):
                 "rarity": "Common",
                 "image": "https://i.imgur.com/NHBALeB.png",
             },
-            "술 잔": {
+            "술잔": {
                 "name" :  "saehee_shotglass",   
                 "rarity": "Common",
                 "image": "https://i.imgur.com/NHBALeB.png",
@@ -640,7 +706,8 @@ class UserData(commands.Cog):
         
     @app_commands.command(name="선물", description= "선택한 아해에게 선물")
     async def give_gift(self, interaction: discord.Interaction):
-        pass
+        view = VerifyGUI()
+        await interaction.response.send_message(view=view)
 
     """
     @app_commands.command(name="랜덤",description="랜덤으로 유저를 뽑습니다")
@@ -791,10 +858,10 @@ class UserData(commands.Cog):
             view.add_item(RcpButtons('가위', "✌️", "scissors", interaction.user.id, bet_money, self))
             view.add_item(RcpButtons('바위', "✊", "rock", interaction.user.id, bet_money, self))
             view.add_item(RcpButtons('보', "✋", "paper", interaction.user.id, bet_money, self))
-            embed = discord.Embed(title='가위바위보중에 하나 골라')
+            embed = discord.Embed(title='[가위바위보중에 하나 골라]')
             await interaction.response.send_message(embed=embed, view=view)
         else:
-            await interaction.response.send_message(content="돈 부족. 너 돈 필요.", ephemeral=True)
+            await interaction.response.send_message(content="[돈 부족. 너 돈 필요.]", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(UserData(bot))
