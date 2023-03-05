@@ -1,14 +1,11 @@
-#import discord, nacl
 import asyncio
 import discord
 from discord import app_commands
 from discord.ext import commands
-#import yt_dlp
 import typing
 import wavelink
 import os
 import random
-import lavalink
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
@@ -16,6 +13,7 @@ class Music(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
         self.queue = []
+        self.loops = False
         bot.loop.create_task(self.create_nodes())
 
     async def create_nodes(self):
@@ -70,7 +68,8 @@ class Music(commands.Cog):
                 await vc.play(self.queue[0])
                 while vc.is_playing() or vc.is_paused():
                     await asyncio.sleep(0.1)
-                self.queue.pop(0)
+                if not self.loops:
+                    self.queue.pop(0)
 
     @app_commands.command(name="재생목록", description="재생목록을 불러옵니다")
     async def play_list(self, interaction: discord.Interaction):
@@ -81,6 +80,24 @@ class Music(commands.Cog):
             await interaction.response.send_message(msg)
         else:
             await interaction.response.send_message("재생목록이 비어있습니다")
+
+    @app_commands.command(name="루프", description="재생중인 음악을 반복합니다")
+    async def loop(self, interaction: discord.Interaction):
+        node = wavelink.NodePool.get_node()
+        player = node.get_player(interaction.guild)
+
+        if player is None:
+            return await interaction.response.send_message("음악봇이 통화방에 없습니다")
+
+        if player.is_playing() or player.is_paused():
+            if self.loops:
+                self.loops = False
+                await interaction.response.send_message("음악 반복을 정지합니다")
+            else:
+                self.loops = True
+                await interaction.response.send_message("현재 음악을 반복합니다")
+        else:
+            await interaction.response.send_message("음악 재생중이 아닙니다")
 
     @app_commands.command(name="스킵", description="재생중인 음악을 스킵합니다")
     async def stop(self, interaction: discord.Interaction):
@@ -93,6 +110,7 @@ class Music(commands.Cog):
         if player.is_playing():
             if player.is_paused():
                 await player.resume()
+            self.loops = False
             await player.stop()
             return await interaction.response.send_message("음악이 스킵되었습니다")
         else:
@@ -135,6 +153,7 @@ class Music(commands.Cog):
 async def setup(bot):
     await bot.add_cog(Music(bot))
     
+# import discord, nacl #import yt_dlp
 # def __init__(self, bot) -> None:
 #         self.bot = bot
 #         self.queue = []
