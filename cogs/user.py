@@ -642,6 +642,21 @@ class UserData(commands.Cog):
     async def give_gift(self, interaction: discord.Interaction):
         pass
 
+    """
+    @app_commands.command(name="랜덤",description="랜덤으로 유저를 뽑습니다")
+    async def random_pick(self, interaction: discord.Interaction, channel_id: str ,message_id: str):
+        channel_obj = await interaction.guild.fetch_channel(int(channel_id))
+        message_obj = await channel_obj.fetch_message((int(message_id)))
+        message_reaction = message_obj.reactions
+        print(message_reaction)
+        users = []
+        async for user in message_reaction.users():
+            users.append(user)
+        print(users)
+        won = random.sample(users, 5)
+        await interaction.response.send_message(won)
+        print(won)"""
+
 ##################################### 미니게임 #################################################### UserData.give_money(self, user_id, money)
     async def embed_create_slotmachine(var_list, result, interaction):
         """
