@@ -324,7 +324,6 @@ class UserData(commands.Cog):
     @app_commands.command(name="가챠", description="호감도템 가챠")
     async def gacha(self, interaction: discord.Interaction):
         pos = {"Common": 40, "Rare": 45, "Epic": 13, "Legendary": 2}
-
         item_list = {
             "개량한복": {
                 "name" :  "rangi_habok",
@@ -406,6 +405,7 @@ class UserData(commands.Cog):
     async def give_gift(self, interaction: discord.Interaction):
         pass
 
+##################################### 미니게임 ####################################################
 async def setup(bot):
     await bot.add_cog(UserData(bot))
     
