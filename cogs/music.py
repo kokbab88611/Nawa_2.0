@@ -19,12 +19,15 @@ class Music(commands.Cog):
 
     async def create_nodes(self):
         await self.bot.wait_until_ready()
-        await wavelink.NodePool.create_node(bot=self.bot, host="127.0.0.1", port="2333", password="1234", region="asia")
+        await wavelink.NodePool.create_node(bot=self.bot, host="127.0.0.1", port="2333", password="youshallnotpass", region="asia")
 
     @app_commands.command(name="입장", description="음악봇이 입장합니다")
     async def join(self, interaction: discord.Interaction, channel: typing.Optional[discord.VoiceChannel]):
         if channel is None:
-            channel = interaction.user.voice.channel
+            try:
+                channel = interaction.user.voice.channel
+            except:
+                return await interaction.response.send_message("먼저 통화방에 접속해 주십시오")
         
         node = wavelink.NodePool.get_node()
         player = node.get_player(interaction.guild)
@@ -52,10 +55,10 @@ class Music(commands.Cog):
         if not interaction.guild.voice_client:
             vc: wavelink.Player = await interaction.user.voice.channel.connect(cls=wavelink.Player)
         else:
-            vc: wavelink.Player =   interaction.guild.voice_client
+            vc: wavelink.Player = interaction.guild.voice_client
 
         await vc.play(search)
-        await interaction.response.send_message(f'{search}를 재생합니다')
+        await interaction.response.send_message(f'{search} 재생합니다')
 
     @app_commands.command(name="정지", description="음악 재생을 정지합니다")
     async def stop(self, interaction: discord.Interaction):
@@ -66,10 +69,46 @@ class Music(commands.Cog):
             return await interaction.response.send_message("음악봇이 통화방에 없습니다")
 
         if player.is_playing():
+            if player.is_paused():
+                await player.resume()
             await player.stop()
             return await interaction.response.send_message("재생이 정지되었습니다")
         else:
             return await interaction.response.send_message("재생되고 있는 음악이 없습니다")
+
+    @app_commands.command(name="일시정지", description="음악 재생을 일시정지합니다")
+    async def pause(self, interaction: discord.Interaction):
+        node = wavelink.NodePool.get_node()
+        player = node.get_player(interaction.guild)
+
+        if player is None:
+            return await interaction.response.send_message("음악봇이 통화방에 없습니다")
+        
+        if not player.is_paused():
+            if player.is_playing:
+                await player.pause()
+                return await interaction.response.send_message("재생중인 음악을 일시정지합니다")
+            else:
+                return await interaction.response.send_message("재생중인 음악이 없습니다")
+        else:
+            return await interaction.response.send_message("음악이 이미 일시정지 되었습니다")
+
+    @app_commands.command(name="재개", description="음악 재생을 재개합니다")
+    async def resume(self, interaction: discord.Interaction):
+        node = wavelink.NodePool.get_node()
+        player = node.get_player(interaction.guild)
+
+        if player is None:
+            return await interaction.response.send_message("음악봇이 통화방에 없습니다")
+        
+        if player.is_paused():
+            if player.is_playing():
+                await player.resume()
+                return await interaction.response.send_message("음악 재생이 재개되었습니다")
+            else:
+                return await interaction.response.send_message("재생중인 음악이 없습니다")
+        else:
+            return await interaction.response.send_message("음악이 이미 재생중입니다")
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
