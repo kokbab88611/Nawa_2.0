@@ -51,7 +51,13 @@ class Music(commands.Cog):
 
     @app_commands.command(name="재생", description="음악을 재생합니다")
     async def play(self, interaction: discord.Interaction, search: str):
+        if search.startswith("https"):
+            try:
+                search = search.split("&")[0]
+            except: 
+                pass
         search = await wavelink.YouTubeTrack.search(query=search, return_first=True)
+        print(search)
         if not interaction.guild.voice_client:
             try:
                 vc: wavelink.Player = await interaction.user.voice.channel.connect(cls=wavelink.Player)
