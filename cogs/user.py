@@ -21,7 +21,7 @@ item_list_convert = {"rangi_hanbok": "개량한복",
             "rangi_teeth": "이빨",
             "saehee_beenyo": "비녀",
             "chiyee_julmuni": "줄무늬 그것",
-            "legendary_saliva": "알 수 없는 용액"
+            "legendary_saliva": "대요괴의 침"
 }
 list_dev_id = ["339767912841871360", "474389454262370314", "393932860597338123", "185181025104560128"]
 all_hi = ["안녀", "안녕", "안뇽", "안뇨", "어서와", "히사시부리", "하이", "반가워", "오랜만이야", "나 또 왔", 
@@ -47,57 +47,63 @@ slotmachine_dict = {1:"<:slot_1:1081172877233102892>",
 class ChoseGUI(discord.ui.View):
     def __init__(self):
         super().__init__()
-        self.add_item(GiftSelect()))
+        self.add_item(GiftSelect())
+        
 
 class VerifyButton(discord.ui.Button):
-    def __init__(self, button_style, label, custom_id, item:str = None, character:str = None) -> None:
+    def __init__(self, button_style, label, custom_id,item_key: str, item:str, character:str , self_) -> None:
         self.item = item
         self.character = character
-        self.rangi_item = {"개량한복": random.randrange(1,3),"저고리":  random.randrange(3,5), "이빨":  random.randrange(5,10)}
-        self.chiyee_item = {"술잔":  random.randrange(1,3),"솥뚜껑":  random.randrange(3,5), "비녀":  random.randrange(5,10)}
-        self.saehee_item = {"개량한복":  random.randrange(1,3),"깃털 머리띠":  random.randrange(3,5), "줄무늬 그것":  random.randrange(5,10)}
+        self.self_ = self_
+        self.item_key = item_key
+        self.rangi_item = {"개량한복": random.randrange(1,5),"저고리":  random.randrange(5,10), "이빨":  random.randrange(20,40)}
+        self.chiyee_item = {"국자":  random.randrange(1,5),"깃털 머리띠":  random.randrange(5,10), "줄무늬 그것":  random.randrange(20,40)}
+        self.saehee_item = {"술잔":  random.randrange(1,5),"이빨":  random.randrange(5,10), "비녀":  random.randrange(20,40)}
         super().__init__(
             style=button_style, label=label, custom_id=custom_id
         )
-    async def give_xp(self, xp: int, user_id: str):
-        """_summary_
-            매세지를 보낸 유저에게 xp를 1~2사이로 랜덤 부여. 레벨업을 했는지 확인하여 True를 받으면 self.data레벨을 올림
-        Args:
-            ctx (_type_): 메세지 Context
-        """
-        return xp, user_id
-        
-                
+                        
     # async level_up(user_id: str)
     # round((4 * (level ^ 3)) / 5)
+    def check_bonus(self, item, item_dict):
+        print(item_dict)
+        if item in list(item_dict.keys()):
+            xp = round(item_dict[item] * 1.3)
+            print(xp)
+            return xp
+        else:
+            xp = item_dict[item]
+            print(xp)
+            return round(xp)
+            
     
-    
-    async def give_character_xp(self, character: str, item: str):
-        if character =="rangi" and item in self.rangi_item:
-            return random.randrange()
-        
-
     async def callback(self, interaction: discord.Interaction):
         no = ChoseGUI()
         if self.custom_id == "yes":
             print(self.custom_id)
             if self.character == "rangi":
                 embed=discord.Embed(title=f"랑이에게 {self.item}(을)를 선물했습니다", description=f"역시 {interaction.user.name} 낭군님 이니라! 정말정말 기쁘니라!!")
-                embed.set_author(name="랑이 ", icon_url="https://i.imgur.com/huDPd5o.jpg")
+                embed.set_author(name="랑이 ", icon_url="https://i.imgur.com/huDPd5o.jpg") 
+                xp = self.check_bonus(self.item, self.rangi_item)
             elif self.character == "chiyee":
-                embed=discord.Embed(title=f"치이에게 {self.item}(을)를 선물했습니다", description=f"우우우?!? {interaction.user.name} 오라버니에게 항상 받기만 해서 죄송한 거예요!! 감사한 거예요!!")
+                embed=discord.Embed(title=f"치이에게 {self.item}(을)를 선물했습니다", description=f"아우우우!? {interaction.user.name} 오라버니에게 항상 받기만 해서 죄송한 거예요!! 감사한 거예요!!")
                 embed.set_author(name="치이 ", icon_url="https://i.imgur.com/aApUYMj.jpg")
+                xp = self.check_bonus(self.item, self.chiyee_item)
             elif self.character == "saehee":
                 embed=discord.Embed(title=f"세희에게 {self.item}(을)를 선물했습니다", description=f"허접투성이 {interaction.user.name} 도련님 치고는 좋은 선물이군요, 감사합니다")
                 embed.set_author(name="saehee ", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+                xp = self.check_bonus(self.item, self.saehee_item)
+            await UserData.character_give_xp(self.self_, interaction_message = interaction.message, xp=xp, character=self.character)
             await interaction.response.edit_message(embed=embed, view=None)
+            
         else:
             await interaction.response.edit_message(view=no)
             
             
 class CharacterButton(discord.ui.Button):
-    def __init__(self, button_style, label, custom_id, item:str) -> None:
-        self.item = item
+    def __init__(self, button_style, label, custom_id, item_kor:str, item_key:str) -> None:
+        self.item_kor = item_kor
+        self.item_key = item_key
         super().__init__(
             style=button_style, label=label, custom_id=custom_id
         )
@@ -105,17 +111,17 @@ class CharacterButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         view = View()
         if self.custom_id == "rangi":
-            embed=discord.Embed(title=f"랑이에게 {self.item}를 선물하시겠습니까?", description="흐냣?! 진짜 이걸 나에게 주는 것이느냐?")
+            embed=discord.Embed(title=f"랑이에게 {self.item_kor}를 선물하시겠습니까?", description="흐냣?! 진짜 이걸 나에게 주는 것이느냐?")
             embed.set_author(name="랑이 ", icon_url="https://i.imgur.com/huDPd5o.jpg")
         elif self.custom_id == "chiyee":
-            embed=discord.Embed(title=f"치이에게 {self.item}를 선물하시겠습니까?", description="아우우우?!! 제게 선물 하시는건가요? 그런건가요!")
+            embed=discord.Embed(title=f"치이에게 {self.item_kor}를 선물하시겠습니까?", description="아우우우?!! 제게 선물 하시는건가요? 그런건가요!")
             embed.set_author(name="치이 ", icon_url="https://i.imgur.com/aApUYMj.jpg")
         elif self.custom_id == "saehee":
-            embed=discord.Embed(title=f"세희에게 {self.item}를 선물하시겠습니까?", description="지금 그거 주시려는 겁니까?")
+            embed=discord.Embed(title=f"세희에게 {self.item_kor}를 선물하시겠습니까?", description="지금 그거 주시려는 겁니까?")
             embed.set_author(name="saehee ", icon_url="https://i.imgur.com/7a4oeOi.jpg")
             
-        button_yes = VerifyButton(discord.ButtonStyle.green,"네", "yes", self.item, self.custom_id)
-        button_no = VerifyButton(discord.ButtonStyle.danger, "아니요", "no") 
+        button_yes = VerifyButton(discord.ButtonStyle.green,"네", "yes", self.item_key, self.item_kor, self.custom_id, )
+        button_no = VerifyButton(discord.ButtonStyle.danger, "아니요", "no", None, None, None) 
         view.add_item(button_yes)
         view.add_item(button_no)
     
@@ -141,7 +147,7 @@ class GiftSelect(discord.ui.Select):
             discord.SelectOption(label="이빨", emoji= "🎁", description="", value="rangi_teeth") ,
             discord.SelectOption(label="비녀", emoji= "🎁", description="", value="saehee_beenyo") ,
             discord.SelectOption(label="줄무늬 그것", emoji= "🎁", description="", value="chiyee_julmuni") ,
-            discord.SelectOption(label="알 수 없는 용액", emoji= "🎁", description="", value="legendary_saliva") ,
+            discord.SelectOption(label="대요괴의 침", emoji= "🎁", description="", value="legendary_saliva") ,
         ] 
         super().__init__(
             placeholder="선물 선택", options=options, min_values=1, max_values=1
@@ -157,9 +163,9 @@ class GiftSelect(discord.ui.Select):
 
         embed=discord.Embed(title=f"{name}을 선택하셨습니다", description="누구에게 선물할지 선택해주세요", color=0xe8dbff)
 
-        button_rangi = CharacterButton(discord.ButtonStyle.green, "랑이", "rangi", name)
-        button_chiyee = CharacterButton(discord.ButtonStyle.green, "치이", "chiyee", name)
-        button_saehee = CharacterButton(discord.ButtonStyle.green, "세희", "saehee", name)    
+        button_rangi = CharacterButton(discord.ButtonStyle.green, "랑이", "rangi", name, self.gift_selected)
+        button_chiyee = CharacterButton(discord.ButtonStyle.green, "치이", "chiyee", name, self.gift_selected)
+        button_saehee = CharacterButton(discord.ButtonStyle.green, "세희", "saehee", name, self.gift_selected)    
         view.add_item(button_rangi)
         view.add_item(button_chiyee)
         view.add_item(button_saehee)
@@ -471,6 +477,64 @@ class UserData(commands.Cog):
         else:
             pass
 
+    def character_level_up(self, user_id: str, character: str) -> bool:
+        """_summary_
+            유저가 레벨업 했는지 확인함.
+        Args:
+            user_id (str,필수): 메세지를 보낸 해당 유저의 id
+        Returns:
+            _type_: 레벨업을 했다면 true를 return함
+        """
+        current_xp = self.data[user_id]["level"][character+"_xp"]
+        current_lvl = self.data[user_id]["level"][character]
+
+        if current_xp >= round(((current_lvl+1)/0.3)**2)+20:
+            self.data[user_id]["level"]["main"] += 2
+            return True
+        elif current_xp >= round(((current_lvl+1)/0.3)**2)+20:
+            self.data[user_id]["level"]["main"] += 1
+            return True
+        return False
+    
+    async def character_give_xp(self, interaction_message, xp: int, character: str):
+        """_summary_
+            매세지를 보낸 유저에게 xp를 1~2사이로 랜덤 부여. 레벨업을 했는지 확인하여 True를 받으면 self.data레벨을 올림
+        Args:
+            ctx (_type_): 메세지 Context
+        """
+        user_name = interaction_message.user.name
+        user_id = str(interaction_message.user.id)
+        channel = interaction_message.channel
+
+        embed=discord.Embed(title="아우우! {}(으)로 레벨 업 하신거예요!!", description="{}")
+        embed.set_author(name="치이", icon_url="https://i.imgur.com/m4rkhda.jpg")
+
+        self.check_user(user_id)
+        self.data[user_id]["level"][character+"_xp"] += xp
+        if self.character_level_up(user_id):
+            
+            rangi_congrats = [f"{user_name}(야)아! 이런 선물은 어디에서 가지고 오는 것이냐? 역시 나를 너무 잘 아는것이니라~",
+                              "흐냐아아! 선물을 엄청 받았느니라! 역시 우리 낭군님 밖에 없느니라~",
+                              "ㅇ...이렇게 많은 선물을 받아도 되는지 모르겠느니라! 나도 뭔가를 주고 싶느니라!!!"
+                        ]
+            chiyee_congrats = [f"꺄우우우!!! 선물을 너무 많이 받은 거예요!! {user_name} 오라버니 밖에 없는 거예요!!",
+                               f"(파닥파닥파닥) ㅇ.. 이게 다 {user_name} 오라버니에게 받은 선물인 거예요!!!",
+                               f"아우우!! {user_name} 오라버니가 최고인 거예요!! 그런 거예요!!"]
+            saehee_congrats = ["저에게 주신 모든 선물은 환불이 불가능 합니다.",
+                               f"{user_name} 도련님 께서는 돈이 남아 도시는지요?",
+                               "뭐 바라는 거라도 있습니까? 슬슬 말하실 때도 되셨습니다."]
+            if character == "rangi":
+                embed=discord.Embed(title=f"{random.choice(rangi_congrats)}", description=f"호감도 {self.data[user_id]['level']['main']} 달성!", color=0x7a90e1)
+                embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
+            elif character == "chiyee":
+                embed=discord.Embed(title=f"{random.choice(chiyee_congrats)}", description=f"호감도 {self.data[user_id]['level']['main']} 달성!", color=0x7a90e1)
+                embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
+            elif character == "saehee":
+                embed=discord.Embed(title=f"{random.choice(saehee_congrats)}", description=f"호감도 {self.data[user_id]['level']['main']} 달성!", color=0x7a90e1)
+                embed.set_author(name="세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+            
+            await channel.send(embed=embed, reference=interaction_message, delete_after=10) 
+
     def level_up(self, user_id: str) -> bool:
         """_summary_
             유저가 레벨업 했는지 확인함.
@@ -515,9 +579,6 @@ class UserData(commands.Cog):
             embed.set_author(name="치이", icon_url="https://i.imgur.com/m4rkhda.jpg")
             
             await channel.send(embed=embed, reference=message, delete_after=10)   
-
-    async def levelup_interaction(self, interaction: discord.Interaction, message):
-        await interaction.response.send_message("인터렉션")
 
     async def give_money(self, user_id, money: int):
         """_summary_
@@ -629,7 +690,7 @@ class UserData(commands.Cog):
     async def on_disconnect(self):
         self.set_json()
 
-    @tasks.loop(seconds=5)
+    @tasks.loop(seconds=30)
     async def repeat_save_user(self):
         self.set_json()
         self.get_json()
@@ -751,7 +812,7 @@ class UserData(commands.Cog):
                 "rarity": "Epic",
                 "image" : "https://i.imgur.com/NHBALeB.png",
             },
-            "알 수 없는 용액": { #침
+            "대요괴의 침": { #침
                 "name" :  "legendary_saliva",
                 "rarity": "Legendary", 
                 "image" : "https://i.imgur.com/NHBALeB.png", 
