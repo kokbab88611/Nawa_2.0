@@ -27,24 +27,24 @@
     },
     "339767912841871360": {
         "level": {
-            "main": 2,
+            "main": 6,
             "xp": 3,
-            "rangi": 0,
-            "rangi_xp": 0,
-            "chiyee": 0,
-            "chiyee_xp": 0,
+            "rangi": 4,
+            "rangi_xp": 133,
+            "chiyee": 2,
+            "chiyee_xp": 49,
             "saehee": 0,
-            "saehee_xp": 0
+            "saehee_xp": 1
         },
         "money": 13500,
         "item": {
             "rangi_teeth": 0,
             "rangi_jeogorri": 0,
-            "rangi_hanbok": 0,
+            "rangi_hanbok": 2,
             "saehee_sotlid": 0,
             "saehee_beenyo": 0,
             "saehee_shotglass": 0,
-            "chiyee_hairband": 0,
+            "chiyee_hairband": 3,
             "chiyee_gookja": 0,
             "chiyee_julmuni": 0,
             "legendary_saliva": 0
