@@ -28,27 +28,79 @@
     "339767912841871360": {
         "level": {
             "main": 6,
-            "xp": 3,
+            "xp": 58,
             "rangi": 4,
-            "rangi_xp": 133,
+            "rangi_xp": 138,
             "chiyee": 2,
-            "chiyee_xp": 49,
+            "chiyee_xp": 92,
             "saehee": 0,
             "saehee_xp": 1
         },
-        "money": 13500,
+        "money": 130000,
+        "item": {
+            "rangi_teeth": 0,
+            "rangi_jeogorri": 5,
+            "rangi_hanbok": 2,
+            "saehee_sotlid": 4,
+            "saehee_beenyo": 0,
+            "saehee_shotglass": 1,
+            "chiyee_hairband": 3,
+            "chiyee_gookja": 3,
+            "chiyee_julmuni": 0,
+            "legendary_saliva": 0
+        },
+        "attendence": true
+    },
+    "393932860597338123": {
+        "level": {
+            "main": 1,
+            "xp": 0,
+            "rangi": 0,
+            "rangi_xp": 0,
+            "chiyee": 0,
+            "chiyee_xp": 0,
+            "saehee": 0,
+            "saehee_xp": 0
+        },
+        "money": 0,
         "item": {
             "rangi_teeth": 0,
             "rangi_jeogorri": 0,
-            "rangi_hanbok": 2,
+            "rangi_hanbok": 0,
             "saehee_sotlid": 0,
             "saehee_beenyo": 0,
             "saehee_shotglass": 0,
-            "chiyee_hairband": 3,
+            "chiyee_hairband": 0,
+            "chiyee_gookja": 0,
+            "chiyee_julmuni": 1,
+            "legendary_saliva": 0
+        },
+        "attendence": true
+    },
+    "408112924591390721": {
+        "level": {
+            "main": 1,
+            "xp": 0,
+            "rangi": 0,
+            "rangi_xp": 0,
+            "chiyee": 0,
+            "chiyee_xp": 0,
+            "saehee": 0,
+            "saehee_xp": 0
+        },
+        "money": 30000,
+        "item": {
+            "rangi_teeth": 0,
+            "rangi_jeogorri": 0,
+            "rangi_hanbok": 0,
+            "saehee_sotlid": 0,
+            "saehee_beenyo": 0,
+            "saehee_shotglass": 0,
+            "chiyee_hairband": 0,
             "chiyee_gookja": 0,
             "chiyee_julmuni": 0,
             "legendary_saliva": 0
         },
-        "attendence": false
+        "attendence": true
     }
 }

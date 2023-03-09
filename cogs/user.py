@@ -59,13 +59,13 @@ class VerifyButton(discord.ui.Button):
         self.character = character
         self.item_key = item_key
         self.self_= self_
-        self.rangi_item = {"개량한복": random.randrange(1,5),"저고리":  random.randrange(5,10), "이빨":  random.randrange(20,40)}
+        self.rangi_item = {"개량한복": random.randrange(1,5),"저고리":  random.randrange(5,10), "이빨":  random.randrange(15,30)}
         self.chiyee_item = {"국자":  random.randrange(1,5),"깃털 머리띠":  random.randrange(5,10), "줄무늬 그것":  random.randrange(20,40)}
-        self.saehee_item = {"술잔":  random.randrange(1,5),"이빨":  random.randrange(5,10), "비녀":  random.randrange(20,40)}
+        self.saehee_item = {"술잔":  random.randrange(1,5),"이빨":  random.randrange(5,10), "비녀":  random.randrange(15,30)}
         self.all_items = {
-                        "개량한복": random.randrange(1,5),"저고리":  random.randrange(5,10), "이빨":  random.randrange(20,40), 
-                        "국자":  random.randrange(1,5),"깃털 머리띠":  random.randrange(5,10), "줄무늬 그것":  random.randrange(20,40),
-                        "술잔":  random.randrange(1,5),"이빨":  random.randrange(5,10), "비녀":  random.randrange(20,40), "대요괴의 침": random.randrange(80,100)}
+                        "개량한복": random.randrange(1,5),"저고리":  random.randrange(5,10), "이빨":  random.randrange(15,30), 
+                        "국자":  random.randrange(1,5),"깃털 머리띠":  random.randrange(5,10), "줄무늬 그것":  random.randrange(15,30),
+                        "술잔":  random.randrange(1,5),"이빨":  random.randrange(5,10), "비녀":  random.randrange(15,30), "대요괴의 침": random.randrange(80,100)}
         super().__init__(
             style=button_style, label=label, custom_id=custom_id
         )
@@ -589,7 +589,15 @@ class UserData(commands.Cog):
             embed=discord.Embed(title=f"아우우! {self.data[user_id]['level']['main']}(으)로 레벨 업 하신거예요!!", description=f"{random.choice(congrats)}", color=0x7a90e1)
             embed.set_author(name="치이", icon_url="https://i.imgur.com/m4rkhda.jpg")
             
-            await channel.send(embed=embed, reference=message, delete_after=10)   
+            await channel.send(embed=embed, reference=message, delete_after=10)  
+
+    @app_commands.command(name="지갑", description="현재 돈 보유량을 확인합니다")
+    async def check_money(self, interaction: discord.Interaction):
+        money = self.data[str(interaction.user.id)]['money']
+        money = format(money, ',d')
+        embed=discord.Embed(title="지갑", description=f"{money}원", color=0xafc2f3)
+        await interaction.response.send_message(embed=embed)
+
 
     async def give_money(self, user_id, money: int):
         """_summary_
@@ -601,7 +609,7 @@ class UserData(commands.Cog):
         self.check_user(str(user_id))
         self.data[str(user_id)]["money"] += money
         
-    @commands.command(name=";전체지급", pass_context=True)
+    @commands.command(name=";지급", pass_context=True)
     async def take_money(self, ctx, user, money: int):
         """_summary_
             user가 전체가 아니라면 해당 user.id에게 돈 징수. 전체라면 self.data에 있는 모든 유저에게 돈 징수.
@@ -614,10 +622,10 @@ class UserData(commands.Cog):
         if str(ctx.author.id) in list_dev_id:
             if user == "전체":
                 for user_id in self.data.items():
-                    self.data[user_id[0]]["money"] -= money
+                    self.data[user_id[0]]["money"] += money
             else:  
                 self.check_user(str(ctx.author.id))
-                self.data[str(user)]["money"] -= money
+                self.data[str(user)]["money"] += money
         else:
             pass
 
@@ -761,7 +769,7 @@ class UserData(commands.Cog):
             
         elif any(x in message.content for x in all_what) and "랑이야" in message.content:
             rangi_what =[
-            f"{message.author.name}(이)가 오기를 기다리고 있었느니라 잘했느냐?",
+            f"헤헤, {message.author.name}(이)가 오기를 기다리고 있었느니라!! 잘했느냐? 그럼 쓰다듬어 주거라!",
             "냥이랑 놀고 있었느니라!!",
             "심심하느니라... 같이 놀아주거라!!",
             "으냐아아!! 도와주거라!!! 공부하기 싫느니라! 나래가 쫓아오느니라!!!",
@@ -804,37 +812,86 @@ class UserData(commands.Cog):
             embed.set_author(name="세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
             await message.channel.send(embed=embed)
             await self.give_xp(message)
-            
+
+    @commands.command(name="랑이야")
+    async def rangi_call(self, ctx, position = None):
+        rangi = [
+            '으냐앗! 왜 부르느냐?',
+            '으에!?...갑자기 왜 그러느냐?.',
+            '내가 보고 싶었느냐?',
+            '놀아주는 것이느냐!! ',
+            '내가 보고 싶었느냐?',
+            'ㄴ..내가 필요한 것이냐!',
+            '나는 사랑 받고 싶느니라~!',
+            '흐에에에?! 불렀느냐?!',
+            '으냣!? 내가 도와줄게 있느냐?!',
+            '여기있느니라!',
+            '네 곁에 항상 있느니라!',
+            '언제든 말만 하거라! 내가 다~ 들어주겠느니라!!',
+            '나는 네 곁에 있느니라! 말만 하거라!',
+            '웅? 불렀느냐?',
+        ]
+        if position == None:
+            embed=discord.Embed(title=f"{random.choice(rangi)}", color=0xebe6e6)
+            embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
+            await self.give_xp(ctx)
+            await ctx.send(embed=embed)
+        else:
+            pass
+
     @commands.command(name="범이야")
     async def rangi_realname(self, ctx):
         rangi = [
             "으냐아아앗!!",
-            "문제가 생긴것이냐!!!",
-            "무슨일 이느냐!!!",
+            "문제가 생긴 것이냐!!!",
+            "무슨 일 이느냐!!!",
             "낭군님아!! 불렀느냐!!",
-            "헤..헤헤 바로옆에 있느니라!",
+            "헤..헤헤 바로 옆에 있느니라!",
         ]
         embed=discord.Embed(title=f"{random.choice(rangi)}", color=0xebe6e6)
         embed.set_author(name="범이", icon_url="https://i.imgur.com/huDPd5o.jpg")
         await self.give_xp(ctx)
         await ctx.send(embed=embed)
-        
+
+    @commands.command(name="치이야")
+    async def chiyee_call(self, ctx, position = None):
+        chiyee = [
+            '꺄우우? 왜 부르시는 건가요?',
+            '드디어 절 불러주신 거예요!',
+            '무슨 일 있는거예요!?!',
+            '도움이 필요한 건가요?',
+            '아우우? 무슨일인 건가요!?',
+            '저는 항상 오라버니 옆에 있는거예요',
+            '놀아 주시는 건가요?',
+            '폐이 놀아줘야 되는거예요!',
+            '어디 안가고 잘 지내는 거예요!',
+            '필요하신게 있으면 말씀 하시는거예요!',
+            '그 짧은 시간에 제가 보고싶었던 건가요?',
+        ]
+        if position == None:
+            embed=discord.Embed(title=f"{random.choice(chiyee)}", color=0x4b84ce)
+            embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
+            await self.give_xp(ctx)
+            await ctx.send(embed=embed)  
+        else:
+            pass
+
     @commands.command(name="연리야")
     async def chiyee_realname(self, ctx):
         chiyee = [
             "꺄우우우우우?!!",
             "오라버니! 너무 막 부르시는 거예요!!",
             "진명이 있는건 좋은거예요!!",
-            "꺄우?! 갑자기 무슨일이신가요!",
+            "꺄우?! 갑자기 무슨 일이 신가요!",
             "ㅊ...창피하게 막 부르시면 안되는거예요!!",
         ]
-        embed=discord.Embed(title=f"{random.choice(chiyee)}", color=0xebe6e6)
-        embed.set_author(name="연리", icon_url="https://i.imgur.com/huDPd5o.jpg")
+        embed=discord.Embed(title=f"{random.choice(chiyee)}", color=0x4b84ce)
+        embed.set_author(name="연리", icon_url="https://i.imgur.com/aApUYMj.jpg")
         await self.give_xp(ctx)
         await ctx.send(embed=embed)
         
-    @commands.command(name="강세희")
-    async def rangi_realname(self, ctx):
+    @commands.command(name="세희야")
+    async def saehee_call(self, ctx, position = None):
         saehee = [  
             '예 주인님',
             '부르셨습니까?',
@@ -847,11 +904,14 @@ class UserData(commands.Cog):
             '크게 안부르셔도 들립니다',
             '계속 듣고 있습니다',
         ]
-        embed=discord.Embed(title=f"{random.choice(saehee)}", color=0xebe6e6)
-        embed.set_author(name="강세희", icon_url="https://i.imgur.com/huDPd5o.jpg")
-        await self.give_xp(ctx)
-        await ctx.send(embed=embed)
-        
+        if position == None:
+            embed=discord.Embed(title=f"{random.choice(saehee)}", color=0x666666)
+            embed.set_author(name="강세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+            await self.give_xp(ctx)
+            await ctx.send(embed=embed)
+        else:
+            pass
+            
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         pass
@@ -932,6 +992,9 @@ class UserData(commands.Cog):
             emcolor=0x3498db
         else:
             emcolor=0x2ecc71
+
+        cost = 50000
+        self.data[str(interaction.user.id)]['money'] -= cost
 
         item_pic = item_list[item]["image"]
         self.data[str(interaction.user.id)]["item"][item_list[item]["name"]] += 1
