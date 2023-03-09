@@ -268,23 +268,23 @@ class BlackJackButtons(Button):
 
         if bot_total < 22:
             if user_total > bot_total:
-                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 당신이 이겼습니다!"
+                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 획득: {self.bet_money}' + "\n [......졌어.쳐다보지마]"
                 embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
                 embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                 await interaction.response.edit_message(embed=embed, view=None)
                 await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*2, 0))))
             elif user_total == bot_total:
-                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 동점이네요!"
+                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 잃음: {self.bet_money}' + "\n [동점.....나, 사랑해?]"
                 embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
                 embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                 await interaction.response.edit_message(embed=embed, view=None)
             else:
-                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 제가 이겼군요!"
+                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 잃음: {self.bet_money}' + "\n [이겼어.허접.]"
                 embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
                 embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                 await interaction.response.edit_message(embed=embed, view=None)
         else:
-            msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 베팅: {self.bet_money}' + "\n 제 버스트네요!"
+            msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 획득: {self.bet_money}' + "\n [......버스트.실수.]"
             embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
             embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
             await interaction.response.edit_message(embed=embed, view=None)
@@ -311,7 +311,7 @@ class BlackJackButtons(Button):
             embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
             await interaction.response.edit_message(embed=embed)
         else:
-            msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: ...' + f'\n 베팅: {self.bet_money}' + "\n 버스트하셨습니다!"
+            msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: ...' + f'\n 잃음: {self.bet_money}' + "\n [버스트.허접.]"
             embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
             embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
             await interaction.response.edit_message(embed=embed, view=None)
@@ -332,7 +332,7 @@ class BlackJackButtons(Button):
             else:
                 await BlackJackButtons.stand(self, interaction)
         else:
-            await interaction.response.send_message(content="너 이거 못눌러", ephemeral=True)
+            await interaction.response.send_message(content="[.....도둑.판결.쓰레기]", ephemeral=True)
 
 class RcpButtons(Button):
     def __init__(self, label, emoji, custom_id, command_userid, bet_money, self_):
@@ -401,23 +401,23 @@ class RcpButtons(Button):
         if interaction.user.id == self.command_userid:
             bot_rcp, result = await RcpButtons.rcp_result(self.custom_id)
             if result == "win":
-                result = "이김"
+                result = "[......졌어.다시해.]"
                 message = f'{self.bet_money * 2} 얻음'
                 await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*3, 0))))
             elif result == "draw":
-                result = "비김"
+                result = "[비겼어.쳐다보지마.]"
                 message = f'{int(round(self.bet_money * 0.5, 0))} 잃음'
                 await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*0.5, 0))))
             else:
-                result = "짐"
+                result = "[이겼어.허접.]"
                 message = f'{self.bet_money} 잃음'
             if self.bet_money == 0:
-                message = "재미용 가위바위보가 좋냐?"
+                message = "[....돈.걸어.]"
             embed = discord.Embed(title=result, description=f'페이:{bot_rcp}\n나:{self.user_rcp}\n{message}', color=0xb0a7d3)
             embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
             await interaction.response.edit_message(content="", embed=embed, view=None)
         else:
-            await interaction.response.send_message(content="너 이거 못눌러", ephemeral=True)
+            await interaction.response.send_message(content="[.....도둑.판결.쓰레기]", ephemeral=True)
 
 class UserData(commands.Cog):
     def __init__(self, bot) -> None:
@@ -1013,19 +1013,23 @@ class UserData(commands.Cog):
                 embed = await UserData.embed_create_slotmachine(i, "결과: ...", interaction)
                 await asyncio.sleep(1)
             if var1 == 1 and var2 == 1 and var3 == 1:
-                result = "잭팟입니다!"
+                result = "[..잭팟.축하해.]"
+                result += f'\n획득: {int(round(bet_money*100, 0))}'
                 await UserData.give_money(self, interaction.user.id, (int(round(bet_money*100, 0))))
             elif var1 == var2 and var2 == var3:
-                result = "트리플입니다!"
+                result = "[트리플.대단해.]"
+                result += f'\n획득: {int(round(bet_money*5, 0))}'
                 await UserData.give_money(self, interaction.user.id, (int(round(bet_money*5, 0))))
             elif var1 == var2 or var1 == var3 or var2 == var3:
-                result = "페어입니다!"
+                result = "[페어.오.]"
+                result += f'\n획득: {int(round(bet_money*1.5, 0))}'
                 await UserData.give_money(self, interaction.user.id, (int(round(bet_money*1.5, 0))))
             else:
-                result = "꽝입니다!"
+                result = "[꽝...허접]"
+                result += f'\n잃음: {bet_money}'
             embed = await UserData.embed_create_slotmachine(var_list[3], result, interaction)
         else:
-            await interaction.response.send_message(content="돈 부족. 너 돈 필요.", ephemeral=True)
+            await interaction.response.send_message(content="[돈....부족해.판결.사기꾼.]", ephemeral=True)
 
     @app_commands.command(name="블랙잭", description="폐이와 블랙잭을 합니다")
     async def blackjack(self, interaction: discord.Interaction, bet_money: int = 0):
@@ -1062,7 +1066,7 @@ class UserData(commands.Cog):
             
             if user_total != 21:
                 if bot_total == 21:
-                    msg += f'\n 제가 블랙잭이군요!'
+                    msg += f'\n [블랙잭...허접.]'
                     embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
                     embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                     await interaction.response.send_message(embed=embed)
@@ -1075,18 +1079,18 @@ class UserData(commands.Cog):
                     await interaction.response.send_message(embed=embed, view=view)
             else:
                 if bot_total != 21:
-                    msg += f'\n 블랙잭 축하드려요!'
+                    msg += f'\n [....블랙잭.축하해.]\n획득: {int(round(bet_money*1.5, 0))}'
                     embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
                     embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                     await interaction.response.send_message(embed=embed)
                     await UserData.give_money(self, interaction.user.id, (int(round(bet_money*2.5, 0))))
                 else:
-                    msg += f'\n 저희 둘 다 블랙잭인가봅니다!'
+                    msg += f'\n [블랙잭..둘다?]\n잃음: {bet_money}'
                     embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
                     embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                     await interaction.response.send_message(embed=embed)
         else:
-            await interaction.response.send_message(content="돈 부족. 너 돈 필요.", ephemeral=True)
+            await interaction.response.send_message(content="[돈....부족해.판결.사기꾼.]", ephemeral=True)
 
     @app_commands.command(name="가위바위보", description="폐이와 가위바위보를 합니다")
     async def buttontest(self, interaction: discord.Interaction, bet_money: int = 0):
@@ -1107,10 +1111,10 @@ class UserData(commands.Cog):
             view.add_item(RcpButtons('가위', "✌️", "scissors", interaction.user.id, bet_money, self))
             view.add_item(RcpButtons('바위', "✊", "rock", interaction.user.id, bet_money, self))
             view.add_item(RcpButtons('보', "✋", "paper", interaction.user.id, bet_money, self))
-            embed = discord.Embed(title='[가위바위보중에 하나 골라]')
+            embed = discord.Embed(title='[가위바위보.하자.]')
             await interaction.response.send_message(embed=embed, view=view)
         else:
-            await interaction.response.send_message(content="[돈 부족. 너 돈 필요.]", ephemeral=True)
+            await interaction.response.send_message(content="[돈....부족해.판결.사기꾼.]", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(UserData(bot))
