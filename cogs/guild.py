@@ -337,6 +337,7 @@ class GuildData(commands.Cog):
 
     @app_commands.command(name="환영켜기", description="해당 채널에 환영 인사를 합니다 /환영켜기")
     async def welcome_activate(self, interaction: discord.Interaction) -> None:
+        self.check_guild(str(interaction.guild.id))
         """_summary_
         해당 태널에 환영인사를 보내게 활성화
         Args:

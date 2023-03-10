@@ -994,20 +994,25 @@ class UserData(commands.Cog):
             emcolor=0x2ecc71
 
         cost = 50000
-        self.data[str(interaction.user.id)]['money'] -= cost
+        if self.data[str(interaction.user.id)]['money'] >= cost:
+            self.data[str(interaction.user.id)]['money'] -= cost
 
-        item_pic = item_list[item]["image"]
-        self.data[str(interaction.user.id)]["item"][item_list[item]["name"]] += 1
-        
-        embed = discord.Embed(
-            title="가챠 결과",
-            description=f"{rarity} \n {item}",
-            color=emcolor,
-        )
+            item_pic = item_list[item]["image"]
+            self.data[str(interaction.user.id)]["item"][item_list[item]["name"]] += 1
+            
+            embed = discord.Embed(
+                title="가챠 결과",
+                description=f"{rarity} \n {item}",
+                color=emcolor,
+            )
 
-        embed.set_image(url=item_pic)
-        embed.set_footer(text=f"총 보유량:{self.data[str(interaction.user.id)]['item'][item_list[item]['name']]}")
-        await interaction.response.send_message(embed=embed)
+            embed.set_image(url=item_pic)
+            embed.set_footer(text=f"총 보유량:{self.data[str(interaction.user.id)]['item'][item_list[item]['name']]}")
+            await interaction.response.send_message(embed=embed)
+        else:
+            embed=discord.Embed(title="돈이 부족합니다", description="돈 좀 벌고 오시죠")
+            await interaction.response.send_message(embed=embed)
+
         
     @app_commands.command(name="선물", description= "선택한 아해에게 선물")
     async def give_gift(self, interaction: discord.Interaction):

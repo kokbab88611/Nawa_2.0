@@ -21,6 +21,13 @@ class Music(commands.Cog):
         await wavelink.NodePool.create_node(bot=self.bot, host="127.0.0.1", port="2333", password="youshallnotpass", region="asia")
 
     @app_commands.command(name="입장", description="음악봇이 입장합니다")
+    async def joincommand_kor(self, interaction: discord.Interaction, channel: typing.Optional[discord.VoiceChannel]):
+        await self.join(interaction, channel)
+
+    @app_commands.command(name="j", description="음악봇이 입장합니다")
+    async def joincommand(self, interaction: discord.Interaction, channel: typing.Optional[discord.VoiceChannel]):
+        await self.join(interaction, channel)
+           
     async def join(self, interaction: discord.Interaction, channel: typing.Optional[discord.VoiceChannel]):
         if channel is None:
             try:
@@ -39,6 +46,13 @@ class Music(commands.Cog):
         await interaction.response.send_message(f'{channel.name}에 입장하였습니다')
 
     @app_commands.command(name="퇴장", description="음악봇이 퇴장합니다")
+    async def quitcommand_kor(self, interaction: discord.Interaction):
+        await self.leave(interaction)
+
+    @app_commands.command(name="q", description="음악봇이 퇴장합니다")
+    async def quitcommand(self, interaction: discord.Interaction):
+        await self.leave(interaction)
+
     async def leave(self, interaction: discord.Interaction):
         node = wavelink.NodePool.get_node()
         player = node.get_player(interaction.guild)
@@ -50,6 +64,13 @@ class Music(commands.Cog):
         self.queue = []
 
     @app_commands.command(name="재생", description="음악을 재생합니다")
+    async def playcommand_kor(self, interaction: discord.Interaction, search: str):
+        await self.play(interaction, str(search))
+
+    @app_commands.command(name="p", description="음악을 재생합니다")
+    async def playcommand(self, interaction: discord.Interaction, search: str):
+        await self.play(interaction, str(search))
+
     async def play(self, interaction: discord.Interaction, search: str):
         if search.startswith("https"):
             try:
@@ -78,6 +99,13 @@ class Music(commands.Cog):
                     self.queue.pop(0)
 
     @app_commands.command(name="재생목록", description="재생목록을 불러옵니다")
+    async def playlistcommand_kor(self, interaction: discord.Interaction):
+        await self.play_list(interaction)
+
+    @app_commands.command(name="pl", description="재생목록을 불러옵니다")
+    async def playlistcommand(self, interaction: discord.Interaction):
+        await self.play_list(interaction)
+
     async def play_list(self, interaction: discord.Interaction):
         msg = ""
         if len(self.queue) > 0:
@@ -88,6 +116,13 @@ class Music(commands.Cog):
             await interaction.response.send_message("재생목록이 비어있습니다")
 
     @app_commands.command(name="루프", description="재생중인 음악을 반복합니다")
+    async def loopcommand_kor(self, interaction: discord.Interaction):
+        await self.loop(interaction)
+
+    @app_commands.command(name="l", description="재생중인 음악을 반복합니다")
+    async def loopcommand(self, interaction: discord.Interaction):
+        await self.loop(interaction)
+
     async def loop(self, interaction: discord.Interaction):
         node = wavelink.NodePool.get_node()
         player = node.get_player(interaction.guild)
@@ -106,7 +141,14 @@ class Music(commands.Cog):
             await interaction.response.send_message("음악 재생중이 아닙니다")
 
     @app_commands.command(name="스킵", description="재생중인 음악을 스킵합니다")
-    async def stop(self, interaction: discord.Interaction):
+    async def skipcommand_kor(self, interaction: discord.Interaction):
+        await self.skip(interaction)
+
+    @app_commands.command(name="s", description="재생중인 음악을 스킵합니다")
+    async def skipcommand(self, interaction: discord.Interaction):
+        await self.skip(interaction)
+
+    async def skip(self, interaction: discord.Interaction):
         node = wavelink.NodePool.get_node()
         player = node.get_player(interaction.guild)
 
@@ -123,6 +165,13 @@ class Music(commands.Cog):
             return await interaction.response.send_message("재생되고 있는 음악이 없습니다")
 
     @app_commands.command(name="일시정지", description="음악 재생을 일시정지합니다")
+    async def pausecommand_kor(self, interaction: discord.Interaction):
+        await self.pause(interaction)
+
+    @app_commands.command(name="pp", description="음악 재생을 일시정지합니다")
+    async def pausecommand(self, interaction: discord.Interaction):
+        await self.pause(interaction)
+
     async def pause(self, interaction: discord.Interaction):
         node = wavelink.NodePool.get_node()
         player = node.get_player(interaction.guild)
@@ -140,6 +189,13 @@ class Music(commands.Cog):
             return await interaction.response.send_message("음악이 이미 일시정지 되었습니다")
 
     @app_commands.command(name="재개", description="음악 재생을 재개합니다")
+    async def resumecommand_kor(self, interaction: discord.Interaction):
+        await self.resume(interaction)
+
+    @app_commands.command(name="r", description="음악 재생을 재개합니다")
+    async def resumecommand(self, interaction: discord.Interaction):
+        await self.resume(interaction)
+
     async def resume(self, interaction: discord.Interaction):
         node = wavelink.NodePool.get_node()
         player = node.get_player(interaction.guild)
