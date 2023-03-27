@@ -1,2 +1,4 @@
-for x in range(1, 50):
-    print(round((x/0.3)**2)+20)
+import datetime
+a = datetime.datetime.now()
+b = f"{a.month}/{a.day}"
+print(b)

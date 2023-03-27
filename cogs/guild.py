@@ -76,6 +76,7 @@ class WarnModal(ui.Modal,title="타임아웃"):
         super().__init__()
         self.user = user
     time = ui.TextInput(label="타임아웃할 시간을 적어주세요", style=discord.TextStyle.short, placeholder="(일,시,분)형식으로 적어 주세요",required=True,max_length=12,min_length=5)
+   
     async def on_submit(self,interaction:discord.Interaction):
         """
         만약 submit이 되었다면 일단 (일,시,분)형식인지 확인하고
