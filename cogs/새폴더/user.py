@@ -1,6 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
+import pymongo
 import json
 import os
 import random
@@ -22,6 +23,10 @@ item_list_convert = {"rangi_hanbok": "개량한복",
             "chiyee_julmuni": "줄무늬 그것",
             "legendary_saliva": "대요괴의 침"
 }
+character_name = {"rangi": "랑이",
+                "chiyee": "치이",
+                "saehee": "세희"}
+
 list_dev_id = ["339767912841871360", "474389454262370314", "393932860597338123", "185181025104560128"]
 all_hi = ["안녀", "안녕", "안뇽", "안뇨", "어서와", "히사시부리", "하이", "반가워", "오랜만이야", "나 또 왔", 
         "좋은 아침", "잘 잤", "좋은 밤", "좋은 저녁", "좋은 점심", "여기야", "반갑다", 
@@ -30,7 +35,7 @@ all_what = ["뭐해", "뭐하니", "뭐하냐", "뭐하고"]
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 utc = datetime.timezone.utc
 rest_time = datetime.time(hour=19, minute=00, tzinfo=utc) #19 00 오전 4시 utf + 9 대한민국
-print(rest_time)
+birthday_time = datetime.time(hour=15, minute=00, tzinfo=utc) #15 00 오전 12시 utf + 9 대한민국
 
 blackjack_dict = {'1':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, 'J':10, 'K':10, 'Q':10}
 slotmachine_dict = {1:"<:slot_1:1081172877233102892>",
@@ -44,6 +49,92 @@ slotmachine_dict = {1:"<:slot_1:1081172877233102892>",
 9:"<:slot_9:1081172962411036753>",
 11:"<a:slot_fruits:1081172981620936734>"}
 
+class Character(discord.ui.View):
+    def __init__(self, self_, user_id):
+        self.self_ = self_
+        self.user_id = user_id
+        super().__init__()
+        self.add_item(CharacterSelect(self.self_, self.user_id))
+
+class ConfirmGui(discord.ui.View):
+    def __init__(self, self_, user_id, birth_date):
+        self.self_ = self_
+        self.user_id = user_id
+        self.birth_date = birth_date
+        super().__init__()
+        self.add_item(CharacterSelect(self.self_, user_id, birth_date))
+
+class ConfirmButton(discord.ui.Button):
+    def __init__(self, self_, button_style, label, custom_id,  character = None, user_id = None, birth_date = None)-> None:
+        self.self_= self_
+        self.character = character
+        self.user_id = user_id
+        self.birth_date = birth_date
+        super().__init__(
+            style=button_style, label=label, custom_id=custom_id
+        )
+        print("신호받음")
+
+    async def callback(self, interaction: discord.Interaction):
+        no = ConfirmGui(self.self_, str(interaction.user.id), self.birth_date) 
+        month, day = (self.birth_date).split("/")[0], (self.birth_date).split("/")[1]
+        if self.custom_id == "yes" and self.birth_date != None:
+            if self.character == "rangi":
+                embed= discord.Embed(title=f"낭군님의 생일 {month}월 {day}일을 기억 하겠느니라!",
+                    description="절대 잊지 않겠느니라!! 꼭 축하해줄 것이니라!!",color=0x0aa40f)
+                embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
+            elif self.character == "chiyee":
+                embed= discord.Embed(title=f"오라버니의 생일은 {month}월 {day}일인 거예요!",
+                    description="제가 꼭 축하해 드릴 거예요!",color=0x0aa40f)
+                embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
+            elif self.character == "saehee":
+                embed= discord.Embed(title=f"{month}월 {day}일은 저주 받은 날이군요",
+                    description="기억나면 뭐 축하하는 척이라도 해드리겠습니다. 기대는 하지 마시지요, 레이드 뛰는 날이면 못해드립니다",color=0x0aa40f)
+                embed.set_author(name="세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+            await interaction.response.edit_message(embed=embed, view=None)
+            UserData.update_birthday(self.self_, str(interaction.user.id), self.birth_date)
+            UserData.update_birthday_character(self.self_, str(interaction.user.id), self.character)
+        elif self.custom_id == "yes" and self.birth_date == None:
+            if self.character == "rangi":
+                embed= discord.Embed(title=f"내가 낭군님의 생일을 축하해주겠느니라!", color=0x0aa40f)
+                embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
+            elif self.character == "chiyee":
+                embed= discord.Embed(title=f"오라버니의 생일은 제가 축하해 드리는 거예요!",color=0x0aa40f)
+                embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
+            elif self.character == "saehee":
+                embed= discord.Embed(title=f"왜 하필 접니까 도련님",color=0x0aa40f)
+                embed.set_author(name="세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+            await interaction.response.edit_message(embed=embed, view=None)
+            UserData.update_birthday_character(self.self_, str(interaction.user.id), self.character)
+        elif self.custom_id == "no":
+            await interaction.response.edit_message(view=no)
+
+class CharacterSelect(discord.ui.Select):
+    def __init__(self, self_, user_id, birth_date):
+        self.self_ = self_
+        self.user_id = user_id
+        self.birth_date = birth_date
+        options=[
+            discord.SelectOption(label="랑이", value="rangi"),
+            discord.SelectOption(label="치이", value="chiyee"),        
+            discord.SelectOption(label="세희", value="saehee")
+        ]
+        super().__init__(
+            placeholder="생일 축하 캐릭터 선택(추후 변경가능)", options=options, min_values=1, max_values=1
+        )
+        
+    async def callback(self, interaction: discord.Interaction):
+        view = ConfirmGui(self.self_, str(interaction.user.id), self.birth_date)
+        self.character_selected = self.values[0]
+        name = character_name[self.character_selected]
+        embed=discord.Embed(title=f"{name}(을)를 선택하셨습니다", color=0xe8dbff)
+        button_yes = ConfirmButton(self.self_, discord.ButtonStyle.green,"네", "yes", self.character_selected, self.user_id, self.birth_date)
+        button_no = ConfirmButton(self.self_, discord.ButtonStyle.danger, "아니요", "no") 
+        view.add_item(button_yes)
+        view.add_item(button_no)
+
+        await interaction.response.edit_message(view=view, embed=embed)
+
 class ChoseGUI(discord.ui.View):
     def __init__(self, self_, user_id):
         self.self_ = self_
@@ -53,7 +144,7 @@ class ChoseGUI(discord.ui.View):
 
 
 class VerifyButton(discord.ui.Button):
-    def __init__(self, self_, button_style, label, custom_id,item_key: str = None, item:str = None, character:str = None)-> None:
+    def __init__(self, self_, button_style, label, custom_id, item_key: str = None, item:str = None, character:str = None)-> None:
         self.item = item
         self.character = character
         self.item_key = item_key
@@ -68,9 +159,7 @@ class VerifyButton(discord.ui.Button):
         super().__init__(
             style=button_style, label=label, custom_id=custom_id
         )
-                        
-    # async level_up(user_id: str)
-    # round((4 * (level ^ 3)) / 5)
+
     def check_bonus(self, item, item_dict):
         print(item_dict)
         if item in list(item_dict.keys()):
@@ -144,11 +233,6 @@ class CharacterButton(discord.ui.Button):
         print(button_yes)
         
         await interaction.response.edit_message(view=view, embed=embed)
-# class VerificationChoose(discord.ui.Button):
-#     def __init__(self):
-#         button_yes = VerifyButton(discord.ButtonStyle.green, "네", "yes", self.item, self.custom_id)
-#         button_no = VerifyButton(discord.ButtonStyle.green, "아니요", "no")
-        
         
 class GiftSelect(discord.ui.Select):
     def __init__(self, self_, user_id):
@@ -418,6 +502,8 @@ class RcpButtons(Button):
         else:
             await interaction.response.send_message(content="[.....도둑.판결.쓰레기]", ephemeral=True)
 
+#___________________________________________________________________________________________________________________________________________
+
 class UserData(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
@@ -680,6 +766,41 @@ class UserData(commands.Cog):
             embed_reject = discord.Embed(title=f"아우우!! 욕심이 많으신 거예요!", description="이미 드린 거예요! 또 드릴 수는 없는 거예요!",color=0x0aa40f)
             embed_reject.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
             embed_reject.add_field(name="돈 보유량", value=f"{self.data[str(interaction.user.id)]['money']}원")
+
+            await interaction.response.send_message(embed=embed_reject)
+
+    # @tasks.loop(time= birthday_time)
+    # async def check_birthday(self):
+    #     time = datetime.datetime.now()
+    #     month_day = f"{time.month}/{time.day}"
+    #     for user_id in self.data.items():
+    #         if self.data[user_id[0]]["birthday"] == month_day:
+    #             user = discord.utils.get(self.bot.guilds.members, id= user_id[0])
+    #             if user:
+    #                 embed 보내기 https://i.imgur.com/wZMgKhQ.png
+    #                 user.send(embed)
+
+    @app_commands.command(name="생일캐릭터", description="캐릭터변경")
+    async def attendence(self, interaction: discord.Interaction):
+        self.check_user(str(interaction.user.id))
+
+
+    @app_commands.command(name="생일", description="생일설정 *변경 불가 /생일 월 일")
+    async def attendence(self, interaction: discord.Interaction, month: int, date: int):
+        self.check_user(str(interaction.user.id))
+        birthday_data = self.data[str(interaction.user.id)]["birthday"]
+        birth_date = f"{month}/{date}"
+        date_time_obj = datetime.datetime.strptime(birth_date, '%m/%d')
+        birth_date = f"{date_time_obj.month}/{date_time_obj.day}"
+        if birthday_data == False:
+            view = ConfirmGui(self, str(interaction.user.id), birth_date)
+            embed_birthday = discord.Embed(title= f"생일을 {date_time_obj.month}월 {date_time_obj.day}일로 설정 하실건가요!", description="다시는 바꾸실 수 없는거예요! 아시겠나요!",color=0x0aa40f)
+            embed_birthday.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
+            await interaction.response.send_message(view=view, embed=embed_birthday)
+
+        else:
+            embed_reject = discord.Embed(title=f"이미 생일을 설정 하신 거예요!!", description="생일은 바꾸실 수 없는 거예요!!",color=0x0aa40f)
+            embed_reject.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
 
             await interaction.response.send_message(embed=embed_reject)
 
