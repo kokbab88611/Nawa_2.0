@@ -1083,15 +1083,15 @@ class UserData(commands.Cog):
             if var1 == 1 and var2 == 1 and var3 == 1:
                 result = "[..잭팟.축하해.]"
                 result += f'\n획득: {int(round(bet_money*100, 0))}'
-                await UserData.give_money(self, interaction.user.id, (int(round(bet_money*100, 0))))
+                await UserData.give_money(self, interaction.user.id, (int(round(bet_money*101, 0))))
             elif var1 == var2 and var2 == var3:
                 result = "[트리플.대단해.]"
                 result += f'\n획득: {int(round(bet_money*5, 0))}'
-                await UserData.give_money(self, interaction.user.id, (int(round(bet_money*5, 0))))
+                await UserData.give_money(self, interaction.user.id, (int(round(bet_money*6, 0))))
             elif var1 == var2 or var1 == var3 or var2 == var3:
                 result = "[페어.오.]"
                 result += f'\n획득: {int(round(bet_money*1.5, 0))}'
-                await UserData.give_money(self, interaction.user.id, (int(round(bet_money*1.5, 0))))
+                await UserData.give_money(self, interaction.user.id, (int(round(bet_money*2.5, 0))))
             else:
                 result = "[꽝...허접]"
                 result += f'\n잃음: {bet_money}'
