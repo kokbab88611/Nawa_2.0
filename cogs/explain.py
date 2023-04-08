@@ -4,6 +4,15 @@ from discord import app_commands, ui
 from discord.ext import commands, tasks
 from discord.ui import Button, Select, View
 
+intro_msg = """
+대한민국 라이트 노벨 "나와 호랑이님"을 기반으로 만든 디스코드 봇 입니다
+해당 봇은 캐릭터:
+"랑이"
+"치이"
+"세희"
+를 포함하고 있습니다
+"""
+
 developer_msg = """
 개발자(씹덕셋)
 > 팀 온가람[오곡밥튀김#3074, 모건#4653, 영후#6983]
@@ -228,6 +237,8 @@ class InfoSelect(Select):
                 description="",
                 colour=discord.Colour.from_rgb(241, 196, 15),
             )
+            embed.add_field(name="", value=intro_msg, inline=False)
+
         elif self.values[0] == "22":
             embed = discord.Embed(
                 title="명령어",
