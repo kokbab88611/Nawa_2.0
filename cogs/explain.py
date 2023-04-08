@@ -33,7 +33,7 @@ msg = """
             > 명령어를 사용한 채팅방을 환영 채널로 설정합니다
             ⚆ `/도움말`
             > 도움말 리스트를 표시합니다
-            
+            +
             ⚆ `/경고확인 <유저#0000>`
             > 선택한 유저의 경고 스택을 차감합니다
             ⚆ `/경고경감 <유저#0000>`
@@ -52,7 +52,7 @@ msg = """
             > 선택한 유저의 타임아웃을 해제합니다
             ⚆ `/타임아웃 <유저#0000> <시간>`
             > 선택한 유저를 타임아웃합니다
-
+            +
             ⚆ `/선물[캐릭터와 관련있는 아이템 선물 시 30% 추가 경험치 지급]`
             > 선물 지급을 위한 창을 불러옵니다
             ⚆ `/출석`
@@ -63,7 +63,11 @@ msg = """
             > 유저의 인벤토리를 표시합니다
             ⚆ `/지갑`
             > 유저의 잔고를 표시합니다
-
+            ⚆ `/생일 <월> <일>`
+            > 생일 날짜를 저장합니다 (변경 불가능)
+            ⚆ `/생일캐릭터`
+            > 생일을 축하해줄 캐릭터를 변경합니다
+            +
             ⚆ `/가위바위보 <베팅금액>`
             > 페이와 가위바위보를 합니다
             ⚆ `/블랙잭 <베팅금액>`
@@ -76,7 +80,7 @@ msg = """
             > 가챠를 돌려 선물용 아이템을 뽑습니다
             ⚆ `/게임정보`
             > 게임 정보 제공 창을 불러옵니다
-
+            +
             ⚆ `/입장`or`/j`
             > 음악봇을 현재 통화방에 입장시킵니다
             ⚆ `/퇴장`or`/q`
@@ -93,7 +97,7 @@ msg = """
             > 현재 재생중인 음악을 반복/반복해제 합니다
             ⚆ `/스킵`or`/s`
             > 현재 재생중인 음악을 스킵합니다
-
+            +
             ⚆ `인사`
             > ex) 랑이야 좋은 아침!
             ⚆ `뭐해`
@@ -103,6 +107,7 @@ msg = """
             ⚆ '이름 부르기'
             > (랑이야, 치이야, 세희야)
             """
+msg = msg.split("+")
 
 class ComButton(discord.ui.Button):
     def __init__(self, button_style, label, custom_id) -> None:
@@ -119,7 +124,7 @@ class ComButton(discord.ui.Button):
                 description="",
                 colour=discord.Colour.from_rgb(241, 196, 15),
             )
-            embed.add_field(name="", value=msg[0:429], inline=True)
+            embed.add_field(name="", value=msg[0], inline=True)
 
         elif self.custom_id == "warn":
             embed = discord.Embed(
@@ -127,7 +132,7 @@ class ComButton(discord.ui.Button):
                 description="",
                 colour=discord.Colour.from_rgb(241, 196, 15),
             )
-            embed.add_field(name="", value=msg[429:1006], inline=True)
+            embed.add_field(name="", value=msg[1], inline=True)
 
         elif self.custom_id == "interact":
             embed = discord.Embed(
@@ -135,7 +140,7 @@ class ComButton(discord.ui.Button):
                 description="",
                 colour=discord.Colour.from_rgb(241, 196, 15),
             )
-            embed.add_field(name="", value=msg[1006:1287], inline=True)
+            embed.add_field(name="", value=msg[2], inline=True)
 
         elif self.custom_id == "game":
             embed = discord.Embed(
@@ -143,7 +148,7 @@ class ComButton(discord.ui.Button):
                 description="",
                 colour=discord.Colour.from_rgb(241, 196, 15),
             )
-            embed.add_field(name="", value=msg[1287:1665], inline=True)
+            embed.add_field(name="", value=msg[3], inline=True)
 
         elif self.custom_id == "music":
             embed = discord.Embed(
@@ -151,7 +156,7 @@ class ComButton(discord.ui.Button):
                 description="",
                 colour=discord.Colour.from_rgb(241, 196, 15),
             )
-            embed.add_field(name="", value=msg[1665:2138], inline=True)
+            embed.add_field(name="", value=msg[4], inline=True)
 
         elif self.custom_id == "talk":
             embed = discord.Embed(
@@ -159,7 +164,7 @@ class ComButton(discord.ui.Button):
                 description="",
                 colour=discord.Colour.from_rgb(241, 196, 15),
             )
-            embed.add_field(name="", value=msg[2138:2361], inline=True)
+            embed.add_field(name="", value=msg[5], inline=True)
         
 
         button1 = ComButton(discord.ButtonStyle.grey, "🚩관리🚩", "sys")
