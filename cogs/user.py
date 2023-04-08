@@ -73,7 +73,6 @@ class ConfirmButton(discord.ui.Button):
         super().__init__(
             style=button_style, label=label, custom_id=custom_id
         )
-        print("신호받음")
 
     async def callback(self, interaction: discord.Interaction):
         no = ConfirmGui(self.self_, str(interaction.user.id), self.birth_date) 
@@ -161,14 +160,11 @@ class VerifyButton(discord.ui.Button):
         )
 
     def check_bonus(self, item, item_dict):
-        print(item_dict)
         if item in list(item_dict.keys()):
             xp = round(item_dict[item] * 1.3)
-            print(xp)
             return xp
         else:
             xp = self.all_items[item]
-            print(xp)
             return round(xp)
             
     def check_item(self, item_key: str, user_id: str):
@@ -180,7 +176,6 @@ class VerifyButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         no = ChoseGUI(self.self_, str(interaction.user.id)) 
         if self.custom_id == "yes" and self.check_item(self.item_key, interaction.user.id):
-            print(self.custom_id)
             if self.character == "rangi":
                 embed=discord.Embed(title=f"랑이에게 {self.item}(을)를 선물했습니다", description=f"역시 {interaction.user.name} 낭군님 이니라! 정말정말 기쁘니라!!")
                 embed.set_author(name="랑이 ", icon_url="https://i.imgur.com/huDPd5o.jpg") 
@@ -230,7 +225,6 @@ class CharacterButton(discord.ui.Button):
         button_no = VerifyButton(self.self_, discord.ButtonStyle.danger, "아니요", "no") 
         view.add_item(button_yes)
         view.add_item(button_no)
-        print(button_yes)
         
         await interaction.response.edit_message(view=view, embed=embed)
         
@@ -260,8 +254,6 @@ class GiftSelect(discord.ui.Select):
         
         self.gift_selected = self.values[0]
         name = item_list_convert[self.gift_selected]
-        print(self.gift_selected)
-        print(name)
 
         embed=discord.Embed(title=f"{name}을 선택하셨습니다", description="누구에게 선물할지 선택해주세요", color=0xe8dbff)
 
@@ -508,7 +500,6 @@ class UserData(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
         self.data = self.get_json()
-        print(self.data)
         self.repeat_save_user.start()
         self.reset_attendence.start()
         self.self_ = self
@@ -795,7 +786,6 @@ class UserData(commands.Cog):
     @app_commands.command(name="생일캐릭터", description="캐릭터변경")
     async def attendence(self, interaction: discord.Interaction):
         self.check_user(str(interaction.user.id))
-
 
     @app_commands.command(name="생일", description="생일설정 *변경 불가 /생일 월 일")
     async def attendence(self, interaction: discord.Interaction, month: int, date: int):
@@ -1148,7 +1138,6 @@ class UserData(commands.Cog):
         embed=discord.Embed(title="선물 보유량", color=0xd4e9c4)
         for item in self.data[str(interaction.user.id)]["item"]:
             item_kor = item_list_convert[item]
-            print(item_kor)
             amount = self.data[str(interaction.user.id)]["item"][item]
             embed.add_field(name=item_kor, value=amount)
         await interaction.response.send_message(view=view, embed=embed)

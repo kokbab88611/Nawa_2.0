@@ -76,7 +76,6 @@ class WarnModal(ui.Modal,title="타임아웃"):
         super().__init__()
         self.user = user
     time = ui.TextInput(label="타임아웃할 시간을 적어주세요", style=discord.TextStyle.short, placeholder="(일,시,분)형식으로 적어 주세요",required=True,max_length=12,min_length=5)
-   
     async def on_submit(self,interaction:discord.Interaction):
         """
         만약 submit이 되었다면 일단 (일,시,분)형식인지 확인하고
@@ -176,7 +175,6 @@ class GuildData(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
         self.data = self.get_json()
-        print(self.data)
         self.repeat_save_guild.start()
 
     @commands.Cog.listener()
@@ -188,7 +186,7 @@ class GuildData(commands.Cog):
             guilds JSON 에 self.data를 덮어씌움.
         """
         try:
-            with open(os.path.join(__location__ + '\\json\\guilds.json'), "w") as file:
+            with open(os.path.join(__location__ + '/json/guilds.json'), "w") as file:
                 file.write(json.dump(self.data, file, indent=4))
         except TypeError:
             pass
@@ -198,7 +196,7 @@ class GuildData(commands.Cog):
             guilds JSON 파일을 불러와서 return함
         return Dict
         """
-        with open(os.path.join(f"{__location__}\\json\\guilds.json"),'r',encoding='utf-8') as file:
+        with open(os.path.join(f"{__location__}/json/guilds.json"),'r',encoding='utf-8') as file:
             return json.load(file)
             
     def check_guild(self, guild_id: str):
@@ -214,7 +212,6 @@ class GuildData(commands.Cog):
                     "warned": {   
                     }
                 }
-            print(f"{guild_id}를 추가함")
         else:
             pass
 
@@ -364,7 +361,7 @@ class GuildData(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         channel=member.guild.get_channel(int(self.data[str(member.guild.id)]["welcome"]))
-        print(channel)
+
         try:
             embed=discord.Embed(title=f"{member.guild.name} 서버에 온걸 환영하느니라!", color=0xebe6e6)
             embed.set_thumbnail(url=member.avatar.url)

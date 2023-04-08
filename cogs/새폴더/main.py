@@ -1,5 +1,4 @@
 import discord
-import asyncio
 from discord.ext import commands, tasks
 from discord.ext.commands import Context
 from discord import app_commands
@@ -29,13 +28,13 @@ class Nawa(commands.Bot):
   async def on_ready(self):
       print("준비되었느니라!")
   
-  async def reloadCog(self):
-    """Cog 폴더에 있는 파일들을 다시 불러옴
-    """
-    for file in os.listdir('./cogs'):
-      if file.endswith('.py'):
-        await self.reload_extension(f'cogs.{file[:-3]}')
-        print(f"{file[:-3]}를 재정비 했느니라!") 
+  # async def reloadCog(self):
+  #   """Cog 폴더에 있는 파일들을 다시 불러옴
+  #   """
+  #   for file in os.listdir('./cogs'):
+  #     if file.endswith('.py'):
+  #       await self.reload_extension(f'cogs.{file[:-3]}')
+  #       print(f"{file[:-3]}를 재정비 했느니라!") 
 
 bot = Nawa()     
 bot.run(token=token)

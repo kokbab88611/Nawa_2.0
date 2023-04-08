@@ -73,7 +73,6 @@ class ConfirmButton(discord.ui.Button):
         super().__init__(
             style=button_style, label=label, custom_id=custom_id
         )
-        print("신호받음")
 
     async def callback(self, interaction: discord.Interaction):
         no = ConfirmGui(self.self_, str(interaction.user.id), self.birth_date) 
@@ -161,14 +160,11 @@ class VerifyButton(discord.ui.Button):
         )
 
     def check_bonus(self, item, item_dict):
-        print(item_dict)
         if item in list(item_dict.keys()):
             xp = round(item_dict[item] * 1.3)
-            print(xp)
             return xp
         else:
             xp = self.all_items[item]
-            print(xp)
             return round(xp)
             
     def check_item(self, item_key: str, user_id: str):
@@ -180,7 +176,6 @@ class VerifyButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         no = ChoseGUI(self.self_, str(interaction.user.id)) 
         if self.custom_id == "yes" and self.check_item(self.item_key, interaction.user.id):
-            print(self.custom_id)
             if self.character == "rangi":
                 embed=discord.Embed(title=f"랑이에게 {self.item}(을)를 선물했습니다", description=f"역시 {interaction.user.name} 낭군님 이니라! 정말정말 기쁘니라!!")
                 embed.set_author(name="랑이 ", icon_url="https://i.imgur.com/huDPd5o.jpg") 
@@ -230,8 +225,7 @@ class CharacterButton(discord.ui.Button):
         button_no = VerifyButton(self.self_, discord.ButtonStyle.danger, "아니요", "no") 
         view.add_item(button_yes)
         view.add_item(button_no)
-        print(button_yes)
-        
+
         await interaction.response.edit_message(view=view, embed=embed)
         
 class GiftSelect(discord.ui.Select):
@@ -260,8 +254,6 @@ class GiftSelect(discord.ui.Select):
         
         self.gift_selected = self.values[0]
         name = item_list_convert[self.gift_selected]
-        print(self.gift_selected)
-        print(name)
 
         embed=discord.Embed(title=f"{name}을 선택하셨습니다", description="누구에게 선물할지 선택해주세요", color=0xe8dbff)
 
@@ -508,7 +500,6 @@ class UserData(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
         self.data = self.get_json()
-        print(self.data)
         self.repeat_save_user.start()
         self.reset_attendence.start()
         self.self_ = self
@@ -573,10 +564,18 @@ class UserData(commands.Cog):
                         "chiyee_julmuni" : 0,
                         "legendary_saliva" : 0
                     },
-                    "attendence": False
+                    "attendence": False,
+                    "birthday": False,
+                    "birthday_character": "rangi"
                 }
         else:
             pass
+
+    def update_birthday(self, user_id: str, date:str) -> None:
+        self.data[user_id]["birthday"] = date
+    
+    def update_birthday_character(self, user_id: str, character: str)-> None:
+        self.data[user_id]["birthday_character"] = character
 
     def character_level_up(self, user_id: str, character: str) -> bool:
         """_summary_
@@ -683,7 +682,6 @@ class UserData(commands.Cog):
         embed=discord.Embed(title="지갑", description=f"{money}원", color=0xafc2f3)
         await interaction.response.send_message(embed=embed)
 
-
     async def give_money(self, user_id, money: int):
         """_summary_
             user 돈 지급용 function
@@ -692,8 +690,8 @@ class UserData(commands.Cog):
             money (int, 필수): 지급할 돈 액수
         """
         self.check_user(str(user_id))
-        self.data[str(user_id)]["money"] += money
-        
+        self.data[str(user_id)]["money"] += money   
+
     @commands.command(name=";지급", pass_context=True)
     async def take_money(self, ctx, user, money: int):
         """_summary_
@@ -757,7 +755,7 @@ class UserData(commands.Cog):
             self.data[str(interaction.user.id)]["money"] += 10000
             self.data[str(interaction.user.id)]["attendence"] = True
 
-            embed_attendence = discord.Embed(title=f"출석체크 완료인 거예요!", description="만원 드린 거예요! 가챠에 다 쓰시면 안되는 거예요!!",color=0x0aa40f)
+            embed_attendence = discord.Embed(title= "출석체크 완료인 거예요!", description="만원 드린 거예요! 가챠에 다 쓰시면 안되는 거예요!!",color=0x0aa40f)
             embed_attendence.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
             embed_attendence.add_field(name="돈 보유량", value=f"{self.data[str(interaction.user.id)]['money']}원")
             
@@ -768,6 +766,11 @@ class UserData(commands.Cog):
             embed_reject.add_field(name="돈 보유량", value=f"{self.data[str(interaction.user.id)]['money']}원")
 
             await interaction.response.send_message(embed=embed_reject)
+
+    @tasks.loop(time= rest_time)
+    async def reset_attendence(self):
+        for user_id in self.data.items():
+            self.data[user_id[0]]["attendence"] = False
 
     # @tasks.loop(time= birthday_time)
     # async def check_birthday(self):
@@ -803,11 +806,6 @@ class UserData(commands.Cog):
             embed_reject.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
 
             await interaction.response.send_message(embed=embed_reject)
-
-    @tasks.loop(time= rest_time)
-    async def reset_attendence(self):
-        for user_id in self.data.items():
-            self.data[user_id[0]]["attendence"] = False
 
     @app_commands.command(name="정보", description="유저 정보를 불러옵니다")
     async def user_information(self, interaction: discord.Interaction):
@@ -1113,7 +1111,7 @@ class UserData(commands.Cog):
         else:
             emcolor=0x2ecc71
 
-        cost = 50000
+        cost = 40000
         if self.data[str(interaction.user.id)]['money'] >= cost:
             self.data[str(interaction.user.id)]['money'] -= cost
 
@@ -1141,7 +1139,6 @@ class UserData(commands.Cog):
         embed=discord.Embed(title="선물 보유량", color=0xd4e9c4)
         for item in self.data[str(interaction.user.id)]["item"]:
             item_kor = item_list_convert[item]
-            print(item_kor)
             amount = self.data[str(interaction.user.id)]["item"][item]
             embed.add_field(name=item_kor, value=amount)
         await interaction.response.send_message(view=view, embed=embed)
@@ -1203,15 +1200,15 @@ class UserData(commands.Cog):
             if var1 == 1 and var2 == 1 and var3 == 1:
                 result = "[..잭팟.축하해.]"
                 result += f'\n획득: {int(round(bet_money*100, 0))}'
-                await UserData.give_money(self, interaction.user.id, (int(round(bet_money*100, 0))))
+                await UserData.give_money(self, interaction.user.id, (int(round(bet_money*101, 0))))
             elif var1 == var2 and var2 == var3:
                 result = "[트리플.대단해.]"
                 result += f'\n획득: {int(round(bet_money*5, 0))}'
-                await UserData.give_money(self, interaction.user.id, (int(round(bet_money*5, 0))))
+                await UserData.give_money(self, interaction.user.id, (int(round(bet_money*6, 0))))
             elif var1 == var2 or var1 == var3 or var2 == var3:
                 result = "[페어.오.]"
                 result += f'\n획득: {int(round(bet_money*1.5, 0))}'
-                await UserData.give_money(self, interaction.user.id, (int(round(bet_money*1.5, 0))))
+                await UserData.give_money(self, interaction.user.id, (int(round(bet_money*2.5, 0))))
             else:
                 result = "[꽝...허접]"
                 result += f'\n잃음: {bet_money}'

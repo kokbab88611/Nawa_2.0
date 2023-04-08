@@ -78,7 +78,6 @@ class Music(commands.Cog):
             except: 
                 pass
         search = await wavelink.YouTubeTrack.search(query=search, return_first=True)
-        print(search)
         if not interaction.guild.voice_client:
             try:
                 vc: wavelink.Player = await interaction.user.voice.channel.connect(cls=wavelink.Player)

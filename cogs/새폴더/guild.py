@@ -175,7 +175,6 @@ class GuildData(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
         self.data = self.get_json()
-        print(self.data)
         self.repeat_save_guild.start()
 
     @commands.Cog.listener()
@@ -213,7 +212,6 @@ class GuildData(commands.Cog):
                     "warned": {   
                     }
                 }
-            print(f"{guild_id}를 추가함")
         else:
             pass
 
@@ -363,7 +361,7 @@ class GuildData(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         channel=member.guild.get_channel(int(self.data[str(member.guild.id)]["welcome"]))
-        print(channel)
+
         try:
             embed=discord.Embed(title=f"{member.guild.name} 서버에 온걸 환영하느니라!", color=0xebe6e6)
             embed.set_thumbnail(url=member.avatar.url)

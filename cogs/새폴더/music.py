@@ -21,7 +21,7 @@ class Music(commands.Cog):
         await self.bot.wait_until_ready()
         node: wavelink.Node = wavelink.Node(uri='http://localhost:2333', password='youshallnotpass')
         await wavelink.NodePool.connect(client=self.bot, nodes=[node])
-        self.nodeid = node.identifier
+        self.nodeid = node.id
 
     @app_commands.command(name="입장", description="음악봇이 입장합니다")
     async def joincommand_kor(self, interaction: discord.Interaction, channel: typing.Optional[discord.VoiceChannel]):
@@ -81,7 +81,7 @@ class Music(commands.Cog):
             except: 
                 pass
         search = await wavelink.YouTubeTrack.search(search, return_first=True)
-        print(search)
+
         if not interaction.guild.voice_client:
             try:
                 vc: wavelink.Player = await interaction.user.voice.channel.connect(cls=wavelink.Player)

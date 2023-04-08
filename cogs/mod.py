@@ -125,7 +125,6 @@ class Moderator(commands.Cog):
             reason (str, 옵션): _description_. Defaults to "사유 없음".
         """
         delete = await interaction.channel.purge(limit=limit + 1)
-        print("디퍼")
         await interaction.response.defer()
         embed = discord.Embed(title=f"{len(delete)}개의 메세지를 묵사발 냈습니다", description=f"사유: {reason}", color=0xb0a7d3)
         embed.set_author(name="관리자 세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
@@ -150,7 +149,6 @@ class Moderator(commands.Cog):
         now = datetime.now().astimezone()
         till = now + timedelta(seconds=sec, minutes=min, hours=hour)
         bantime = timedelta(seconds=sec, minutes=min, hours=hour, days=day)
-        print(bantime.seconds)
 
         embedChannel = discord.Embed(
             title=f"{user.name}이 {bantime.days}일 {bantime.seconds // 60 // 60}시간 {(bantime.seconds // 60) % 60}분 {bantime.seconds % 60}초 동안 타임아웃 처리되었습니다",
