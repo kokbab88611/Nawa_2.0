@@ -25,16 +25,10 @@ msg = """
             > 채팅방을 생성합니다
             ⚆ `/통화방 <이름> <최대 유저 수[0일시 제한 없음]>`
             > 통화방을 생성합니다
-            ⚆ `/초대`
-            > 봇 초대 링크를 생성합니다
             ⚆ `/환영끄기`
             > 명령어를 사용한 채팅방의 일반 채널로 설정합니다
             ⚆ `/환영켜기`
             > 명령어를 사용한 채팅방을 환영 채널로 설정합니다
-            ⚆ `/도움말`
-            > 도움말 리스트를 표시합니다
-            ⚆ `/서버`
-            > 나와 아해들 다스코드 서버 초대 링크
             +
             ⚆ `/경고확인 <유저#0000>`
             > 선택한 유저의 경고 스택을 차감합니다
@@ -108,6 +102,13 @@ msg = """
             > (범이, 연리, 강세희)
             ⚆ '이름 부르기'
             > (랑이야, 치이야, 세희야)
+            +
+            ⚆ `/도움말`
+            > 도움말 리스트를 표시합니다
+            ⚆ `/서버`
+            > 나와 아해들 다스코드 서버 초대 링크
+            ⚆ `/초대`
+            > 봇 초대 링크를 생성합니다
             """
 msg = msg.split("+")
 
@@ -167,6 +168,13 @@ class ComButton(discord.ui.Button):
                 colour=discord.Colour.from_rgb(241, 196, 15),
             )
             embed.add_field(name="", value=msg[5], inline=True)
+        elif self.custom_id == "else":
+            embed = discord.Embed(
+                title="🎸 기타",
+                description="",
+                colour=discord.Colour.from_rgb(241, 196, 15),
+            )
+            embed.add_field(name="", value=msg[6], inline=True)
         
 
         button1 = ComButton(discord.ButtonStyle.grey, "🚩관리🚩", "sys")
@@ -175,6 +183,7 @@ class ComButton(discord.ui.Button):
         button4 = ComButton(discord.ButtonStyle.grey, "🎲게임🎲", "game")
         button5 = ComButton(discord.ButtonStyle.grey, "🎹음악🎹", "music")
         button6 = ComButton(discord.ButtonStyle.grey, "👋대화👋", "talk")
+        button7 = ComButton(discord.ButtonStyle.grey, "🎸기타🎸", "else")
 
         view.add_item(button1)
         view.add_item(button2)
@@ -182,6 +191,7 @@ class ComButton(discord.ui.Button):
         view.add_item(button4)
         view.add_item(button5)
         view.add_item(button6)
+        view.add_item(button7)
 
         await interaction.response.edit_message(view=view, embed=embed)
 
@@ -231,6 +241,7 @@ class InfoSelect(Select):
             button4 = ComButton(discord.ButtonStyle.grey, "🎲게임🎲", "game")
             button5 = ComButton(discord.ButtonStyle.grey, "🎹음악🎹", "music")
             button6 = ComButton(discord.ButtonStyle.grey, "👋대화👋", "talk")
+            button7 = ComButton(discord.ButtonStyle.grey, "🎸기타🎸", "else")
 
             view.add_item(button1)
             view.add_item(button2)
@@ -238,6 +249,7 @@ class InfoSelect(Select):
             view.add_item(button4)
             view.add_item(button5)
             view.add_item(button6)
+            view.add_item(button7)
 
         elif self.values[0] == "33":
             embed = discord.Embed(
