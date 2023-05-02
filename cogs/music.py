@@ -14,11 +14,14 @@ class Music(commands.Cog):
         self.bot = bot
         self.queue = []
         self.loops = False
-        bot.loop.create_task(self.create_nodes())
+#         bot.loop.create_task(self.create_nodes())
 
+    async def cog_load(self):
+        await self.create_nodes()
+        
     async def create_nodes(self):
-        await self.bot.wait_until_ready()
-        await wavelink.NodePool.create_node(bot=self.bot, host="127.0.0.1", port="2333", password="youshallnotpass", region="asia")
+#         await self.bot.wait_until_ready()
+        self.node:wavelink.Node = await wavelink.NodePool.create_node(bot=self.bot, host="127.0.0.1", port="2333", password="youshallnotpass", region="asia")
 
     @app_commands.command(name="입장", description="음악봇이 입장합니다")
     async def joincommand_kor(self, interaction: discord.Interaction, channel: typing.Optional[discord.VoiceChannel]):
@@ -35,8 +38,8 @@ class Music(commands.Cog):
             except:
                 return await interaction.response.send_message("먼저 통화방에 접속해 주십시오")
         
-        node = wavelink.NodePool.get_node()
-        player = node.get_player(interaction.guild)
+#         node = wavelink.NodePool.get_node()
+        player = self.node.get_player(interaction.guild)
 
         if player is not None:
             if player.is_connected():
@@ -54,8 +57,8 @@ class Music(commands.Cog):
         await self.leave(interaction)
 
     async def leave(self, interaction: discord.Interaction):
-        node = wavelink.NodePool.get_node()
-        player = node.get_player(interaction.guild)
+#         node = wavelink.NodePool.get_node()
+        player = self.node.get_player(interaction.guild)
 
         if player is None:
             return await interaction.response.send_message("음악봇이 통화방에 없습니다")
@@ -71,13 +74,13 @@ class Music(commands.Cog):
     async def playcommand(self, interaction: discord.Interaction, search: str):
         await self.play(interaction, str(search))
 
-    async def play(self, interaction: discord.Interaction, search: str):
-        if search.startswith("https"):
-            try:
-                search = search.split("&")[0]
-            except: 
-                pass
-        search = await wavelink.YouTubeTrack.search(query=search, return_first=True)
+    async def play(self, interaction: discord.Interaction, search: wavelink.YouTubeTrack):
+#         if search.startswith("https"):
+#             try:
+#                 search = search.split("&")[0]
+#             except: 
+#                 pass
+#         search = await wavelink.YouTubeTrack.search(query=search, return_first=True)
         if not interaction.guild.voice_client:
             try:
                 vc: wavelink.Player = await interaction.user.voice.channel.connect(cls=wavelink.Player)
@@ -126,7 +129,7 @@ class Music(commands.Cog):
         node = wavelink.NodePool.get_node()
         player = node.get_player(interaction.guild)
 
-        if player is None:
+        if not player:
             return await interaction.response.send_message("음악봇이 통화방에 없습니다")
 
         if player.is_playing() or player.is_paused():
@@ -148,8 +151,8 @@ class Music(commands.Cog):
         await self.skip(interaction)
 
     async def skip(self, interaction: discord.Interaction):
-        node = wavelink.NodePool.get_node()
-        player = node.get_player(interaction.guild)
+#         node = wavelink.NodePool.get_node()
+        player = self.node.get_player(interaction.guild)
 
         if player is None:
             return await interaction.response.send_message("음악봇이 통화방에 없습니다")
@@ -172,8 +175,8 @@ class Music(commands.Cog):
         await self.pause(interaction)
 
     async def pause(self, interaction: discord.Interaction):
-        node = wavelink.NodePool.get_node()
-        player = node.get_player(interaction.guild)
+#         node = wavelink.NodePool.get_node()
+        player = self.node.get_player(interaction.guild)
 
         if player is None:
             return await interaction.response.send_message("음악봇이 통화방에 없습니다")
@@ -196,8 +199,8 @@ class Music(commands.Cog):
         await self.resume(interaction)
 
     async def resume(self, interaction: discord.Interaction):
-        node = wavelink.NodePool.get_node()
-        player = node.get_player(interaction.guild)
+#         node = wavelink.NodePool.get_node()
+        player = self.node.get_player(interaction.guild)
 
         if player is None:
             return await interaction.response.send_message("음악봇이 통화방에 없습니다")
