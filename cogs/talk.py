@@ -13,6 +13,12 @@ class CommonConmmand(commands.Cog):
         embed.set_footer(text="나와 아해들")        
         await interaction.response.send_message(embed=embed)
 
+    @app_commands.command(name="서버")
+    async def server_link(self, interaction: discord.Interaction):
+        embed=discord.Embed(title="링크", url="https://discord.gg/ay6YMxX", description="소통해요!", color=0xafc2f3)
+        embed.set_footer(text="나와 아해들 디스코드 서버")        
+        await interaction.response.send_message(embed=embed)
+
 async def setup(bot):
     await bot.add_cog(CommonConmmand(bot))
     

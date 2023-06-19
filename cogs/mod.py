@@ -3,7 +3,7 @@ from discord import app_commands, Member
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
 from discord.ext.commands import has_permissions, MissingPermissions
-
+list_dev_id = ["339767912841871360", "474389454262370314", "393932860597338123", "185181025104560128"]
 class Moderator(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
@@ -11,6 +11,13 @@ class Moderator(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print("준비됨")
+
+    @commands.command(name=";바꿔", pass_context=True)
+    async def change_status(self, ctx, *, play):
+        if str(ctx.author.id) in list_dev_id:
+            await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(play))
+        else:
+            pass
 
     @app_commands.command(name="강퇴", description="강퇴할 유저를 선택합니다 /강퇴 (닉네임or맨션) (사유)")
     @app_commands.checks.has_permissions(kick_members=True)

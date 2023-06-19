@@ -150,11 +150,11 @@ class VerifyButton(discord.ui.Button):
         self.self_= self_
         self.rangi_item = {"개량한복": random.randrange(1,5),"저고리":  random.randrange(5,10), "이빨":  random.randrange(15,30)}
         self.chiyee_item = {"국자":  random.randrange(1,5),"깃털 머리띠":  random.randrange(5,10), "줄무늬 그것":  random.randrange(20,40)}
-        self.saehee_item = {"술잔":  random.randrange(1,5),"이빨":  random.randrange(5,10), "비녀":  random.randrange(15,30)}
+        self.saehee_item = {"술잔":  random.randrange(1,5),"솥뚜껑":  random.randrange(5,10), "비녀":  random.randrange(15,30)}
         self.all_items = {
                         "개량한복": random.randrange(1,5),"저고리":  random.randrange(5,10), "이빨":  random.randrange(15,30), 
                         "국자":  random.randrange(1,5),"깃털 머리띠":  random.randrange(5,10), "줄무늬 그것":  random.randrange(15,30),
-                        "술잔":  random.randrange(1,5),"이빨":  random.randrange(5,10), "비녀":  random.randrange(15,30), "대요괴의 침": random.randrange(80,100)}
+                        "술잔":  random.randrange(1,5),"솥뚜껑":  random.randrange(5,10), "비녀":  random.randrange(15,30), "대요괴의 침": random.randrange(80,100)}
         super().__init__(
             style=button_style, label=label, custom_id=custom_id
         )
@@ -225,7 +225,7 @@ class CharacterButton(discord.ui.Button):
         button_no = VerifyButton(self.self_, discord.ButtonStyle.danger, "아니요", "no") 
         view.add_item(button_yes)
         view.add_item(button_no)
-        
+
         await interaction.response.edit_message(view=view, embed=embed)
         
 class GiftSelect(discord.ui.Select):
@@ -476,18 +476,18 @@ class RcpButtons(Button):
         if interaction.user.id == self.command_userid:
             bot_rcp, result = await RcpButtons.rcp_result(self.custom_id)
             if result == "win":
-                result = "[......졌어.다시해.]"
+                result = "[운빨 망겜 안할래]"
                 message = f'{self.bet_money * 2} 얻음'
                 await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*3, 0))))
             elif result == "draw":
-                result = "[비겼어.쳐다보지마.]"
+                result = "[비겼으니 돈은 반만 가져감]"
                 message = f'{int(round(self.bet_money * 0.5, 0))} 잃음'
                 await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*0.5, 0))))
             else:
-                result = "[이겼어.허접.]"
+                result = "[ㅋ 너 나 절대 못이김]"
                 message = f'{self.bet_money} 잃음'
             if self.bet_money == 0:
-                message = "[....돈.걸어.]"
+                message = "[돈도 못거는 쫄보 였음?]"
             embed = discord.Embed(title=result, description=f'페이:{bot_rcp}\n나:{self.user_rcp}\n{message}', color=0xb0a7d3)
             embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
             await interaction.response.edit_message(content="", embed=embed, view=None)
@@ -658,7 +658,7 @@ class UserData(commands.Cog):
         embed=discord.Embed(title="아우우! {}(으)로 레벨 업 하신거예요!!", description="{}")
         embed.set_author(name="치이", icon_url="https://i.imgur.com/m4rkhda.jpg")
 
-        self.check_user(user_id)
+        self.check_user(str(user_id))
         random_xp = random.randint(1, 2)
         self.data[user_id]["level"]["xp"] += random_xp
         if self.level_up(user_id):
@@ -677,6 +677,7 @@ class UserData(commands.Cog):
 
     @app_commands.command(name="지갑", description="현재 돈 보유량을 확인합니다")
     async def check_money(self, interaction: discord.Interaction):
+        self.check_user(str(interaction.user.id))
         money = self.data[str(interaction.user.id)]['money']
         money = format(money, ',d')
         embed=discord.Embed(title="지갑", description=f"{money}원", color=0xafc2f3)
@@ -720,21 +721,6 @@ class UserData(commands.Cog):
             ctx (_type_): 메세지 Context
         """
         await ctx.send("퐁이니라!")
-
-    @commands.command(name="아", pass_context=True)
-    async def test(self, ctx):
-        """_summary_
-        레벨기능 테스트 ***임시***
-        Args:
-            ctx (_type_): 메세지 Context
-        """
-        await self.give_xp(ctx.author.name , str(ctx.author.id), ctx.channel)
-
-    @commands.command(name="인벤", pass_context=True)
-    async def inven(self, ctx):
-        self.check_user()
-        user_data=self.data[str(ctx.author.id)]
-        await ctx.send(f"{user_data}")
 
     @app_commands.command(name="인벤토리", description="인벤토리를 불러옵니다")
     async def inventory(self, interaction: discord.Interaction):
@@ -784,11 +770,12 @@ class UserData(commands.Cog):
     #                 user.send(embed)
 
     @app_commands.command(name="생일캐릭터", description="캐릭터변경")
-    async def attendence(self, interaction: discord.Interaction):
+    async def birthday_character(self, interaction: discord.Interaction):
         self.check_user(str(interaction.user.id))
 
+
     @app_commands.command(name="생일", description="생일설정 *변경 불가 /생일 월 일")
-    async def attendence(self, interaction: discord.Interaction, month: int, date: int):
+    async def birthday(self, interaction: discord.Interaction, month: int, date: int):
         self.check_user(str(interaction.user.id))
         birthday_data = self.data[str(interaction.user.id)]["birthday"]
         birth_date = f"{month}/{date}"
@@ -1110,7 +1097,7 @@ class UserData(commands.Cog):
         else:
             emcolor=0x2ecc71
 
-        cost = 40000
+        cost = 30000
         if self.data[str(interaction.user.id)]['money'] >= cost:
             self.data[str(interaction.user.id)]['money'] -= cost
 
@@ -1187,7 +1174,10 @@ class UserData(commands.Cog):
         """
         self.check_user(str(interaction.user.id))
         owned_money = self.data[str(interaction.user.id)]["money"]
-        if bet_money <= owned_money:
+        if bet_money < 0:
+            await interaction.response.send_message(content="[너 거지. 정.직.하.게. 돈 벌어와]", ephemeral=True)
+            pass
+        elif bet_money <= owned_money:
             await UserData.give_money(self, interaction.user.id, (bet_money * -1))
             var1 = random.randint(1,9)
             var2 = random.randint(1,9)
@@ -1197,23 +1187,23 @@ class UserData(commands.Cog):
                 embed = await UserData.embed_create_slotmachine(i, "결과: ...", interaction)
                 await asyncio.sleep(1)
             if var1 == 1 and var2 == 1 and var3 == 1:
-                result = "[..잭팟.축하해.]"
+                result = "[잭팟 ㅊㅊ]"
                 result += f'\n획득: {int(round(bet_money*100, 0))}'
                 await UserData.give_money(self, interaction.user.id, (int(round(bet_money*101, 0))))
             elif var1 == var2 and var2 == var3:
-                result = "[트리플.대단해.]"
+                result = "[트리플. 좀 치네]"
                 result += f'\n획득: {int(round(bet_money*5, 0))}'
                 await UserData.give_money(self, interaction.user.id, (int(round(bet_money*6, 0))))
             elif var1 == var2 or var1 == var3 or var2 == var3:
-                result = "[페어.오.]"
+                result = "[페어네 나랑 치이 처럼]"
                 result += f'\n획득: {int(round(bet_money*1.5, 0))}'
                 await UserData.give_money(self, interaction.user.id, (int(round(bet_money*2.5, 0))))
             else:
-                result = "[꽝...허접]"
+                result = "[꽝... 허접 ㅋ]"
                 result += f'\n잃음: {bet_money}'
             embed = await UserData.embed_create_slotmachine(var_list[3], result, interaction)
         else:
-            await interaction.response.send_message(content="[돈....부족해.판결.사기꾼.]", ephemeral=True)
+            await interaction.response.send_message(content="[돈 부족. 판결. 사기꾼]", ephemeral=True)
 
     @app_commands.command(name="블랙잭", description="폐이와 블랙잭을 합니다")
     async def blackjack(self, interaction: discord.Interaction, bet_money: int = 0):
@@ -1230,7 +1220,10 @@ class UserData(commands.Cog):
         """
         self.check_user(str(interaction.user.id))
         owned_money = self.data[str(interaction.user.id)]["money"]
-        if bet_money <= owned_money:
+        if bet_money < 0:
+            await interaction.response.send_message(content="[너 거지.  정.직.하.게. 돈 벌어와]", ephemeral=True)
+            pass
+        elif bet_money <= owned_money:
             await UserData.give_money(self, interaction.user.id, (bet_money * -1))
             cards = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 'sJ', 'sK', 'sQ', 'sA', 
             'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'hJ', 'hK', 'hQ', 'hA', 
@@ -1250,7 +1243,7 @@ class UserData(commands.Cog):
             
             if user_total != 21:
                 if bot_total == 21:
-                    msg += f'\n [블랙잭...허접.]'
+                    msg += f'\n [블랙잭...허접 ㅋ]'
                     embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
                     embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                     await interaction.response.send_message(embed=embed)
@@ -1263,7 +1256,7 @@ class UserData(commands.Cog):
                     await interaction.response.send_message(embed=embed, view=view)
             else:
                 if bot_total != 21:
-                    msg += f'\n [....블랙잭.축하해.]\n획득: {int(round(bet_money*1.5, 0))}'
+                    msg += f'\n [블랙잭 ㅊㅊ]\n획득: {int(round(bet_money*1.5, 0))}'
                     embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
                     embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                     await interaction.response.send_message(embed=embed)
@@ -1274,7 +1267,7 @@ class UserData(commands.Cog):
                     embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                     await interaction.response.send_message(embed=embed)
         else:
-            await interaction.response.send_message(content="[돈....부족해.판결.사기꾼.]", ephemeral=True)
+            await interaction.response.send_message(content="[돈 부족. 판결. 사기꾼]", ephemeral=True)
 
     @app_commands.command(name="가위바위보", description="폐이와 가위바위보를 합니다")
     async def buttontest(self, interaction: discord.Interaction, bet_money: int = 0):
@@ -1289,16 +1282,19 @@ class UserData(commands.Cog):
         """
         self.check_user(str(interaction.user.id))
         owned_money = self.data[str(interaction.user.id)]["money"]
-        if bet_money <= owned_money:
+        if bet_money < 0:
+            await interaction.response.send_message(content="[너 거지.  정.직.하.게. 돈 벌어와]", ephemeral=True)
+            pass
+        elif bet_money <= owned_money:
             await UserData.give_money(self, interaction.user.id, (bet_money * -1))
             view = View()
             view.add_item(RcpButtons('가위', "✌️", "scissors", interaction.user.id, bet_money, self))
             view.add_item(RcpButtons('바위', "✊", "rock", interaction.user.id, bet_money, self))
             view.add_item(RcpButtons('보', "✋", "paper", interaction.user.id, bet_money, self))
-            embed = discord.Embed(title='[가위바위보.하자.]')
+            embed = discord.Embed(title='[넌 나 못이김]')
             await interaction.response.send_message(embed=embed, view=view)
         else:
-            await interaction.response.send_message(content="[돈....부족해.판결.사기꾼.]", ephemeral=True)
+            await interaction.response.send_message(content="[돈 부족. 판결. 사기꾼]", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(UserData(bot))
