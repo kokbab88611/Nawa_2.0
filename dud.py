@@ -1,2 +1,5 @@
-import nest_asyncio 
-nest_asyncio.apply()
+a = {}
+
+a["test"] = []
+a["test"].append("sex")
+print(a)

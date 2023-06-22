@@ -12,8 +12,8 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 class Music(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
-        self.queue = []
-        self.loops = False
+        self.queue = {}
+        self.loops = {}
         self.nodeid = None
         bot.loop.create_task(self.create_nodes())
 
@@ -64,7 +64,7 @@ class Music(commands.Cog):
             return await interaction.response.send_message("음악봇이 통화방에 없습니다")
         await player.disconnect()
         await interaction.response.send_message("음악봇이 퇴장하였습니다")
-        self.queue = []
+        self.queue[interaction.guild.id] = []
 
     @app_commands.command(name="재생", description="음악을 재생합니다")
     async def playcommand_kor(self, interaction: discord.Interaction, search: str):
@@ -90,16 +90,23 @@ class Music(commands.Cog):
         else:
             vc: wavelink.Player = interaction.guild.voice_client
 
-        self.queue.append(search)
+        if interaction.guild.id in self.queue:
+            self.queue[interaction.guild.id].append(search)
+        else:
+            self.queue[interaction.guild.id] = []
+            self.queue[interaction.guild.id].append(search)
+
         await interaction.response.send_message(f'{search}이/가 재생목록에 추가되었습니다')
 
         if not vc.is_playing() and not vc.is_paused():
-            while len(self.queue) > 0:
-                await vc.play(self.queue[0])
+            while len(self.queue[interaction.guild.id]) > 0:
+                await vc.play(self.queue[interaction.guild.id][0])
                 while vc.is_playing() or vc.is_paused():
                     await asyncio.sleep(0.1)
-                if not self.loops:
-                    self.queue.pop(0)
+                if not self.loops[interaction.guild.id]:
+                    self.queue[interaction.guild.id].pop(0)
+    
+        self.loops[interaction.guild.id] = False
 
     @app_commands.command(name="재생목록", description="재생목록을 불러옵니다")
     async def playlistcommand_kor(self, interaction: discord.Interaction):
@@ -111,12 +118,15 @@ class Music(commands.Cog):
 
     async def play_list(self, interaction: discord.Interaction):
         msg = ""
-        if len(self.queue) > 0:
-            for num, title in enumerate(self.queue):
-               msg += f'{num}: {title}\n'
-            await interaction.response.send_message(msg)
-        else:
-            await interaction.response.send_message("재생목록이 비어있습니다")
+        try:
+            if len(self.queue[interaction.guild.id]) > 0:
+                for num, title in enumerate(self.queue[interaction.guild.id]):
+                    msg += f'{num}: {title}\n'
+                    await interaction.response.send_message(msg)
+            else:
+                await interaction.response.send_message("재생목록이 비어있습니다")
+        except KeyError:
+            await interaction.response.send_message("재생목록이 비어있습니다")  
 
     @app_commands.command(name="루프", description="재생중인 음악을 반복합니다")
     async def loopcommand_kor(self, interaction: discord.Interaction):
@@ -134,11 +144,11 @@ class Music(commands.Cog):
             return await interaction.response.send_message("음악봇이 통화방에 없습니다")
 
         if player.is_playing() or player.is_paused():
-            if self.loops:
-                self.loops = False
+            if self.loops[interaction.guild.id]:
+                self.loops[interaction.guild.id] = False
                 await interaction.response.send_message("음악 반복을 정지합니다")
             else:
-                self.loops = True
+                self.loops[interaction.guild.id] = True
                 await interaction.response.send_message("현재 음악을 반복합니다")
         else:
             await interaction.response.send_message("음악 재생중이 아닙니다")
@@ -161,7 +171,7 @@ class Music(commands.Cog):
         if player.is_playing():
             if player.is_paused():
                 await player.resume()
-            self.loops = False
+            self.loops[interaction.guild.id] = False
             await player.stop()
             return await interaction.response.send_message("음악이 스킵되었습니다")
         else:
