@@ -349,10 +349,11 @@ class BlackJackButtons(Button):
                 await interaction.response.edit_message(embed=embed, view=None)
                 await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*2, 0))))
             elif user_total == bot_total:
-                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 잃음: {self.bet_money}' + "\n [동점.....나, 사랑해?]"
+                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 잃음: 0' + "\n [동점.....나, 사랑해?]"
                 embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
                 embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                 await interaction.response.edit_message(embed=embed, view=None)
+                await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*1, 0))))
             else:
                 msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 잃음: {self.bet_money}' + "\n [이겼어.허접.]"
                 embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
@@ -391,6 +392,53 @@ class BlackJackButtons(Button):
             embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
             await interaction.response.edit_message(embed=embed, view=None)
 
+    async def doubledown(self, interaction):
+        self.bet_money = self.bet_money * 2
+
+        self.user_deck.append(self.cards.pop(random.randrange(len(self.cards))))
+        user_total, user_cards_msg = await BlackJackButtons.create_msg(self.user_deck, False)
+        bot_total, bot_cards_msg = await BlackJackButtons.create_msg(self.bot_deck, True)
+        if user_total <= 21:
+            bot_total, bot_cards_msg = await BlackJackButtons.create_msg(self.bot_deck, False)
+            while bot_total < 17:
+                self.bot_deck.append(self.cards.pop(random.randrange(len(self.cards))))
+                bot_total, bot_cards_msg = await BlackJackButtons.create_msg(self.bot_deck, False)
+            user_total, user_cards_msg = await BlackJackButtons.create_msg(self.user_deck, False)
+
+            if bot_total < 22:
+                if user_total > bot_total:
+                    msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 획득: {self.bet_money}' + "\n [......졌어.쳐다보지마]"
+                    embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+                    embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
+                    await interaction.response.edit_message(embed=embed, view=None)
+                    await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*-0.5, 0))))
+                    await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*2, 0))))
+                elif user_total == bot_total:
+                    msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 잃음: 0' + "\n [동점.....나, 사랑해?]"
+                    embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+                    embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
+                    await interaction.response.edit_message(embed=embed, view=None)
+                    await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*0.5, 0))))
+                else:
+                    msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 잃음: {self.bet_money}' + "\n [이겼어.허접.]"
+                    embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+                    embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
+                    await interaction.response.edit_message(embed=embed, view=None)
+                    await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*-0.5, 0))))
+            else:
+                msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: {bot_total}' + f'\n 획득: {self.bet_money}' + "\n [......버스트.실수.]"
+                embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+                embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
+                await interaction.response.edit_message(embed=embed, view=None)
+                await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*-0.5, 0))))
+                await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*2, 0))))
+        else:
+            msg = user_cards_msg + f' 유저: {user_total}' + "\n" + bot_cards_msg + f' 봇: ...' + f'\n 잃음: {self.bet_money}' + "\n [버스트.허접.]"
+            embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
+            embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
+            await interaction.response.edit_message(embed=embed, view=None)
+            await UserData.give_money(self.self_, interaction.user.id, (int(round(self.bet_money*-0.5, 0))))
+
     async def callback(self, interaction):
         """
         _summary_
@@ -404,6 +452,8 @@ class BlackJackButtons(Button):
         if interaction.user.id == self.command_userid:
             if self.custom_id == "hit":
                 await BlackJackButtons.hit(self, interaction)
+            elif self.custom_id == "doubledown":
+                await BlackJackButtons.doubledown(self, interaction)
             else:
                 await BlackJackButtons.stand(self, interaction)
         else:
@@ -1225,10 +1275,10 @@ class UserData(commands.Cog):
             pass
         elif bet_money <= owned_money:
             await UserData.give_money(self, interaction.user.id, (bet_money * -1))
-            cards = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 'sJ', 'sK', 'sQ', 'sA', 
-            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'hJ', 'hK', 'hQ', 'hA', 
-            'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'dJ', 'dK', 'dQ', 'dA', 
-            'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'cJ', 'cK', 'cQ', 'cA']
+            cards = ['s2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 'sJ', 'sK', 'sQ', 'sA', 
+            'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'hJ', 'hK', 'hQ', 'hA', 
+            'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'dJ', 'dK', 'dQ', 'dA', 
+            'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'cJ', 'cK', 'cQ', 'cA']
 
             user_deck = []
             bot_deck = []
@@ -1251,6 +1301,8 @@ class UserData(commands.Cog):
                     view = View()
                     view.add_item(BlackJackButtons('히트', discord.ButtonStyle.green, "🃏", "hit", interaction.user.id, bet_money, user_deck, bot_deck, cards, self))
                     view.add_item(BlackJackButtons('스탠드', discord.ButtonStyle.red, "🖐🏻", "stand", interaction.user.id, bet_money, user_deck, bot_deck, cards, self))
+                    if owned_money > bet_money * 2:
+                        view.add_item(BlackJackButtons('더블다운', discord.ButtonStyle.grey, "💰", "doubledown", interaction.user.id, bet_money, user_deck, bot_deck, cards, self))
                     embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
                     embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
                     await interaction.response.send_message(embed=embed, view=view)
