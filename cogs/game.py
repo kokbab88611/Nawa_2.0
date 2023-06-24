@@ -6,53 +6,56 @@ from discord.ext import commands, tasks
 import random
 
 class MemoryGameDropDown(discord.ui.Select):
-    def __init__(self):
+    def __init__(self, cards):
+        self.cards = cards
         options = [
             discord.SelectOption(
-                label="A1", value="A1"),
+                label="A1", value=1),
             discord.SelectOption(
-                label="A2", value="A2"),
+                label="A2", value=2),
             discord.SelectOption(
-                label="A3", value="A3"),
+                label="A3", value=3),
             discord.SelectOption(
-                label="A4", value="A4"),
+                label="A4", value=4),
             discord.SelectOption(
-                label="B1", value="B1"),
+                label="B1", value=5),
             discord.SelectOption(
-                label="B2", value="B2"),
+                label="B2", value=6),
             discord.SelectOption(
-                label="B3", value="B3"),
+                label="B3", value=7),
             discord.SelectOption(
-                label="B4", value="B4"),
+                label="B4", value=8),
             discord.SelectOption(
-                label="C1", value="C1"),
+                label="C1", value=9),
             discord.SelectOption(
-                label="C2", value="C2"),
+                label="C2", value=10),
             discord.SelectOption(
-                label="C3", value="C3"),
+                label="C3", value=11),
             discord.SelectOption(
-                label="C4", value="C4"),
+                label="C4", value=12),
             discord.SelectOption(
-                label="D1", value="D1"),
+                label="D1", value=13),
             discord.SelectOption(
-                label="D2", value="D2"),
+                label="D2", value=14),
             discord.SelectOption(
-                label="D3", value="D3"),
+                label="D3", value=15),
             discord.SelectOption(
-                label="D4", value="D4"),
+                label="D4", value=16),
         ]
 
         super().__init__(placeholder="원하시는 카드를 선택하십시오", options=options, min_values=2, max_values=2)
 
     async def callback(self, interaction: discord.Interaction):
         
-        view = MemoryGameView()
+        if self.cards[self.values[0]] == self.cards[self.values[1]]:
+            pass
+        view = MemoryGameView(self.cards)
         await interaction.response.edit_message(content=f"{self.values[0]} 과 {self.values[1]} 을 선택하셨습니다", view=view)
 
 class MemoryGameView(discord.ui.View):
-    def __init__(self):
+    def __init__(self, cards):
         super().__init__()
-        self.add_item(MemoryGameDropDown())
+        self.add_item(MemoryGameDropDown(cards))
 
 class Game(commands.Cog):
     channel_id:string
@@ -92,7 +95,7 @@ class Game(commands.Cog):
         embed = discord.Embed(
                 title="카드 짝 맞추기",
                 description=base)
-        view = MemoryGameView()
+        view = MemoryGameView(cards)
         await interaction.response.send_message(embed=embed, view=view)
 
 async def setup(bot):
