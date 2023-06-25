@@ -52,14 +52,18 @@ class MemoryGameDropDown(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         global tries
 
-        
+        lst = []
+        for i in range(len(cards_dis)):
+            if cards_dis[i] != "⬜":
+                lst.append()
+
 
         if cards_dis[int(self.values[0])] == "⬜" and cards_dis[int(self.values[1])] == "⬜":
             tries += 1
             cards_dis[int(self.values[0])], cards_dis[int(self.values[1])] = cards[int(self.values[0])], cards[int(self.values[1])]
 
             if cards[int(self.values[0])] != cards[int(self.values[1])]:
-                #await asyncio.sleep(3)
+                # await asyncio.sleep(3)
                 cards_dis[int(self.values[0])], cards_dis[int(self.values[1])] = "⬜", "⬜"
 
             if "⬜" in cards_dis:
