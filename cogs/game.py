@@ -52,11 +52,10 @@ class MemoryGameDropDown(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         global tries
 
-        lst = []
-        for i in range(len(cards_dis)):
-            if cards_dis[i] != "⬜":
-                lst.append()
-
+        # lst = []
+        # for i in range(len(cards_dis)):
+        #     # if cards_dis[i] != "⬜":
+        #     #     lst.append()
 
         if cards_dis[int(self.values[0])] == "⬜" and cards_dis[int(self.values[1])] == "⬜":
             tries += 1
@@ -86,7 +85,6 @@ class MemoryGameDropDown(discord.ui.Select):
                     description=base)
             view = MemoryGameView()
             await interaction.response.edit_message(content="이미 뒤집힌 카드는 선택할 수 없습니다", view=view, embed=embed)
-
 
 class MemoryGameView(discord.ui.View):
     def __init__(self):
