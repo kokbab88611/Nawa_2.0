@@ -5,10 +5,34 @@ from discord.ui import Button, View
 from discord.ext import commands, tasks
 import random
 
+MemoryGameDict = {1:"<:aya:1122868308144828438>",
+2:"<:baduk:1122868299663941783>",
+3:"<:chie:1122868288616157214>",
+4:"<:gahi:1122868284077903932>",
+5:"<:nyangi:1122868279225090149>",
+6:"<:rangi:1122868296832782396>",
+7:"<:seongi:1122868304210558996>",
+8:"<:yeorin:1122868292625895606>"}
+
 class MemoryGameVars():
     def __init__(self):
         self.tries = 0
-        self.cards = ["1️⃣", "1️⃣", "2️⃣", "2️⃣", "3️⃣", "3️⃣", "4️⃣", "4️⃣", "5️⃣", "5️⃣", "6️⃣", "6️⃣", "7️⃣", "7️⃣", "8️⃣", "8️⃣"]
+        self.cards = [f"{MemoryGameDict[1]}", 
+        f"{MemoryGameDict[1]}", 
+        f"{MemoryGameDict[2]}", 
+        f"{MemoryGameDict[2]}", 
+        f"{MemoryGameDict[3]}", 
+        f"{MemoryGameDict[3]}", 
+        f"{MemoryGameDict[4]}", 
+        f"{MemoryGameDict[4]}", 
+        f"{MemoryGameDict[5]}", 
+        f"{MemoryGameDict[5]}", 
+        f"{MemoryGameDict[6]}", 
+        f"{MemoryGameDict[6]}", 
+        f"{MemoryGameDict[7]}", 
+        f"{MemoryGameDict[7]}", 
+        f"{MemoryGameDict[8]}", 
+        f"{MemoryGameDict[8]}"]
         self.cards = random.sample(self.cards, len(self.cards))
         self.cards_dis = ["⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜"]
 
