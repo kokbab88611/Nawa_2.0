@@ -5,13 +5,16 @@ from discord.ui import Button, View
 from discord.ext import commands, tasks
 import random
 
-tries = 0
-cards = ["1️⃣", "1️⃣", "2️⃣", "2️⃣", "3️⃣", "3️⃣", "4️⃣", "4️⃣", "5️⃣", "5️⃣", "6️⃣", "6️⃣", "7️⃣", "7️⃣", "8️⃣", "8️⃣"]
-cards = random.sample(cards, len(cards))
-cards_dis = ["⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜"]
+class MemoryGameVars():
+    def __init__(self):
+        self.tries = 0
+        self.cards = ["1️⃣", "1️⃣", "2️⃣", "2️⃣", "3️⃣", "3️⃣", "4️⃣", "4️⃣", "5️⃣", "5️⃣", "6️⃣", "6️⃣", "7️⃣", "7️⃣", "8️⃣", "8️⃣"]
+        self.cards = random.sample(self.cards, len(self.cards))
+        self.cards_dis = ["⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜"]
 
 class MemoryGameDropDown(discord.ui.Select):
-    def __init__(self):
+    def __init__(self, variables):
+        self.variables = variables
         options = [
             discord.SelectOption(
                 label="A1", value=0),
@@ -50,46 +53,46 @@ class MemoryGameDropDown(discord.ui.Select):
         super().__init__(placeholder="원하시는 카드를 선택하십시오", options=options, min_values=2, max_values=2)
 
     async def callback(self, interaction: discord.Interaction):
-        global tries
+        lst = []
+        for i in range(len(self.variables.cards_dis)):
+            if self.variables.cards_dis[i] != "⬜":
+                if self.variables.cards_dis[i] in lst:
+                    lst.remove(self.variables.cards_dis[i])
+                else:
+                    lst.append(self.variables.cards_dis[i])
+        for i in lst:
+            self.variables.cards_dis[self.variables.cards_dis.index(i)] = "⬜"
 
-        # lst = []
-        # for i in range(len(cards_dis)):
-        #     # if cards_dis[i] != "⬜":
-        #     #     lst.append()
+        if self.variables.cards_dis[int(self.values[0])] == "⬜" and self.variables.cards_dis[int(self.values[1])] == "⬜":
+            self.variables.tries += 1
+            self.variables.cards_dis[int(self.values[0])], self.variables.cards_dis[int(self.values[1])] = self.variables.cards[int(self.values[0])], self.variables.cards[int(self.values[1])]
 
-        if cards_dis[int(self.values[0])] == "⬜" and cards_dis[int(self.values[1])] == "⬜":
-            tries += 1
-            cards_dis[int(self.values[0])], cards_dis[int(self.values[1])] = cards[int(self.values[0])], cards[int(self.values[1])]
-
-            if cards[int(self.values[0])] != cards[int(self.values[1])]:
-                # await asyncio.sleep(3)
-                cards_dis[int(self.values[0])], cards_dis[int(self.values[1])] = "⬜", "⬜"
-
-            if "⬜" in cards_dis:
-                base=Game.MemoryGameGrid(cards_dis)
+            if "⬜" in self.variables.cards_dis:
+                base=Game.MemoryGameGrid(self.variables.cards_dis)
                 embed = discord.Embed(
                         title="카드 짝 맞추기",
                         description=base)
-                view = MemoryGameView()
+                view = MemoryGameView(self.variables)
                 await interaction.response.edit_message(content="", view=view, embed=embed)
             else:
-                base = f"소요 횟수: {tries}"
+                base = f"소요 횟수: {self.variables.tries}"
                 embed = discord.Embed(
                         title="카드 짝 맞추기",
                         description=base)
                 await interaction.response.edit_message(content="", embed=embed)
         else:
-            base=Game.MemoryGameGrid(cards_dis)
+            base=Game.MemoryGameGrid(self.variables.cards_dis)
             embed = discord.Embed(
                     title="카드 짝 맞추기",
                     description=base)
-            view = MemoryGameView()
+            view = MemoryGameView(self.variables)
             await interaction.response.edit_message(content="이미 뒤집힌 카드는 선택할 수 없습니다", view=view, embed=embed)
 
 class MemoryGameView(discord.ui.View):
-    def __init__(self):
+    def __init__(self, variables):
         super().__init__()
-        self.add_item(MemoryGameDropDown())
+        self.variables = variables
+        self.add_item(MemoryGameDropDown(variables))
 
 class Game(commands.Cog):
     channel_id:string
@@ -128,16 +131,13 @@ class Game(commands.Cog):
 
     @app_commands.command(name="카드짝", description="카드 짝 맞추기 게임을 플레이합니다")
     async def MemoryGame(self, interaction: discord.Interaction):
-        global cards, cards_dis, tries
-        tries = 0
-        cards = random.sample(cards, len(cards))
-        cards_dis = ["⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜", "⬜"]
-        print(cards)
-        base=Game.MemoryGameGrid(cards_dis)
+        variables = MemoryGameVars()
+        print(variables.cards)
+        base=Game.MemoryGameGrid(variables.cards_dis)
         embed = discord.Embed(
                 title="카드 짝 맞추기",
                 description=base)
-        view = MemoryGameView()
+        view = MemoryGameView(variables)
         await interaction.response.send_message(embed=embed, view=view)
 
 async def setup(bot):
