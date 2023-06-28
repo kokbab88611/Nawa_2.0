@@ -4,6 +4,27 @@ from discord import app_commands,Interaction,Reaction,InteractionResponse
 from discord.ui import Button, View
 from discord.ext import commands, tasks
 import random
+import os
+import PIL
+from PIL import Image, ImageFont, ImageDraw
+import datetime
+
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+
+ZodiacDict = {
+    "호랑이":"",
+    "토끼":"",
+    "용":"",
+    "뱀":"",
+    "말":"",
+    "양":"",
+    "원숭이":"",
+    "닭":"",
+    "개":"",
+    "돼지":"",
+    "쥐":"",
+    "소":"",
+}
 
 MemoryGameDict = {1:"<:aya:1122868308144828438>",
 2:"<:baduk:1122868299663941783>",
@@ -167,6 +188,47 @@ class Game(commands.Cog):
                 description=base)
         view = MemoryGameView(variables, command_userid)
         await interaction.response.send_message(embed=embed, view=view)
+
+    @app_commands.command(name="운세", description="오늘의 운세입니다")
+    async def DailyLuck(self, interaction: discord.Interaction, zodiac: str):
+        """
+        _summary_
+        오늘의 띠별 운세
+        Args:
+            interaction (discord.interaction, 필수): 커맨드 쓴 사람 & interaction
+            zodiac (int, 옵션): 자신의 띠
+        """
+
+        date_text = datetime.datetime.now().strftime("%m")+"월"+" "+datetime.datetime.now().strftime("%d")+"일"
+        image = Image.open(os.path.join(f"{__location__}\\DailyLuck\\DailyLuckImg.jpg"))
+        fonts_dir = os.path.join(f"{__location__}\\DailyLuck")
+        draw = ImageDraw.Draw(image)
+        draw.text((410,40),date_text,font=ImageFont.truetype(os.path.join(fonts_dir, 'Dobong_Cultural_Routes(TTF).ttf'), 35), fill=(210,210,210))
+        image.save(os.path.join(f"{__location__}\\DailyLuck\\DailyLuckImgDate.jpg"))
+
+        try:
+            luck_text = ZodiacDict[zodiac]
+        except:
+            luck_text = "호랑이·토끼·용·뱀·말·양·원숭이·닭·개·돼지·쥐·소 중 하나의 띠를 입력해 주십시오"
+
+        msg = ""
+        n = len(luck_text)//10
+        for i in range(n):
+            msg += luck_text[i*10:(i+1)*10]
+            msg += "\n"
+        msg += luck_text[n*10:]
+
+        image = Image.open(os.path.join(f"{__location__}\\DailyLuck\\DailyLuckImgDate.jpg"))
+        fonts_dir = os.path.join(f"{__location__}\\DailyLuck")
+        draw = ImageDraw.Draw(image)
+        draw.text((360,95),msg,font=ImageFont.truetype(os.path.join(fonts_dir, 'Dobong_Cultural_Routes(TTF).ttf'), 35), fill=(255,255,255))
+        image.save(os.path.join(f"{__location__}\\DailyLuck\\DailyLuckImgEdit.jpg"))
+
+        embed = discord.Embed(title="오늘의 운세", colour=discord.Colour(0x71368a))
+        file = discord.File(os.path.join(f"{__location__}\\DailyLuck\\DailyLuckImgEdit.jpg"), filename="image.jpg")
+        embed.set_image(url="attachment://image.jpg")
+        embed.set_author(name="성의", icon_url="https://pbs.twimg.com/profile_images/2541389832/oph3xdipc43uupewwjau_400x400.png")
+        await interaction.response.send_message(embed=embed, file=file)
 
 async def setup(bot):
     await bot.add_cog(Game(bot))
