@@ -300,7 +300,6 @@ class Game(commands.Cog):
     async def MemoryGame(self, interaction: discord.Interaction):
         command_userid = interaction.user.id
         variables = MemoryGameVars()
-        print(variables.cards)
         base=Game.MemoryGameGrid(variables.cards_dis)
         embed = discord.Embed(
                 title="카드 짝 맞추기",
