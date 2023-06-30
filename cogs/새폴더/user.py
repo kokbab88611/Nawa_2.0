@@ -141,6 +141,7 @@ class ChoseGUI(discord.ui.View):
         super().__init__()
         self.add_item(GiftSelect(self.self_, user_id))
 
+
 class VerifyButton(discord.ui.Button):
     def __init__(self, self_, button_style, label, custom_id, item_key: str = None, item:str = None, character:str = None)-> None:
         self.item = item
@@ -148,12 +149,12 @@ class VerifyButton(discord.ui.Button):
         self.item_key = item_key
         self.self_= self_
         self.rangi_item = {"개량한복": random.randrange(1,5),"저고리":  random.randrange(5,10), "이빨":  random.randrange(15,30)}
-        self.chiyee_item = {"국자":  random.randrange(1,5),"깃털 머리띠":  random.randrange(5,10), "줄무늬 그것":  random.randrange(15,30)}
+        self.chiyee_item = {"국자":  random.randrange(1,5),"깃털 머리띠":  random.randrange(5,10), "줄무늬 그것":  random.randrange(20,40)}
         self.saehee_item = {"술잔":  random.randrange(1,5),"솥뚜껑":  random.randrange(5,10), "비녀":  random.randrange(15,30)}
         self.all_items = {
                         "개량한복": random.randrange(1,5),"저고리":  random.randrange(5,10), "이빨":  random.randrange(15,30), 
                         "국자":  random.randrange(1,5),"깃털 머리띠":  random.randrange(5,10), "줄무늬 그것":  random.randrange(15,30),
-                        "술잔":  random.randrange(1,5),"솥뚜껑":  random.randrange(5,10), "비녀":  random.randrange(15,30), "대요괴의 침": random.randrange(50,80)}
+                        "술잔":  random.randrange(1,5),"솥뚜껑":  random.randrange(5,10), "비녀":  random.randrange(15,30), "대요괴의 침": random.randrange(80,100)}
         super().__init__(
             style=button_style, label=label, custom_id=custom_id
         )
@@ -196,7 +197,7 @@ class VerifyButton(discord.ui.Button):
             await interaction.response.edit_message(view=no)
         else:
             embed=discord.Embed(title=f"{self.item}(을)를 보유하지 않습니다", description="/가챠 커맨드를 통해 뽑으세요")
-            await interaction.response.edit_message(embed=embed, view=None)
+            await interaction.response.edit_message(embed=embed, view=None)    
             
 class CharacterButton(discord.ui.Button):
     def __init__(self, button_style, label, custom_id, item_kor:str, item_key:str, self_, command_userid) -> None:
@@ -225,9 +226,10 @@ class CharacterButton(discord.ui.Button):
             button_no = VerifyButton(self.self_, discord.ButtonStyle.danger, "아니요", "no") 
             view.add_item(button_yes)
             view.add_item(button_no)
-            await interaction.response.edit_message(view=view, embed=embed)
         else:
             await interaction.response.send_message(content="선물을 하고 싶으시면 /선물 을 하시면 됩니다 쓰레기 주인님", ephemeral=True)
+
+        await interaction.response.edit_message(view=view, embed=embed)
         
 class GiftSelect(discord.ui.Select):
     def __init__(self, self_, user_id):
@@ -598,11 +600,11 @@ class UserData(commands.Cog):
                     "level": {
                         "main": 1,
                         "xp": 0,
-                        "rangi": 0,
+                        "rangi": 1,
                         "rangi_xp": 0,
-                        "chiyee": 0,
+                        "chiyee": 1,
                         "chiyee_xp": 0,
-                        "saehee": 0,
+                        "saehee": 1,
                         "saehee_xp": 0,
                     },
                     "money": 30000,
@@ -637,7 +639,7 @@ class UserData(commands.Cog):
         Args:
             user_id (str,필수): 메세지를 보낸 해당 유저의 id
         Returns:
-            _type_: 레벨업을 했다면 true를 return함
+            _type_: 업을 했다면 true를 return함
         """
         current_xp = self.data[user_id]["level"][character+"_xp"]
         current_lvl = self.data[user_id]["level"][character]
@@ -646,8 +648,8 @@ class UserData(commands.Cog):
             self.data[user_id]["level"][character] += 1
             self.data[user_id]["level"][character+"_xp"] = 0
             return True
+
         return False
-    
     # async def apply_xp(self, user_id, xp: int)
     
     async def character_give_xp(self, user_name, user_id, channel, xp: int, character: str):
@@ -1084,7 +1086,7 @@ class UserData(commands.Cog):
     @app_commands.command(name="가챠", description="호감도템 가챠")
     async def gacha(self, interaction: discord.Interaction):
         self.check_user(str(interaction.user.id))
-        pos = {"Common": 40, "Rare": 45, "Epic": 14, "Legendary": 2}
+        pos = {"Common": 40, "Rare": 45, "Epic": 13, "Legendary": 2}
         item_list = {
             "개량한복": {
                 "name" :  "rangi_hanbok",
@@ -1303,7 +1305,7 @@ class UserData(commands.Cog):
                     view = View()
                     view.add_item(BlackJackButtons('히트', discord.ButtonStyle.green, "🃏", "hit", interaction.user.id, bet_money, user_deck, bot_deck, cards, self))
                     view.add_item(BlackJackButtons('스탠드', discord.ButtonStyle.red, "🖐🏻", "stand", interaction.user.id, bet_money, user_deck, bot_deck, cards, self))
-                    if owned_money > bet_money * 2:
+                    if owned_money >= bet_money * 2:
                         view.add_item(BlackJackButtons('더블다운', discord.ButtonStyle.grey, "💰", "doubledown", interaction.user.id, bet_money, user_deck, bot_deck, cards, self))
                     embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
                     embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
