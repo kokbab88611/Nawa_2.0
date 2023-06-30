@@ -8,10 +8,12 @@ import os
 import PIL
 from PIL import Image, ImageFont, ImageDraw
 import datetime
+from datetime import timezone
+from time import gmtime, strftime
 import csv
 
 utc = datetime.timezone.utc
-rest_time = datetime.time(hour=19, minute=00, tzinfo=utc)
+rest_time = datetime.time(hour=15, minute=00, tzinfo=utc)
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 DailyLuckMsg = [
@@ -265,6 +267,7 @@ class Game(commands.Cog):
     channel_id:string
     def __init__(self, bot) -> None:
         self.bot = bot
+        self.reset_attendence.start()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -329,7 +332,10 @@ class Game(commands.Cog):
             fw.writerow([user_id, luck_text])
             f.close()
 
-        date_text = datetime.datetime.now().strftime("%m")+"월"+" "+datetime.datetime.now().strftime("%d")+"일"
+        cur_time = datetime.datetime.now(timezone.utc)
+        cur_time += datetime.timedelta(hours=9)
+        date_text = cur_time.strftime("%m")+"월"+" "+cur_time.strftime("%d")+"일"
+        
         image = Image.open(os.path.join(f"{__location__}\\DailyLuck\\DailyLuckImg.jpg"))
         fonts_dir = os.path.join(f"{__location__}\\DailyLuck")
         draw = ImageDraw.Draw(image)
