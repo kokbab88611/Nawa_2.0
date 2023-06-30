@@ -375,8 +375,9 @@ class Game(commands.Cog):
         lst = []
         msg = Game.RecruitMsg(topic, people, lst)
 
-        button = Button(label="참여", style=discord.ButtonStyle.green, emoji="🥑")
-        async def button_callback(interaction):
+        exit_button = Button(label="취소", style=discord.ButtonStyle.red, emoji="🏃")
+        join_button = Button(label="참여", style=discord.ButtonStyle.green, emoji="🥑")
+        async def join_button_callback(interaction):
             if len(lst) >= people:
                 await interaction.response.send_message("이미 모집이 끝났습니다", ephemeral=True)
             else:
@@ -390,12 +391,26 @@ class Game(commands.Cog):
                             description=msg,
                             colour=discord.Colour(0xE67E22))
                     embed.set_author(name="나래", icon_url="https://i.imgur.com/i0SbMqN.jpg")
-
                     await interaction.response.edit_message(embed=embed, view=view)
+
+        async def exit_button_callback(interaction):
+            if str(interaction.user) in lst:
+                lst.remove(str(interaction.user))
+                msg = Game.RecruitMsg(topic, people, lst)
+                embed = discord.Embed(
+                        title=f"{topic} : {len(lst)}/{people}",
+                        description=msg,
+                        colour=discord.Colour(0xE67E22))
+                embed.set_author(name="나래", icon_url="https://i.imgur.com/i0SbMqN.jpg")
+                await interaction.response.edit_message(embed=embed, view=view)
+            else:
+                await interaction.response.send_message("참여하지 않은 인원은 참여를 취소할 수 없습니다", ephemeral=True)
         
-        button.callback = button_callback
+        exit_button.callback = exit_button_callback
+        join_button.callback = join_button_callback
         view = View(timeout=None)
-        view.add_item(button)
+        view.add_item(join_button)
+        view.add_item(exit_button)
         embed = discord.Embed(
                 title=f"{topic} : {len(lst)}/{people}",
                 description=msg,
