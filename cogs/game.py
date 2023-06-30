@@ -154,6 +154,10 @@ MemoryGameDict = {1:"<:aya:1122868308144828438>",
 7:"<:seongi:1122868304210558996>",
 8:"<:yeorin:1122868292625895606>"}
 
+class RecruitVars():
+    def __init__(self):
+        self.lst = []
+
 class MemoryGameVars():
     def __init__(self):
         self.tries = 0
@@ -360,6 +364,26 @@ class Game(commands.Cog):
         f = open(os.path.join(f"{__location__}\\DailyLuck\\DailyLuckCSV.csv"), "w")
         f.truncate()
         f.close()
+
+    def RecruitMsg(topic, people, lst):
+        msg = ""
+        if len(lst) > 0:
+            for i in range(len(lst)):
+                msg += f"{i}. {lst[i]}\n"
+        else:
+            msg += "아직 아무도 모집되지 않았습니다"
+        return msg
+
+    @app_commands.command(name="모집", description="인원수만큼 사람을 모집합니다")
+    async def recruit(self, interaction: discord.Interaction, topic: str, people: int=10):
+        variables = RecruitVars()
+        msg = Game.RecruitMsg(topic, people, variables.lst)
+        embed = discord.Embed(
+                title=f"{topic} : {len(variables.lst)}/{people}",
+                description=msg,
+                colour=discord.Colour(0xE67E22))
+        embed.set_author(name="나래", icon_url="https://i.imgur.com/i0SbMqN.jpg")
+        await interaction.response.send_message(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Game(bot))

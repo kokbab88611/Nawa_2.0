@@ -1301,7 +1301,7 @@ class UserData(commands.Cog):
                     view = View()
                     view.add_item(BlackJackButtons('히트', discord.ButtonStyle.green, "🃏", "hit", interaction.user.id, bet_money, user_deck, bot_deck, cards, self))
                     view.add_item(BlackJackButtons('스탠드', discord.ButtonStyle.red, "🖐🏻", "stand", interaction.user.id, bet_money, user_deck, bot_deck, cards, self))
-                    if owned_money > bet_money * 2:
+                    if owned_money >= bet_money * 2:
                         view.add_item(BlackJackButtons('더블다운', discord.ButtonStyle.grey, "💰", "doubledown", interaction.user.id, bet_money, user_deck, bot_deck, cards, self))
                     embed = discord.Embed(title='블랙잭', description=msg, color=0xb0a7d3)
                     embed.set_author(name="폐이", icon_url="https://i.imgur.com/OdIiI2V.jpg")
