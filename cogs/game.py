@@ -154,14 +154,6 @@ MemoryGameDict = {1:"<:aya:1122868308144828438>",
 7:"<:seongi:1122868304210558996>",
 8:"<:yeorin:1122868292625895606>"}
 
-class RecruitButtons(discord.ui.View):
-    def __init__(self):
-        super().__init__()
-
-    @discord.ui.button(Label = "참가", style = discord.ButtonStyle.green, disabled = False, emoji = "🥑")
-    async def RecruitButton(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message("개병신새끼")
-
 class RecruitVars():
     def __init__(self):
         self.lst = []
@@ -391,6 +383,7 @@ class Game(commands.Cog):
                 description=msg,
                 colour=discord.Colour(0xE67E22))
         embed.set_author(name="나래", icon_url="https://i.imgur.com/i0SbMqN.jpg")
+
         await interaction.response.send_message(embed=embed)
 
 async def setup(bot):
