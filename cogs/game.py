@@ -378,6 +378,16 @@ class Game(commands.Cog):
     async def recruit(self, interaction: discord.Interaction, topic: str, people: int=10):
         variables = RecruitVars()
         msg = Game.RecruitMsg(topic, people, variables.lst)
+
+        # button = Button(label="참여", style=discord.ButtonStyle.green, emoji="🥑")
+        # async def button_callback(interaction):
+        #     variables.lst.append(str(interaction.user))
+        #     await interaction.response.edit_message(content=interaction.user)
+        # button.callback = button_callback
+
+        # view = View(timeout=None)
+        # view.add_item(button)
+
         embed = discord.Embed(
                 title=f"{topic} : {len(variables.lst)}/{people}",
                 description=msg,
