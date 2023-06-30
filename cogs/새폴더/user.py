@@ -141,7 +141,6 @@ class ChoseGUI(discord.ui.View):
         super().__init__()
         self.add_item(GiftSelect(self.self_, user_id))
 
-
 class VerifyButton(discord.ui.Button):
     def __init__(self, self_, button_style, label, custom_id, item_key: str = None, item:str = None, character:str = None)-> None:
         self.item = item
