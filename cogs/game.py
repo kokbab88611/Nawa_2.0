@@ -154,10 +154,6 @@ MemoryGameDict = {1:"<:aya:1122868308144828438>",
 7:"<:seongi:1122868304210558996>",
 8:"<:yeorin:1122868292625895606>"}
 
-class RecruitVars():
-    def __init__(self):
-        self.lst = []
-
 class MemoryGameVars():
     def __init__(self):
         self.tries = 0
@@ -376,25 +372,37 @@ class Game(commands.Cog):
 
     @app_commands.command(name="모집", description="인원수만큼 사람을 모집합니다")
     async def recruit(self, interaction: discord.Interaction, topic: str, people: int=10):
-        variables = RecruitVars()
-        msg = Game.RecruitMsg(topic, people, variables.lst)
+        lst = []
+        msg = Game.RecruitMsg(topic, people, lst)
 
-        # button = Button(label="참여", style=discord.ButtonStyle.green, emoji="🥑")
-        # async def button_callback(interaction):
-        #     variables.lst.append(str(interaction.user))
-        #     await interaction.response.edit_message(content=interaction.user)
-        # button.callback = button_callback
+        button = Button(label="참여", style=discord.ButtonStyle.green, emoji="🥑")
+        async def button_callback(interaction):
+            if len(lst) >= people:
+                await interaction.response.send_message("이미 모집이 끝났습니다", ephemeral=True)
+            else:
+                if str(interaction.user) in lst:
+                    await interaction.response.send_message("이미 참여했습니다", ephemeral=True)
+                else:
+                    lst.append(str(interaction.user))
+                    msg = Game.RecruitMsg(topic, people, lst)
+                    embed = discord.Embed(
+                            title=f"{topic} : {len(lst)}/{people}",
+                            description=msg,
+                            colour=discord.Colour(0xE67E22))
+                    embed.set_author(name="나래", icon_url="https://i.imgur.com/i0SbMqN.jpg")
 
-        # view = View(timeout=None)
-        # view.add_item(button)
-
+                    await interaction.response.edit_message(embed=embed, view=view)
+        
+        button.callback = button_callback
+        view = View(timeout=None)
+        view.add_item(button)
         embed = discord.Embed(
-                title=f"{topic} : {len(variables.lst)}/{people}",
+                title=f"{topic} : {len(lst)}/{people}",
                 description=msg,
                 colour=discord.Colour(0xE67E22))
         embed.set_author(name="나래", icon_url="https://i.imgur.com/i0SbMqN.jpg")
 
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(embed=embed, view=view)
 
 async def setup(bot):
     await bot.add_cog(Game(bot))
