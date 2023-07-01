@@ -8,10 +8,12 @@ import os
 import PIL
 from PIL import Image, ImageFont, ImageDraw
 import datetime
+from datetime import timezone
+from time import gmtime, strftime
 import csv
 
 utc = datetime.timezone.utc
-rest_time = datetime.time(hour=19, minute=00, tzinfo=utc)
+rest_time = datetime.time(hour=15, minute=00, tzinfo=utc)
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 DailyLuckMsg = [
@@ -154,10 +156,6 @@ MemoryGameDict = {1:"<:aya:1122868308144828438>",
 7:"<:seongi:1122868304210558996>",
 8:"<:yeorin:1122868292625895606>"}
 
-class RecruitVars():
-    def __init__(self):
-        self.lst = []
-
 class MemoryGameVars():
     def __init__(self):
         self.tries = 0
@@ -269,6 +267,7 @@ class Game(commands.Cog):
     channel_id:string
     def __init__(self, bot) -> None:
         self.bot = bot
+        self.reset_attendence.start()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -333,7 +332,10 @@ class Game(commands.Cog):
             fw.writerow([user_id, luck_text])
             f.close()
 
-        date_text = datetime.datetime.now().strftime("%m")+"월"+" "+datetime.datetime.now().strftime("%d")+"일"
+        cur_time = datetime.datetime.now(timezone.utc)
+        cur_time += datetime.timedelta(hours=9)
+        date_text = cur_time.strftime("%m")+"월"+" "+cur_time.strftime("%d")+"일"
+        
         image = Image.open(os.path.join(f"{__location__}/DailyLuck/DailyLuckImg.jpg"))
         fonts_dir = os.path.join(f"{__location__}/DailyLuck")
         draw = ImageDraw.Draw(image)
@@ -374,27 +376,70 @@ class Game(commands.Cog):
             msg += "아직 아무도 모집되지 않았습니다"
         return msg
 
+    async def RecruitEnd(interaction, topic):
+        for i in range(604800):
+            await asyncio.sleep(1)
+            print(i,"초")
+        embed = discord.Embed(
+                title=f"{topic}",
+                description="모집 시간이 만료되었습니다",
+                colour=discord.Colour(0xE67E22))
+        embed.set_author(name="나래", icon_url="https://i.imgur.com/i0SbMqN.jpg")
+        try:
+            await interaction.response.edit_message(embed=embed, view=None)
+        except:
+            await interaction.edit_original_response(embed=embed,view=None)
+
     @app_commands.command(name="모집", description="인원수만큼 사람을 모집합니다")
     async def recruit(self, interaction: discord.Interaction, topic: str, people: int=10):
-        variables = RecruitVars()
-        msg = Game.RecruitMsg(topic, people, variables.lst)
+        lst = []
+        msg = Game.RecruitMsg(topic, people, lst)
 
-        # button = Button(label="참여", style=discord.ButtonStyle.green, emoji="🥑")
-        # async def button_callback(interaction):
-        #     variables.lst.append(str(interaction.user))
-        #     await interaction.response.edit_message(content=interaction.user)
-        # button.callback = button_callback
+        exit_button = Button(label="취소", style=discord.ButtonStyle.red, emoji="🏃")
+        join_button = Button(label="참여", style=discord.ButtonStyle.green, emoji="🥑")
+        async def join_button_callback(interaction):
+            if len(lst) >= people:
+                await interaction.response.send_message("이미 모집이 끝났습니다", ephemeral=True)
+            else:
+                if str(interaction.user) in lst:
+                    await interaction.response.send_message("이미 참여했습니다", ephemeral=True)
+                else:
+                    lst.append(str(interaction.user))
+                    msg = Game.RecruitMsg(topic, people, lst)
+                    embed = discord.Embed(
+                            title=f"{topic} : {len(lst)}/{people}",
+                            description=msg,
+                            colour=discord.Colour(0xE67E22))
+                    embed.set_author(name="나래", icon_url="https://i.imgur.com/i0SbMqN.jpg")
+                    await interaction.response.edit_message(embed=embed, view=view)
 
-        # view = View(timeout=None)
-        # view.add_item(button)
-
+        async def exit_button_callback(interaction):
+            if str(interaction.user) in lst:
+                lst.remove(str(interaction.user))
+                msg = Game.RecruitMsg(topic, people, lst)
+                embed = discord.Embed(
+                        title=f"{topic} : {len(lst)}/{people}",
+                        description=msg,
+                        colour=discord.Colour(0xE67E22))
+                embed.set_author(name="나래", icon_url="https://i.imgur.com/i0SbMqN.jpg")
+                await interaction.response.edit_message(embed=embed, view=view)
+            else:
+                await interaction.response.send_message("참여하지 않은 인원은 참여를 취소할 수 없습니다", ephemeral=True)
+        
+        exit_button.callback = exit_button_callback
+        join_button.callback = join_button_callback
+        view = View(timeout=None)
+        view.add_item(join_button)
+        view.add_item(exit_button)
         embed = discord.Embed(
-                title=f"{topic} : {len(variables.lst)}/{people}",
+                title=f"{topic} : {len(lst)}/{people}",
                 description=msg,
                 colour=discord.Colour(0xE67E22))
         embed.set_author(name="나래", icon_url="https://i.imgur.com/i0SbMqN.jpg")
 
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(embed=embed, view=view)
+
+        await Game.RecruitEnd(interaction, topic)
 
 async def setup(bot):
     await bot.add_cog(Game(bot))
