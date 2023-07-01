@@ -379,7 +379,6 @@ class Game(commands.Cog):
     async def RecruitEnd(interaction, topic):
         for i in range(604800):
             await asyncio.sleep(1)
-            print(i,"초")
         embed = discord.Embed(
                 title=f"{topic}",
                 description="모집 시간이 만료되었습니다",
