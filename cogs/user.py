@@ -139,7 +139,7 @@ class ChoseGUI(discord.ui.View):
         self.self_ = self_
         self.user_id = user_id
         super().__init__()
-        self.add_item(GiftSelect(self.self_, user_id))
+        self.add_item(GiftSelect(self.self_, self.user_id))
 
 
 class VerifyButton(discord.ui.Button):
@@ -261,9 +261,9 @@ class GiftSelect(discord.ui.Select):
 
             embed=discord.Embed(title=f"{name}을 선택하셨습니다", description="누구에게 선물할지 선택해주세요", color=0xe8dbff)
 
-            button_rangi = CharacterButton(discord.ButtonStyle.green, "랑이", "rangi", name, self.gift_selected, self.self_)
-            button_chiyee = CharacterButton(discord.ButtonStyle.green, "치이", "chiyee", name, self.gift_selected, self.self_)
-            button_saehee = CharacterButton(discord.ButtonStyle.green, "세희", "saehee", name, self.gift_selected, self.self_)    
+            button_rangi = CharacterButton(discord.ButtonStyle.green, "랑이", "rangi", name, self.gift_selected, self.self_, self.user_id)
+            button_chiyee = CharacterButton(discord.ButtonStyle.green, "치이", "chiyee", name, self.gift_selected, self.self_, self.user_id)
+            button_saehee = CharacterButton(discord.ButtonStyle.green, "세희", "saehee", name, self.gift_selected, self.self_, self.user_id)    
             view.add_item(button_rangi)
             view.add_item(button_chiyee)
             view.add_item(button_saehee)
