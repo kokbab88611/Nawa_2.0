@@ -211,7 +211,7 @@ class CharacterButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         view = View()
-        if interaction.user.id == self.command_userid:
+        if str(interaction.user.id) == self.command_userid:
             if self.custom_id == "rangi":
                 embed=discord.Embed(title=f"랑이에게 {self.item_kor}를 선물하시겠습니까?", description="흐냣?! 진짜 이걸 나에게 주는 것이느냐?")
                 embed.set_author(name="랑이 ", icon_url="https://i.imgur.com/huDPd5o.jpg")
@@ -253,7 +253,7 @@ class GiftSelect(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        if interaction.user.id == self.user_id:
+        if str(interaction.user.id) == self.user_id:
             view = ChoseGUI(self.self_, str(interaction.user.id))
             
             self.gift_selected = self.values[0]
