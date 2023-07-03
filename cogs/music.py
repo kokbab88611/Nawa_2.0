@@ -238,5 +238,22 @@ class Music(commands.Cog):
         else:
             return await interaction.response.send_message("음악이 이미 재생중이거나 재생중인 음악이 없습니다")
 
+    @app_commands.command(name="말해", description="tts입니다")
+    async def text_to_speech(self, interaction: discord.Interaction, text: str):
+        channel = interaction.user.voice.channel
+        tts = gTTS(text=text, lang="ko")
+        tts.save(os.path.join(f"{__location__}\\TTS\\text.mp3"))
+
+        await interaction.response.send_message("하는중")
+        if not interaction.guild.voice_client:
+            try:
+                vc = await channel.connect()
+            except:
+                return await interaction.response.send_message("먼저 통화방에 접속해 주십시오")
+        else:
+            vc = interaction.guild.voice_client
+
+        vc.play(discord.FFmpegPCMAudio(os.path.join(f"{__location__}\\TTS\\text.mp3")))
+
 async def setup(bot):
     await bot.add_cog(Music(bot))

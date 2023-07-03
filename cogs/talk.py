@@ -23,23 +23,6 @@ class CommonConmmand(commands.Cog):
         embed.set_footer(text="나와 아해들 디스코드 서버")
         await interaction.response.send_message(embed=embed)
 
-    # @app_commands.command(name="말해", description="tts입니다")
-    # async def text_to_speech(self, interaction: discord.Interaction, text: str):
-    #     channel = interaction.user.voice.channel
-    #     tts = gTTS(text=text, lang="ko")
-    #     tts.save(os.path.join(f"{__location__}\\TTS\\text.mp3"))
-
-    #     await interaction.response.send_message("하는중")
-    #     if not interaction.guild.voice_client:
-    #         try:
-    #             vc = await channel.connect()
-    #         except:
-    #             return await interaction.response.send_message("먼저 통화방에 접속해 주십시오")
-    #     else:
-    #         vc = interaction.guild.voice_client
-
-    #     vc.play(discord.FFmpegPCMAudio(os.path.join(f"{__location__}\\TTS\\text.mp3")))
-
 async def setup(bot):
     await bot.add_cog(CommonConmmand(bot))
     
