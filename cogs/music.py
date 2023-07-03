@@ -7,6 +7,8 @@ import wavelink
 import os
 import random
 import time
+import nacl
+from gtts import gTTS
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
@@ -46,8 +48,11 @@ class Music(commands.Cog):
         player = node.get_player(interaction.guild.id)
 
         if player is not None:
-            if player.is_connected():
-                return await interaction.response.send_message("이미 봇이 통화방에 있습니다")
+            try:
+                if player.is_connected():
+                    return await interaction.response.send_message("이미 봇이 통화방에 있습니다")
+            except:
+                return await interaction.response.send_message("이미 봇이 다른 통화방에 있습니다")
         
         await channel.connect(cls=wavelink.Player)
         await interaction.response.send_message(f'{channel.name}에 입장하였습니다')
@@ -238,22 +243,20 @@ class Music(commands.Cog):
         else:
             return await interaction.response.send_message("음악이 이미 재생중이거나 재생중인 음악이 없습니다")
 
-    @app_commands.command(name="말해", description="tts입니다")
-    async def text_to_speech(self, interaction: discord.Interaction, text: str):
-        channel = interaction.user.voice.channel
-        tts = gTTS(text=text, lang="ko")
-        tts.save(os.path.join(f"{__location__}\\TTS\\text.mp3"))
+    # @app_commands.command(name="말해", description="tts입니다")
+    # async def text_to_speech(self, interaction: discord.Interaction, text: str):
+    #     node = wavelink.NodePool.get_node(self.nodeid)
+    #     vc = node.get_player(interaction.guild.id)
 
-        await interaction.response.send_message("하는중")
-        if not interaction.guild.voice_client:
-            try:
-                vc = await channel.connect()
-            except:
-                return await interaction.response.send_message("먼저 통화방에 접속해 주십시오")
-        else:
-            vc = interaction.guild.voice_client
+    #     channel = interaction.user.voice.channel
+    #     tts = gTTS(text=text, lang="ko")
+    #     tts.save(os.path.join(f"{__location__}\\TTS\\text.mp3"))
 
-        vc.play(discord.FFmpegPCMAudio(os.path.join(f"{__location__}\\TTS\\text.mp3")))
+    #     if not interaction.guild.voice_client:
+    #         vc = await channel.connect()
+
+    #     vc.play(discord.FFmpegPCMAudio(os.path.join(f"{__location__}\\TTS\\text.mp3")))
+    #     await interaction.response.send_message("말하는중")
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
