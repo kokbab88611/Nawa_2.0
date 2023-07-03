@@ -2,8 +2,6 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import os
-import nacl
-from gtts import gTTS
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
