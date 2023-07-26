@@ -812,6 +812,13 @@ class UserData(commands.Cog):
         for user_id in self.data.items():
             self.data[user_id[0]]["attendence"] = False
 
+    # @tasks.loop(time= after_ten.time())
+    # async def repeat_every_ten(self):
+    #     global after_ten
+    #     #after_ten = time.time() + datetime.timedelta(minutes = 10)
+    #     after_ten = time.time() + datetime.timedelta(seconds = 10)
+    #     print("1minute passed")
+
     # @tasks.loop(time= birthday_time)
     # async def check_birthday(self):
     #     time = datetime.datetime.now()
