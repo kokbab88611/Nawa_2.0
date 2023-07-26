@@ -7,8 +7,6 @@ import wavelink
 import os
 import random
 import time
-import nacl
-from gtts import gTTS
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
@@ -80,6 +78,10 @@ class Music(commands.Cog):
         await self.play(interaction, str(search))
 
     @app_commands.command(name="p", description="음악을 재생합니다")
+    async def playcommand(self, interaction: discord.Interaction, search: str):
+        await self.play(interaction, str(search))
+
+    @app_commands.command(name="ㅔ", description="음악을 재생합니다")
     async def playcommand(self, interaction: discord.Interaction, search: str):
         await self.play(interaction, str(search))
 
@@ -176,6 +178,10 @@ class Music(commands.Cog):
         await self.skip(interaction)
 
     @app_commands.command(name="s", description="재생중인 음악을 스킵합니다")
+    async def skipcommand(self, interaction: discord.Interaction):
+        await self.skip(interaction)
+
+    @app_commands.command(name="ㄴ", description="재생중인 음악을 스킵합니다")
     async def skipcommand(self, interaction: discord.Interaction):
         await self.skip(interaction)
 
