@@ -1358,6 +1358,27 @@ class UserData(commands.Cog):
             await interaction.response.send_message(embed=embed, view=view)
         else:
             await interaction.response.send_message(content="[돈 부족. 판결. 사기꾼]", ephemeral=True)
+        
+    @app_commands.command(name="땅파기", description="땅파기 게임입니다")
+    async def Dig(self, interaction: discord.Interaction):
+        # msg = ""
+        # n = len(luck_text)//10
+        # for i in range(n):
+        #     msg += luck_text[i*10:(i+1)*10]
+        #     msg += "\n"
+        # msg += luck_text[n*10:]
+
+        image = Image.open(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgDate.jpg"))
+        fonts_dir = os.path.join(f"{__location__}\\DigGame")
+        draw = ImageDraw.Draw(image)
+        draw.text((360,95),msg,font=ImageFont.truetype(os.path.join(fonts_dir, 'Dobong_Cultural_Routes(TTF).ttf'), 35), fill=(255,255,255))
+        image.save(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgEdit.jpg"))
+
+        embed = discord.Embed(title="땅파기 게임", colour=discord.Colour(0xe67e22))
+        file = discord.File(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgEdit.jpg"), filename="image.jpg")
+        embed.set_image(url="attachment://image.jpg")
+        embed.set_author(name="바둑이", icon_url="https://cdn.discordapp.com/attachments/525940059330052107/1134923364478226505/141298252133.jpg")
+        await interaction.response.send_message(embed=embed, file=file)
 
 async def setup(bot):
     await bot.add_cog(UserData(bot))
