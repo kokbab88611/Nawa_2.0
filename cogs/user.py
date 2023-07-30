@@ -272,6 +272,11 @@ class GiftSelect(discord.ui.Select):
         else:
             await interaction.response.send_message(content="선물을 하고 싶으시면 /선물 을 하시면 됩니다 쓰레기 주인님", ephemeral=True)
 
+class DigVars():
+    def __init__(self, user_id):
+        self.item = False
+        self.user_id = user_id
+
 class BlackJackButtons(Button):
     def __init__(self, label, button_style, emoji, custom_id, command_userid, bet_money, user_deck, bot_deck, cards, self_):
         """
@@ -549,6 +554,59 @@ class RcpButtons(Button):
             await interaction.response.edit_message(content="", embed=embed, view=None)
         else:
             await interaction.response.send_message(content="[.....도둑.판결.쓰레기]", ephemeral=True)
+
+class DigGameButtons(Button):
+    def __init__(self, label, button_style, emoji, custom_id, dig_var):
+        super().__init__(label=label, style=button_style, emoji=emoji, custom_id=custom_id)
+        self.custom_id=str(custom_id)
+        self.dig_var = dig_var
+
+    async def DigGame_msg(interaction, dig_var, image, msg="", buttons=True):
+        embed = discord.Embed(title="땅파기 게임", colour=discord.Colour(0xe67e22))
+        embed.set_author(name="바둑이", icon_url="https://cdn.discordapp.com/attachments/525940059330052107/1134923364478226505/141298252133.jpg")
+        embed.description = msg
+        view = View()
+        if buttons == True:
+            view.add_item(DigGameButtons('파내기', discord.ButtonStyle.gray, "🃏", "pull", dig_var))
+            view.add_item(DigGameButtons('나가기', discord.ButtonStyle.gray, "🃏", "quit", dig_var))
+            view.add_item(DigGameButtons('스위치', discord.ButtonStyle.gray, "🃏", "switch", dig_var))
+                
+        if image == True:
+            file = discord.File(os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg"), filename="image.jpg")
+            embed.set_image(url="attachment://image.jpg")
+            try:
+                await interaction.response.edit_message(embed=embed, file=file, view=view)
+            except:
+                await interaction.response.send_message(embed=embed, file=file, view=view)
+        else:
+            try:
+                await interaction.response.edit_message(embed=embed, view=view)
+            except:
+                await interaction.response.send_message(embed=embed, view=view)
+
+    async def quit(self, interaction):
+        await DigGameButtons.DigGame_msg(interaction, self.dig_var, False, "게임끝", False)
+
+    async def pull(self, interaction):
+        if self.dig_var.item == True:
+            msg = "TRUE"
+        else:
+            msg = "FALSE"
+        await DigGameButtons.DigGame_msg(interaction, self.dig_var, False, msg)
+
+    async def callback(self, interaction):
+        if interaction.user.id == self.dig_var.user_id:
+            if self.custom_id == "quit":
+                await DigGameButtons.quit(self, interaction)
+            elif self.custom_id == "switch":
+                if self.dig_var.item == True:
+                    self.dig_var.item = False
+                else:
+                    self.dig_var.item = True
+            else:
+                await DigGameButtons.pull(self, interaction)
+        else:
+            await interaction.response.send_message(content="타인의 게임에 관여할 수 없습니다", ephemeral=True)
 
 #___________________________________________________________________________________________________________________________________________
 
@@ -1358,9 +1416,9 @@ class UserData(commands.Cog):
             await interaction.response.send_message(embed=embed, view=view)
         else:
             await interaction.response.send_message(content="[돈 부족. 판결. 사기꾼]", ephemeral=True)
-        
+
     @app_commands.command(name="땅파기", description="땅파기 게임입니다")
-    async def Dig(self, interaction: discord.Interaction):
+    async def DigGame(self, interaction: discord.Interaction):
         # msg = ""
         # n = len(luck_text)//10
         # for i in range(n):
@@ -1368,17 +1426,36 @@ class UserData(commands.Cog):
         #     msg += "\n"
         # msg += luck_text[n*10:]
 
-        image = Image.open(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgDate.jpg"))
-        fonts_dir = os.path.join(f"{__location__}\\DigGame")
-        draw = ImageDraw.Draw(image)
-        draw.text((360,95),msg,font=ImageFont.truetype(os.path.join(fonts_dir, 'Dobong_Cultural_Routes(TTF).ttf'), 35), fill=(255,255,255))
-        image.save(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgEdit.jpg"))
+        # try:
+        #     await interaction.response.send_message(embed=embed)
+        # except:
+        #     await interaction.edit_original_response(embed=embed)
 
-        embed = discord.Embed(title="땅파기 게임", colour=discord.Colour(0xe67e22))
-        file = discord.File(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgEdit.jpg"), filename="image.jpg")
-        embed.set_image(url="attachment://image.jpg")
-        embed.set_author(name="바둑이", icon_url="https://cdn.discordapp.com/attachments/525940059330052107/1134923364478226505/141298252133.jpg")
-        await interaction.response.send_message(embed=embed, file=file)
+        # 개량한복
+        # 술잔
+        # 국자
+        # 저고리
+        # 깃털 머리띠
+        # 솥뚜껑
+        # 이빨
+        # 비녀
+        # 줄무늬 그것
+        # 대요괴의 침
+
+        # image = Image.open(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgDate.jpg"))
+        # fonts_dir = os.path.join(f"{__location__}\\DigGame")
+        # draw = ImageDraw.Draw(image)
+        # draw.text((360,95),msg,font=ImageFont.truetype(os.path.join(fonts_dir, 'Dobong_Cultural_Routes(TTF).ttf'), 35), fill=(255,255,255))
+        # image.save(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgEdit.jpg"))
+
+        # embed = discord.Embed(title="땅파기 게임", colour=discord.Colour(0xe67e22))
+        # file = discord.File(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgEdit.jpg"), filename="image.jpg")
+        # embed.set_image(url="attachment://image.jpg")
+        # embed.set_author(name="바둑이", icon_url="https://cdn.discordapp.com/attachments/525940059330052107/1134923364478226505/141298252133.jpg")
+        # await interaction.response.send_message(embed=embed, file=file)
+        user_id = interaction.user.id
+        dig_var = DigVars(user_id)
+        await DigGameButtons.DigGame_msg(interaction, dig_var, False, "시작")
 
 async def setup(bot):
     await bot.add_cog(UserData(bot))
