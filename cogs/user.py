@@ -653,7 +653,7 @@ class UserData(commands.Cog):
         self.data = self.get_json()
         self.repeat_save_user.start()
         self.reset_attendence.start()
-        # self.stock_change.start()
+        self.stock_change.start()
         self.self_ = self
         #UserData.self_
     @commands.Cog.listener()
@@ -908,12 +908,40 @@ class UserData(commands.Cog):
         for user_id in self.data.items():
             self.data[user_id[0]]["attendence"] = False        
 
-    # @tasks.loop(time=600)
-    # async def stock_change():
-    #     ticker_list = [x for x in stock_list.keys()]
-    #     # lambda x: 
-    #     pass
-        
+
+    @tasks.loop(seconds=600)
+    async def stock_change(self):
+        percentage = {"below_one": 90, "below_three": 5.5, "below_five": 3, "below_ten": 1, "event": 0.5}
+        for stock_ticker in stock_list.keys():
+            change_value = None
+            a = random.choices(list(percentage.keys()), weights = list(percentage.values()))[0]
+            if a == "below_one":
+                random_num = round(random.uniform(0, 1), 2)
+                change_value = random_num / 100
+            elif a == "below_three":
+                random_num = round(random.uniform(1, 3), 2)
+                change_value = random_num / 100
+            elif a == "below_five":
+                random_num = round(random.uniform(3, 5), 2)
+                change_value = random_num / 100
+            elif a == "below_ten":
+                random_num = round(random.uniform(5, 10), 2)
+                change_value = random_num / 100
+            elif a == "event":
+                random_num = round(random.uniform(10, 30), 2)
+                change_value = random_num / 100
+
+            def increase(stock_ticker, change_value):
+                stock_list[stock_ticker][-2] = float(stock_list[stock_ticker][-2])*(1+change_value)
+
+            def decrease(stock_ticker, change_value):
+                stock_list[stock_ticker][-2] = float(stock_list[stock_ticker][-2])*(1-change_value)                                                  
+
+            alter = random.choice([increase, decrease])
+            alter(stock_ticker, change_value)
+        for x in stock_list.values():
+            print(x[-2])
+
     
 
     # @tasks.loop(time= after_ten.time())
@@ -961,9 +989,6 @@ class UserData(commands.Cog):
     @app_commands.command(name="정보", description="유저 정보를 불러옵니다")
     async def user_information(self, interaction: discord.Interaction):
         self.check_user(str(interaction.user.id))
-        with open('users.json') as f:
-            data = json.load(f)
-
         if str(interaction.user.id) not in self.data:
             await interaction.response.send_message("등록되지 않은 유저입니다.")
             return
