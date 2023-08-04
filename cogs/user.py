@@ -1683,7 +1683,7 @@ class UserData(commands.Cog):
             if dig_var.caught == False:
                 embed = DigGameButtons.DigGame_msg(False, "💦바둑이가 지친 듯 하다", "땅파기 실패..")
             else:
-                num = random.randint(0,9)
+                num = random.randint(0,1000)
                 if num < 10:
                     self.data[str(interaction.user.id)]["item"][item_list[num][3]] += 1
                     UserData.DigGame_create_img(item_list[num][0]+" 교환권", item_list[num][2])
