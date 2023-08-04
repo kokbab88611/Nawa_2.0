@@ -365,7 +365,7 @@ class GInfoSelect(Select):
                 colour=discord.Colour.from_rgb(241, 196, 15),
             )
             embed.add_field(name="명령어", value="`/땅파기`", inline=False)
-            embed.add_field(name="\📖 플레이 방법", value="> -빨간 느낌표 3개를 기다립니다\n> -파내기 버튼을 누르면 땅을 판다", inline=True)
+            embed.add_field(name="\📖 플레이 방법", value="> -빨간 느낌표 3개를 기다립니다\n> -파내기 버튼을 누르면 땅을 판다\n> -늦게 누르면 바둑이가 지쳐 보상을 받지 못합니다", inline=True)
             embed.add_field(name="\💰 상품", value="> 10~1000원/무작위 아이템", inline=True)
 
         view = infoview()
