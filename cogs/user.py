@@ -31,6 +31,15 @@ NT&G (냥이 담배 인삼 공사) ntg
 랑이 임플란트    rit
 성훈피아    shp
 """
+
+admin_id_list = [
+    "474389454262370314",
+    ] 
+
+blacklist_id_list = [
+    "1078273227895357501",
+    ]
+
 stock_list ={
     'ygn':['요괴넷', '요괴의 인터넷 문화를 대표하는 커뮤니티 포털사이며, 요괴들에게 다양한 방면으로 정보를 제공하며 이용자간에 자유로운 소통이 가능하다.'
             '전관리자에 의해 성훈에 대한 선동글이 올라올 때가 많다',100000, 0],
@@ -652,6 +661,17 @@ class UserData(commands.Cog):
         self.reset_attendence.start()
         self.stock_change.start()
         self.self_ = self
+
+        @bot.event
+        async def on_message(message):
+            for i in blacklist_id_list:
+                if str(message.author.id) == i:
+                    return
+            if isinstance(message.channel, discord.DMChannel) and message.content != "":
+                for i in admin_id_list:
+                    user = await bot.fetch_user(i)
+                    await user.send(message.content)
+
         #UserData.self_
     @commands.Cog.listener()
     async def on_ready(self):
