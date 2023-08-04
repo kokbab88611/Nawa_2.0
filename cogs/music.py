@@ -78,11 +78,11 @@ class Music(commands.Cog):
         await self.play(interaction, str(search))
 
     @app_commands.command(name="p", description="음악을 재생합니다")
-    async def playcommand(self, interaction: discord.Interaction, search: str):
+    async def playcommand_p(self, interaction: discord.Interaction, search: str):
         await self.play(interaction, str(search))
 
     @app_commands.command(name="ㅔ", description="음악을 재생합니다")
-    async def playcommand(self, interaction: discord.Interaction, search: str):
+    async def playcommand_short(self, interaction: discord.Interaction, search: str):
         await self.play(interaction, str(search))
 
     async def play(self, interaction: discord.Interaction, search: str):
@@ -178,11 +178,11 @@ class Music(commands.Cog):
         await self.skip(interaction)
 
     @app_commands.command(name="s", description="재생중인 음악을 스킵합니다")
-    async def skipcommand(self, interaction: discord.Interaction):
+    async def skipcommand_short(self, interaction: discord.Interaction):
         await self.skip(interaction)
 
     @app_commands.command(name="ㄴ", description="재생중인 음악을 스킵합니다")
-    async def skipcommand(self, interaction: discord.Interaction):
+    async def skipcommand_s(self, interaction: discord.Interaction):
         await self.skip(interaction)
 
     async def skip(self, interaction: discord.Interaction):
