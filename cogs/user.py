@@ -669,6 +669,12 @@ class UserData(commands.Cog):
             if isinstance(message.channel, discord.DMChannel) and message.content != "" and "!문의" in message.content:
                 channel = bot.get_channel(1137051717058433055)
                 await channel.send(message.content)
+                user = bot.get_user(message.author.id)
+                await user.send("피드백 감사합니다")
+            else:
+                if not isinstance(message.channel, discord.DMChannel) and message.content != "" and "!문의" in message.content:
+                    user = bot.get_user(message.author.id)
+                    await user.send("문의는 DM으로 보내주십시오")
 
         #UserData.self_
     @commands.Cog.listener()
