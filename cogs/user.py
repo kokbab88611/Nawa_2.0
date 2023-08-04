@@ -88,14 +88,14 @@ slotmachine_dict = {1:"<:slot_1:1081172877233102892>",
 9:"<:slot_9:1081172962411036753>",
 11:"<a:slot_fruits:1081172981620936734>"}
 
-DigGame_msg_dict = {1:"1번",
-2:"2번",
-3:"3번",
-4:"4번",
-5:"5번",
-6:"6번",
-7:"7번",
-8:"걸림",}
+DigGame_msg_dict = {1:"킁킁..  찾고 있을게요! 조금 어렵지만 찾을 수 있을거에요!",
+2:"헤헤 파고있어요! 잠시만 기다려 주세요!",
+3:"❕❕여기 뭐가 있는거 같아요! 제가 한번 파볼게요!",
+4:"❗❓❗촉이 왔어요 주인님! 이쪽인거 같아요!",
+5:"💦이번에는 꼭 찾을 수 있을거에요! 한번 믿어주세요!",
+6:"냄새가 나요! 제가 빨리 파고 있을게요 주인님은 쉬고 계세요!",
+7:"❗❗❗주인님이 좋아할 만한걸 찾은거 같아요!",
+8:"❗❗❗찾았어요!! 쓰담쓰담 해주세요!",}
 
 class Character(discord.ui.View):
     def __init__(self, self_, user_id):
@@ -1666,7 +1666,7 @@ class UserData(commands.Cog):
 
         DigGame_msg_num = 1
         await asyncio.sleep(1)
-        while DigGame_msg_num != 8 and dig_var.end == False:
+        while DigGame_msg_num != 8 and DigGame_msg_num != 7 and dig_var.end == False:
             msg = DigGame_msg_dict[DigGame_msg_num]
             embed = DigGameButtons.DigGame_msg(False, msg, "기다리는 중...")
             await interaction.edit_original_response(embed=embed)
