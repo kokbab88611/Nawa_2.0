@@ -1682,6 +1682,7 @@ class UserData(commands.Cog):
             await asyncio.sleep(av_time)
             if dig_var.caught == False:
                 embed = DigGameButtons.DigGame_msg(False, "💦바둑이가 지친 듯 하다", "땅파기 실패..")
+                await interaction.edit_original_response(embed=embed, view=None)
             else:
                 num = random.randint(0,1000)
                 if num < 10:
