@@ -7,6 +7,8 @@ import os
 import random
 import datetime
 from time import gmtime, strftime
+import PIL
+from PIL import Image, ImageFont, ImageDraw
 
 import string,array,time
 import asyncio
@@ -48,6 +50,15 @@ slotmachine_dict = {1:"<:slot_1:1081172877233102892>",
 8:"<:slot_8:1081172951606505472>",
 9:"<:slot_9:1081172962411036753>",
 11:"<a:slot_fruits:1081172981620936734>"}
+
+DigGame_msg_dict = {1:"1번",
+2:"2번",
+3:"3번",
+4:"4번",
+5:"5번",
+6:"6번",
+7:"7번",
+8:"걸림",}
 
 class Character(discord.ui.View):
     def __init__(self, self_, user_id):
@@ -275,6 +286,8 @@ class GiftSelect(discord.ui.Select):
 class DigVars():
     def __init__(self, user_id):
         self.item = False
+        self.end = False
+        self.caught = False
         self.user_id = user_id
 
 class BlackJackButtons(Button):
@@ -561,48 +574,32 @@ class DigGameButtons(Button):
         self.custom_id=str(custom_id)
         self.dig_var = dig_var
 
-    async def DigGame_msg(interaction, dig_var, image, msg="", buttons=True):
-        embed = discord.Embed(title="땅파기 게임", colour=discord.Colour(0xe67e22))
+    def DigGame_msg(image, msg="", title="", colour=0xe67e22):
+        embed = discord.Embed(title=title, colour=discord.Colour(colour))
         embed.set_author(name="바둑이", icon_url="https://cdn.discordapp.com/attachments/525940059330052107/1134923364478226505/141298252133.jpg")
         embed.description = msg
-        view = View()
-        if buttons == True:
-            view.add_item(DigGameButtons('파내기', discord.ButtonStyle.gray, "🃏", "pull", dig_var))
-            view.add_item(DigGameButtons('나가기', discord.ButtonStyle.gray, "🃏", "quit", dig_var))
-            view.add_item(DigGameButtons('스위치', discord.ButtonStyle.gray, "🃏", "switch", dig_var))
-                
         if image == True:
-            file = discord.File(os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg"), filename="image.jpg")
             embed.set_image(url="attachment://image.jpg")
-            try:
-                await interaction.response.edit_message(embed=embed, file=file, view=view)
-            except:
-                await interaction.response.send_message(embed=embed, file=file, view=view)
-        else:
-            try:
-                await interaction.response.edit_message(embed=embed, view=view)
-            except:
-                await interaction.response.send_message(embed=embed, view=view)
+        return embed
 
     async def quit(self, interaction):
-        await DigGameButtons.DigGame_msg(interaction, self.dig_var, False, "게임끝", False)
+        self.dig_var.end = True
+        embed = DigGameButtons.DigGame_msg(False, "그만두었다", "땅파기 실패..")
+        await interaction.response.edit_message(embed=embed, view=None)
 
     async def pull(self, interaction):
         if self.dig_var.item == True:
-            msg = "TRUE"
+            self.dig_var.caught = True
+            await interaction.response.edit_message()
         else:
-            msg = "FALSE"
-        await DigGameButtons.DigGame_msg(interaction, self.dig_var, False, msg)
+            self.dig_var.end = True
+            embed = DigGameButtons.DigGame_msg(False, "아무것도 찾지 못했다..", "땅파기 실패..")
+            await interaction.response.edit_message(embed=embed, view=None)
 
     async def callback(self, interaction):
         if interaction.user.id == self.dig_var.user_id:
             if self.custom_id == "quit":
                 await DigGameButtons.quit(self, interaction)
-            elif self.custom_id == "switch":
-                if self.dig_var.item == True:
-                    self.dig_var.item = False
-                else:
-                    self.dig_var.item = True
             else:
                 await DigGameButtons.pull(self, interaction)
         else:
@@ -1417,45 +1414,80 @@ class UserData(commands.Cog):
         else:
             await interaction.response.send_message(content="[돈 부족. 판결. 사기꾼]", ephemeral=True)
 
+    def DigGame_create_img(msg,tier):
+        image = Image.open(os.path.join(f"{__location__}\\DigGame\\DigGameImg{tier}.jpg"))
+        fonts_dir = os.path.join(f"{__location__}\\DigGame")
+        draw = ImageDraw.Draw(image)
+        draw.text((30,25),msg,font=ImageFont.truetype(os.path.join(fonts_dir, 'Dobong_Cultural_Routes(TTF).ttf'), 35), fill=(255,255,255))
+        image.save(os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg"))
+
     @app_commands.command(name="땅파기", description="땅파기 게임입니다")
     async def DigGame(self, interaction: discord.Interaction):
-        # msg = ""
-        # n = len(luck_text)//10
-        # for i in range(n):
-        #     msg += luck_text[i*10:(i+1)*10]
-        #     msg += "\n"
-        # msg += luck_text[n*10:]
+        self.check_user(str(interaction.user.id))
 
-        # try:
-        #     await interaction.response.send_message(embed=embed)
-        # except:
-        #     await interaction.edit_original_response(embed=embed)
+        item_list =[["개량한복", 0x2ecc71, "Common", "rangi_hanbok"], 
+        ["술잔", 0x2ecc71, "Common", "saehee_shotglass"],
+        ["국자", 0x2ecc71, "Common", "chiyee_gookja"],
+        ["저고리", 0x3498db, "Rare", "rangi_jeogorri"],
+        ["깃털 머리띠", 0x3498db, "Rare", "chiyee_hairband"],
+        ["솥뚜껑", 0x3498db, "Rare", "saehee_sotlid"],
+        ["이빨", 0x71368a, "Epic", "rangi_teeth"],
+        ["비녀", 0x71368a, "Epic", "saehee_beenyo"],
+        ["줄무늬 그것", 0x71368a, "Epic", "chiyee_julmuni"],
+        ["대요괴의 침", 0xe67e22, "Legendary", "legendary_saliva"]]
 
-        # 개량한복
-        # 술잔
-        # 국자
-        # 저고리
-        # 깃털 머리띠
-        # 솥뚜껑
-        # 이빨
-        # 비녀
-        # 줄무늬 그것
-        # 대요괴의 침
-
-        # image = Image.open(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgDate.jpg"))
+        # image = Image.open(os.path.join(f"{__location__}\\DigGame\\DigGameImgBase.jpg"))
         # fonts_dir = os.path.join(f"{__location__}\\DigGame")
         # draw = ImageDraw.Draw(image)
         # draw.text((360,95),msg,font=ImageFont.truetype(os.path.join(fonts_dir, 'Dobong_Cultural_Routes(TTF).ttf'), 35), fill=(255,255,255))
-        # image.save(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgEdit.jpg"))
+        # image.save(os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg"))
+
+        # os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg")
 
         # embed = discord.Embed(title="땅파기 게임", colour=discord.Colour(0xe67e22))
         # file = discord.File(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgEdit.jpg"), filename="image.jpg")
         # embed.set_image(url="attachment://image.jpg")
         # embed.set_author(name="바둑이", icon_url="https://cdn.discordapp.com/attachments/525940059330052107/1134923364478226505/141298252133.jpg")
         # await interaction.response.send_message(embed=embed, file=file)
+
         user_id = interaction.user.id
         dig_var = DigVars(user_id)
-        await DigGameButtons.DigGame_msg(interaction, dig_var, False, "시작")
+        view = View()
+        view.add_item(DigGameButtons('파내기', discord.ButtonStyle.gray, "🔍", "pull", dig_var))
+        view.add_item(DigGameButtons('그만두기', discord.ButtonStyle.gray, "❌", "quit", dig_var))
+        embed = DigGameButtons.DigGame_msg(False, "🐶바둑이가 달려간다", "땅파기 시작!")
+        await interaction.response.send_message(embed=embed, view=view)
+
+        DigGame_msg_num = 1
+        await asyncio.sleep(1)
+        while DigGame_msg_num != 8 and dig_var.end == False:
+            msg = DigGame_msg_dict[DigGame_msg_num]
+            embed = DigGameButtons.DigGame_msg(False, msg, "기다리는 중...")
+            await interaction.edit_original_response(embed=embed)
+            DigGame_msg_num = random.randint(1,8)
+            await asyncio.sleep(random.randint(1,3))
+        if dig_var.end == False:
+            dig_var.item = True
+            msg = DigGame_msg_dict[DigGame_msg_num]
+            embed = DigGameButtons.DigGame_msg(False, msg, "기다리는 중...")
+            await interaction.edit_original_response(embed=embed)
+
+            av_time = random.randint(1,3)
+            await asyncio.sleep(av_time)
+            if dig_var.caught == False:
+                embed = DigGameButtons.DigGame_msg(False, "💦바둑이가 지친 듯 하다", "땅파기 실패..")
+            else:
+                num = random.randint(0,9)
+                if num < 10:
+                    self.data[str(interaction.user.id)]["item"][item_list[num][3]] += 1
+                    UserData.DigGame_create_img(item_list[num][0]+" 교환권", item_list[num][2])
+                    embed = DigGameButtons.DigGame_msg(True, f"{item_list[num][0]} | 등급: {item_list[num][2]}", "❔❔❔ 찾았다!", item_list[num][1])
+                else:
+                    self.data[str(interaction.user.id)]['money'] += num
+                    UserData.DigGame_create_img(str(num)+"원 교환권", "Money")
+                    embed = DigGameButtons.DigGame_msg(True, f"{num}원 | 등급: 몰?루", "💰💰💰 찾았다!")
+                file = discord.File(os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg"), filename="image.jpg")
+                await interaction.edit_original_response(embed=embed, view=None, attachments=[file])
 
 async def setup(bot):
     await bot.add_cog(UserData(bot))
