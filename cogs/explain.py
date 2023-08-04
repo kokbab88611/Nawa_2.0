@@ -82,6 +82,8 @@ msg = """
             > 페이와 블랙잭을 합니다
             ⚆ `/슬롯머신 <베팅금액>`
             > 페이의 슬롯머신을 돌립니다
+            ⚆ `/땅파기`
+            > 바둑이와 땅을 팝니다
             ⚆ `/카드짝`
             > 카드 짝 맞추기 게임을 합니다
             ⚆ `/추첨 <추첨 인원> <이름들[','로 구분]>`
@@ -305,6 +307,9 @@ class GInfoSelect(Select):
             discord.SelectOption(
                 label="카드 맞추기", description="카드 짝 맞추기", emoji="🎴", value=4
             ),
+            discord.SelectOption(
+                label="땅파기", description="바둑이와 땅파기", emoji="🔍", value=5
+            ),
         ]
         super().__init__(
             placeholder="Choose an option", options=options, min_values=1, max_values=1
@@ -352,6 +357,16 @@ class GInfoSelect(Select):
             embed.add_field(name="명령어", value="`/카드짝`", inline=False)
             embed.add_field(name="\📖 플레이 방법", value="> -카드 두장을 선택하면 카드를 뒤집습니다\n> -카드가 서로 짝을 이룰 경우 유지됩니다\n> -모든 카드가 뒤집어지면 게임이 끝납니다", inline=True)
             embed.add_field(name="\💰 상품", value="> 현재 존재하지 않습니다", inline=True)
+
+        elif self.values[0] == "5":
+            embed = discord.Embed(
+                title="🔍 땅파기",
+                description="",
+                colour=discord.Colour.from_rgb(241, 196, 15),
+            )
+            embed.add_field(name="명령어", value="`/땅파기`", inline=False)
+            embed.add_field(name="\📖 플레이 방법", value="> -빨간 느낌표 3개를 기다립니다\n> -파내기 버튼을 누르면 땅을 판다\n> -늦게 누르면 바둑이가 지쳐 보상을 받지 못합니다", inline=True)
+            embed.add_field(name="\💰 상품", value="> 10~1000원/무작위 아이템", inline=True)
 
         view = infoview()
         await interaction.response.edit_message(view=view, embed=embed)
