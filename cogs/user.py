@@ -5,6 +5,8 @@ import json
 import os
 import random
 import datetime
+import csv
+import pandas as pd
 from time import gmtime, strftime
 import PIL
 from PIL import Image, ImageFont, ImageDraw
@@ -35,29 +37,6 @@ NT&G (냥이 담배 인삼 공사) ntg
 blacklist_id_list = [
     "1078273227895357501",
     ]
-
-stock_list ={
-    'ygn':['요괴넷', '요괴의 인터넷 문화를 대표하는 커뮤니티 포털사이며, 요괴들에게 다양한 방면으로 정보를 제공하며 이용자간에 자유로운 소통이 가능하다.'
-            '전관리자에 의해 성훈에 대한 선동글이 올라올 때가 많다',100000, 0],
-    'jfb':['지리산 F&B', '식품 제조 및 판매 업체이다. 지리산에서 수확한 식재료 사용으로 많이 알려져있으며, 국내 친환경 유기농 식품 선두 주자이다', 100000, 0],
-    'pco':['폐이코', '결제 데이터를 수집하여 빅데이터 기반의 요괴의 신용평가 모델을 개발하고 제공한다',50000, 0],
-    'chh':['치이 홀딩스', '오작교 그룹 계열사 지분을 다수 가지고 있으며, 대한민국 3대 건설사인 오작교 건설사의 최대주주이다',50000, 0],
-    'bbo':['범이 바이오', '특수 한약재를 이용하여 의약품, 화장품 등의 원료 제조 및 판매를 목적으로 설립되었다. 최근 대표 의약품의 주 원료가 "침" 인것으로'
-           '발각되어 CEO는 도주중이다', 50000, 0],
-    'yls':['염라상조', '대한민국 1위 상조 회사이자 관혼상제 전문 행사 기업이다. CEO 염라의 과음으로 인해 주주들의 반발이 심한 회사이다',100000, 0],
-    'grn':['기린 미디어', '만화 및 애니메이션 콘텐츠와 관련한 종합 엔터테인먼트 사업을 주 사업으로 운영중이며, 서브컬쳐 문화의 선두주자이다.', 15000, 0],
-    'sbb':['SB세희뱅크', '랑이의 경제활동을 지원하는 것을 목적으로 설립된 특화 전문은행. 모든 현금의 출처는 불분명하다', 50000, 0],
-    'ntg':['NT&G', '담배를 제조 및 판매하는 기업으로, Nyangyi Tobacco and Ginseng의 약자이다. 냥이담배인삼공사는'
-           '요괴 시장의 80% 이상을 차지하고 있는 담배 회사이며, 냥이의 주 자금줄이다.', 50000, 0],
-    'nrh':['나래 헬스케어','곰의일족 계열사이며 국내 헬스장 프렌차이즈의 선두주자이다. 국내최초 곰의 일족을 위한 커리큘럼으로 시작하여'
-           '일반인들에게는 큰 인기를 얻지 못했지만, 최근 연애를 위해 신청하는 일반인들도 늘어났다.', 1000, 0],
-    'ayi':['아야 인더스트리', '전 세계적으로 기술력을 인정받고 있는 모피를 생산하는 피혁 업계의 선두 기업이다.',4000, 0],
-    'rit':['랑이 임플란트', '치과용 임플란트 및 치과용 소프트웨어 제조, 판매를 주요 사업으로 영위하고 있다. CEO또한 해당 제품을 사용하는 것으로'
-           '밝혀지면서 유명세를 얻었다',70000, 0],
-    'nhh':['낳갤', '디시인사이드에 2017년 1월 31일에 개설된 나와 호랑이님의 마이너 갤러리. 페이퍼 컴퍼니다.', 800, 0],
-    'jns':['견우성투어', '일반여행업을 주요 사업으로 영위할 목적으로 설립됨. 견우성을 거점으로 한 서비스제공 사업 등을 영위하고 있음.', 700, 0],
-    'shp':['성훈노벨', '만화 및 소설 관련 컨텐츠 사업을 영위 하고 있다. CEO가 투잡을 뛴다는 소문이...', 500, 0],
-}
 
 item_list_convert = {"rangi_hanbok": "개량한복",
             "saehee_shotglass": "술잔",
@@ -656,7 +635,31 @@ class UserData(commands.Cog):
         self.repeat_save_user.start()
         self.reset_attendence.start()
         self.stock_change.start()
+        self.stock_tickers = ['ygn', 'jfb', 'pco', 'chh', 'bbo', 'yls', 'grn', 'sbb', 'ntg', 'nrh', 'ayi', 'rit', 'nhh', 'jns', 'shp',]
+        self.stock_price_df = pd.DataFrame(columns=self.stock_tickers)
         self.self_ = self
+        self.stock_list ={
+        'ygn':['요괴넷', '요괴의 인터넷 문화를 대표하는 커뮤니티 포털사이며, 요괴들에게 다양한 방면으로 정보를 제공하며 이용자간에 자유로운 소통이 가능하다.'
+                '전관리자에 의해 성훈에 대한 선동글이 올라올 때가 많다',100000, 0],
+        'jfb':['지리산 F&B', '식품 제조 및 판매 업체이다. 지리산에서 수확한 식재료 사용으로 많이 알려져있으며, 국내 친환경 유기농 식품 선두 주자이다', 100000, 0],
+        'pco':['폐이코', '결제 데이터를 수집하여 빅데이터 기반의 요괴의 신용평가 모델을 개발하고 제공한다',50000, 0],
+        'chh':['치이 홀딩스', '오작교 그룹 계열사 지분을 다수 가지고 있으며, 대한민국 3대 건설사인 오작교 건설사의 최대주주이다',50000, 0],
+        'bbo':['범이 바이오', '특수 한약재를 이용하여 의약품, 화장품 등의 원료 제조 및 판매를 목적으로 설립되었다. 최근 대표 의약품의 주 원료가 "침" 인것으로'
+            '발각되어 CEO는 도주중이다', 50000, 0],
+        'yls':['염라상조', '대한민국 1위 상조 회사이자 관혼상제 전문 행사 기업이다. CEO 염라의 과음으로 인해 주주들의 반발이 심한 회사이다',100000, 0],
+        'grn':['기린 미디어', '만화 및 애니메이션 콘텐츠와 관련한 종합 엔터테인먼트 사업을 주 사업으로 운영중이며, 서브컬쳐 문화의 선두주자이다.', 15000, 0],
+        'sbb':['SB세희뱅크', '랑이의 경제활동을 지원하는 것을 목적으로 설립된 특화 전문은행. 모든 현금의 출처는 불분명하다', 50000, 0],
+        'ntg':['NT&G', '담배를 제조 및 판매하는 기업으로, Nyangyi Tobacco and Ginseng의 약자이다. 냥이담배인삼공사는'
+            '요괴 시장의 80% 이상을 차지하고 있는 담배 회사이며, 냥이의 주 자금줄이다.', 50000, 0],
+        'nrh':['나래 헬스케어','곰의일족 계열사이며 국내 헬스장 프렌차이즈의 선두주자이다. 국내최초 곰의 일족을 위한 커리큘럼으로 시작하여'
+            '일반인들에게는 큰 인기를 얻지 못했지만, 최근 연애를 위해 신청하는 일반인들도 늘어났다.', 1000, 0],
+        'ayi':['아야 인더스트리', '전 세계적으로 기술력을 인정받고 있는 모피를 생산하는 피혁 업계의 선두 기업이다.',4000, 0],
+        'rit':['랑이 임플란트', '치과용 임플란트 및 치과용 소프트웨어 제조, 판매를 주요 사업으로 영위하고 있다. CEO또한 해당 제품을 사용하는 것으로'
+            '밝혀지면서 유명세를 얻었다',70000, 0],
+        'nhh':['낳갤', '디시인사이드에 2017년 1월 31일에 개설된 나와 호랑이님의 마이너 갤러리. 페이퍼 컴퍼니다.', 800, 0],
+        'jns':['견우성투어', '일반여행업을 주요 사업으로 영위할 목적으로 설립됨. 견우성을 거점으로 한 서비스제공 사업 등을 영위하고 있음.', 700, 0],
+        'shp':['성훈노벨', '만화 및 소설 관련 컨텐츠 사업을 영위 하고 있다. CEO가 투잡을 뛴다는 소문이...', 500, 0],
+    }
 
         @bot.event
         async def on_message(message):
@@ -924,7 +927,7 @@ class UserData(commands.Cog):
     @tasks.loop(seconds=600)
     async def stock_change(self):
         percentage = {"below_one": 90, "below_three": 5.5, "below_five": 3, "below_ten": 1, "event": 0.5}
-        for stock_ticker in stock_list.keys():
+        for stock_ticker in self.stock_list.keys():
             change_value = None
             a = random.choices(list(percentage.keys()), weights = list(percentage.values()))[0]
             if a == "below_one":
@@ -944,15 +947,14 @@ class UserData(commands.Cog):
                 change_value = random_num / 100
 
             def increase(stock_ticker, change_value):
-                stock_list[stock_ticker][-2] = float(stock_list[stock_ticker][-2])*(1+change_value)
+                self.stock_list[stock_ticker][-2] = float(self.stock_list[stock_ticker][-2])*(1+change_value)
 
             def decrease(stock_ticker, change_value):
-                stock_list[stock_ticker][-2] = float(stock_list[stock_ticker][-2])*(1-change_value)                                                  
+                self.stock_list[stock_ticker][-2] = float(self.stock_list[stock_ticker][-2])*(1-change_value)                                                  
 
             alter = random.choice([increase, decrease])
             alter(stock_ticker, change_value)
-        for x in stock_list.values():
-            print(x[-2])
+            self.stock_price_df[stock_ticker]
 
     
 
