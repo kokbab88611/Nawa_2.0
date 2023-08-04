@@ -32,10 +32,6 @@ NT&G (냥이 담배 인삼 공사) ntg
 성훈피아    shp
 """
 
-admin_id_list = [
-    "474389454262370314",
-    ] 
-
 blacklist_id_list = [
     "1078273227895357501",
     ]
@@ -667,10 +663,9 @@ class UserData(commands.Cog):
             for i in blacklist_id_list:
                 if str(message.author.id) == i:
                     return
-            if isinstance(message.channel, discord.DMChannel) and message.content != "":
-                for i in admin_id_list:
-                    user = await bot.fetch_user(i)
-                    await user.send(message.content)
+            if isinstance(message.channel, discord.DMChannel) and message.content != "" and "!문의" in message.content:
+                channel = bot.get_channel(1137051717058433055)
+                await channel.send(message.content)
 
         #UserData.self_
     @commands.Cog.listener()
