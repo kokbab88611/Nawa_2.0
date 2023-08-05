@@ -1220,7 +1220,6 @@ class UserData(commands.Cog):
             "흐냐아앗!! 갑자기 그런말 하면 부끄럽느니라!",
             "나도! 나도 그렇느니라♡! 사랑 하느니라!!",
             "흐냐!! 내가 먼저 할려 했느니라!!! 내가 더 많이 할것이니라!! 사랑하니라! 사랑하니라!!!!",
-            f"졸리니라아아.. 나랑 더 자자꾸나아 {message.author.display_name}아",
             ]
             embed=discord.Embed(title=f"{random.choice(rangi_love)}", color=0xebe6e6)
             embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
@@ -1261,6 +1260,10 @@ class UserData(commands.Cog):
                 '근심 걱정이 가득한 얼굴이니라.. 내가 해줄 수 있는게 있으면 꼭 말하거라!',
                 f'다 잘풀릴 것이니라..! 조금만 참아 보거라 {message.author.display_name}(아)야..!'
             ]
+            embed=discord.Embed(title=f"{random.choice(worry)}", color=0xebe6e6)
+            embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
+            await message.channel.send(embed=embed)
+
     #이름 부르기
     @commands.command(name="랑이야")
     async def rangi_call(self, ctx, position = None):

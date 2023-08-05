@@ -1,17 +1,43 @@
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
-import pymongo
 import json
 import os
 import random
 import datetime
+import csv
+import pandas as pd
 from time import gmtime, strftime
+import PIL
+from PIL import Image, ImageFont, ImageDraw
 
 import string,array,time
 import asyncio
 from discord import Interaction,Reaction,InteractionResponse
 from discord.ui import Button, View
+
+"""
+요괴넷  ygn
+지리산 F&B jfb
+폐이코  pco
+치이 홀딩스 chh
+범이 바이오 bbo
+나호갤  nhg
+염라상조   yls 
+직녀성  jns
+기린 미디어 grn
+SB세희뱅크 sbb
+NT&G (냥이 담배 인삼 공사) ntg
+나래 헬스케어    nrh
+아야 인더스트리 ayi
+랑이 임플란트    rit
+성훈피아    shp
+"""
+
+blacklist_id_list = [
+    "1078273227895357501",
+    ]
+
 item_list_convert = {"rangi_hanbok": "개량한복",
             "saehee_shotglass": "술잔",
             "chiyee_gookja": "국자",
@@ -28,10 +54,7 @@ character_name = {"rangi": "랑이",
                 "saehee": "세희"}
 
 list_dev_id = ["339767912841871360", "474389454262370314", "393932860597338123", "185181025104560128"]
-all_hi = ["안녀", "안녕", "안뇽", "안뇨", "어서와", "히사시부리", "하이", "반가워", "오랜만이야", "나 또 왔", 
-        "좋은 아침", "잘 잤", "좋은 밤", "좋은 저녁", "좋은 점심", "여기야", "반갑다", 
-        "돌아왔", "나 왔어", "나 왔", "갔다 왔", "다녀왔"]
-all_what = ["뭐해", "뭐하니", "뭐하냐", "뭐하고"]
+
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 utc = datetime.timezone.utc
 rest_time = datetime.time(hour=19, minute=00, tzinfo=utc) #19 00 오전 4시 utf + 9 대한민국
@@ -48,6 +71,15 @@ slotmachine_dict = {1:"<:slot_1:1081172877233102892>",
 8:"<:slot_8:1081172951606505472>",
 9:"<:slot_9:1081172962411036753>",
 11:"<a:slot_fruits:1081172981620936734>"}
+
+DigGame_msg_dict = {1:"킁킁..  찾고 있을게요! 조금 어렵지만 찾을 수 있을거에요!",
+2:"헤헤 파고있어요! 잠시만 기다려 주세요!",
+3:"❕❕여기 뭐가 있는거 같아요! 제가 한번 파볼게요!",
+4:"❗❓❗촉이 왔어요 주인님! 이쪽인거 같아요!",
+5:"💦이번에는 꼭 찾을 수 있을거에요! 한번 믿어주세요!",
+6:"냄새가 나요! 제가 빨리 파고 있을게요 주인님은 쉬고 계세요!",
+7:"❗❗❗주인님이 좋아할 만한걸 찾은거 같아요!",
+8:"❗❗❗찾았어요!! 쓰담쓰담 해주세요!",}
 
 class Character(discord.ui.View):
     def __init__(self, self_, user_id):
@@ -139,7 +171,7 @@ class ChoseGUI(discord.ui.View):
         self.self_ = self_
         self.user_id = user_id
         super().__init__()
-        self.add_item(GiftSelect(self.self_, self.user_id ))
+        self.add_item(GiftSelect(self.self_, self.user_id))
 
 
 class VerifyButton(discord.ui.Button):
@@ -272,6 +304,13 @@ class GiftSelect(discord.ui.Select):
         else:
             await interaction.response.send_message(content="선물을 하고 싶으시면 /선물 을 하시면 됩니다 쓰레기 주인님", ephemeral=True)
 
+class DigVars():
+    def __init__(self, user_id):
+        self.item = False
+        self.end = False
+        self.caught = False
+        self.user_id = user_id
+
 class BlackJackButtons(Button):
     def __init__(self, label, button_style, emoji, custom_id, command_userid, bet_money, user_deck, bot_deck, cards, self_):
         """
@@ -377,7 +416,7 @@ class BlackJackButtons(Button):
         _summary_
         hit 버튼 누르면 작동
         유저의 덱 채우기
-        유저의 덱 결과에 따른 답변/결과
+        유저의 덱 결과에 따른 답변/결과.
         Args:
             self (obj, 필수): 버튼에 대한 정보를 담는 오브젝트
             interaction (discord.interaction, 필수): interaction에 대한 정보를 담는 오브젝트
@@ -550,6 +589,43 @@ class RcpButtons(Button):
         else:
             await interaction.response.send_message(content="[.....도둑.판결.쓰레기]", ephemeral=True)
 
+class DigGameButtons(Button):
+    def __init__(self, label, button_style, emoji, custom_id, dig_var):
+        super().__init__(label=label, style=button_style, emoji=emoji, custom_id=custom_id)
+        self.custom_id=str(custom_id)
+        self.dig_var = dig_var
+
+    def DigGame_msg(image, msg="", title="", colour=0xe67e22):
+        embed = discord.Embed(title=title, colour=discord.Colour(colour))
+        embed.set_author(name="바둑이", icon_url="https://cdn.discordapp.com/attachments/525940059330052107/1134923364478226505/141298252133.jpg")
+        embed.description = msg
+        if image == True:
+            embed.set_image(url="attachment://image.jpg")
+        return embed
+
+    async def quit(self, interaction):
+        self.dig_var.end = True
+        embed = DigGameButtons.DigGame_msg(False, "그만두었다", "땅파기 실패..")
+        await interaction.response.edit_message(embed=embed, view=None)
+
+    async def pull(self, interaction):
+        if self.dig_var.item == True:
+            self.dig_var.caught = True
+            await interaction.response.edit_message()
+        else:
+            self.dig_var.end = True
+            embed = DigGameButtons.DigGame_msg(False, "아무것도 찾지 못했다..", "땅파기 실패..")
+            await interaction.response.edit_message(embed=embed, view=None)
+
+    async def callback(self, interaction):
+        if interaction.user.id == self.dig_var.user_id:
+            if self.custom_id == "quit":
+                await DigGameButtons.quit(self, interaction)
+            else:
+                await DigGameButtons.pull(self, interaction)
+        else:
+            await interaction.response.send_message(content="타인의 게임에 관여할 수 없습니다", ephemeral=True)
+
 #___________________________________________________________________________________________________________________________________________
 
 class UserData(commands.Cog):
@@ -558,7 +634,48 @@ class UserData(commands.Cog):
         self.data = self.get_json()
         self.repeat_save_user.start()
         self.reset_attendence.start()
+        self.stock_change.start()
+        self.stock_tickers = ['ygn', 'jfb', 'pco', 'chh', 'bbo', 'yls', 'grn', 'sbb', 'ntg', 'nrh', 'ayi', 'rit', 'nhh', 'jns', 'shp',]
+        self.stock_price_df = pd.DataFrame(columns=self.stock_tickers)
         self.self_ = self
+        self.stock_list ={
+        'ygn':['요괴넷', '요괴의 인터넷 문화를 대표하는 커뮤니티 포털사이며, 요괴들에게 다양한 방면으로 정보를 제공하며 이용자간에 자유로운 소통이 가능하다.'
+                '전관리자에 의해 성훈에 대한 선동글이 올라올 때가 많다',100000, 0],
+        'jfb':['지리산 F&B', '식품 제조 및 판매 업체이다. 지리산에서 수확한 식재료 사용으로 많이 알려져있으며, 국내 친환경 유기농 식품 선두 주자이다', 100000, 0],
+        'pco':['폐이코', '결제 데이터를 수집하여 빅데이터 기반의 요괴의 신용평가 모델을 개발하고 제공한다',50000, 0],
+        'chh':['치이 홀딩스', '오작교 그룹 계열사 지분을 다수 가지고 있으며, 대한민국 3대 건설사인 오작교 건설사의 최대주주이다',50000, 0],
+        'bbo':['범이 바이오', '특수 한약재를 이용하여 의약품, 화장품 등의 원료 제조 및 판매를 목적으로 설립되었다. 최근 대표 의약품의 주 원료가 "침" 인것으로'
+            '발각되어 CEO는 도주중이다', 50000, 0],
+        'yls':['염라상조', '대한민국 1위 상조 회사이자 관혼상제 전문 행사 기업이다. CEO 염라의 과음으로 인해 주주들의 반발이 심한 회사이다',100000, 0],
+        'grn':['기린 미디어', '만화 및 애니메이션 콘텐츠와 관련한 종합 엔터테인먼트 사업을 주 사업으로 운영중이며, 서브컬쳐 문화의 선두주자이다.', 15000, 0],
+        'sbb':['SB세희뱅크', '랑이의 경제활동을 지원하는 것을 목적으로 설립된 특화 전문은행. 모든 현금의 출처는 불분명하다', 50000, 0],
+        'ntg':['NT&G', '담배를 제조 및 판매하는 기업으로, Nyangyi Tobacco and Ginseng의 약자이다. 냥이담배인삼공사는'
+            '요괴 시장의 80% 이상을 차지하고 있는 담배 회사이며, 냥이의 주 자금줄이다.', 50000, 0],
+        'nrh':['나래 헬스케어','곰의일족 계열사이며 국내 헬스장 프렌차이즈의 선두주자이다. 국내최초 곰의 일족을 위한 커리큘럼으로 시작하여'
+            '일반인들에게는 큰 인기를 얻지 못했지만, 최근 연애를 위해 신청하는 일반인들도 늘어났다.', 1000, 0],
+        'ayi':['아야 인더스트리', '전 세계적으로 기술력을 인정받고 있는 모피를 생산하는 피혁 업계의 선두 기업이다.',4000, 0],
+        'rit':['랑이 임플란트', '치과용 임플란트 및 치과용 소프트웨어 제조, 판매를 주요 사업으로 영위하고 있다. CEO또한 해당 제품을 사용하는 것으로'
+            '밝혀지면서 유명세를 얻었다',70000, 0],
+        'nhh':['낳갤', '디시인사이드에 2017년 1월 31일에 개설된 나와 호랑이님의 마이너 갤러리. 페이퍼 컴퍼니다.', 800, 0],
+        'jns':['견우성투어', '일반여행업을 주요 사업으로 영위할 목적으로 설립됨. 견우성을 거점으로 한 서비스제공 사업 등을 영위하고 있음.', 700, 0],
+        'shp':['성훈노벨', '만화 및 소설 관련 컨텐츠 사업을 영위 하고 있다. CEO가 투잡을 뛴다는 소문이...', 500, 0],
+    }
+
+        @bot.event
+        async def on_message(message):
+            for i in blacklist_id_list:
+                if str(message.author.id) == i:
+                    return
+            if isinstance(message.channel, discord.DMChannel) and message.content != "" and "!문의" in message.content:
+                channel = bot.get_channel(1137051717058433055)
+                await channel.send(message.content)
+                user = bot.get_user(message.author.id)
+                await user.send("피드백 감사합니다")
+            else:
+                if not isinstance(message.channel, discord.DMChannel) and message.content != "" and "!문의" in message.content:
+                    user = bot.get_user(message.author.id)
+                    await user.send("문의는 DM으로 보내주십시오")
+
         #UserData.self_
     @commands.Cog.listener()
     async def on_ready(self):
@@ -705,7 +822,7 @@ class UserData(commands.Cog):
         Args:
             ctx (_type_): 메세지 Context
         """
-        user_name = message.author.name
+        user_name = message.author.display_name
         user_id = str(message.author.id)
         channel = message.channel
 
@@ -810,7 +927,49 @@ class UserData(commands.Cog):
     @tasks.loop(time= rest_time)
     async def reset_attendence(self):
         for user_id in self.data.items():
-            self.data[user_id[0]]["attendence"] = False
+            self.data[user_id[0]]["attendence"] = False        
+
+
+    @tasks.loop(seconds=600)
+    async def stock_change(self):
+        percentage = {"below_one": 90, "below_three": 5.5, "below_five": 3, "below_ten": 1, "event": 0.5}
+        for stock_ticker in self.stock_list.keys():
+            change_value = None
+            a = random.choices(list(percentage.keys()), weights = list(percentage.values()))[0]
+            if a == "below_one":
+                random_num = round(random.uniform(0, 1), 2)
+                change_value = random_num / 100
+            elif a == "below_three":
+                random_num = round(random.uniform(1, 3), 2)
+                change_value = random_num / 100
+            elif a == "below_five":
+                random_num = round(random.uniform(3, 5), 2)
+                change_value = random_num / 100
+            elif a == "below_ten":
+                random_num = round(random.uniform(5, 10), 2)
+                change_value = random_num / 100
+            elif a == "event":
+                random_num = round(random.uniform(10, 30), 2)
+                change_value = random_num / 100
+
+            def increase(stock_ticker, change_value):
+                self.stock_list[stock_ticker][-2] = float(self.stock_list[stock_ticker][-2])*(1+change_value)
+
+            def decrease(stock_ticker, change_value):
+                self.stock_list[stock_ticker][-2] = float(self.stock_list[stock_ticker][-2])*(1-change_value)                                                  
+
+            alter = random.choice([increase, decrease])
+            alter(stock_ticker, change_value)
+            self.stock_price_df[stock_ticker]
+
+    
+
+    # @tasks.loop(time= after_ten.time())
+    # async def repeat_every_ten(self):
+    #     global after_ten
+    #     #after_ten = time.time() + datetime.timedelta(minutes = 10)
+    #     after_ten = time.time() + datetime.timedelta(seconds = 10)
+    #     print("1minute passed")
 
     # @tasks.loop(time= birthday_time)
     # async def check_birthday(self):
@@ -850,9 +1009,6 @@ class UserData(commands.Cog):
     @app_commands.command(name="정보", description="유저 정보를 불러옵니다")
     async def user_information(self, interaction: discord.Interaction):
         self.check_user(str(interaction.user.id))
-        with open('users.json') as f:
-            data = json.load(f)
-
         if str(interaction.user.id) not in self.data:
             await interaction.response.send_message("등록되지 않은 유저입니다.")
             return
@@ -875,21 +1031,30 @@ class UserData(commands.Cog):
 ############################################ 대화 기능 ###############################################
     @commands.Cog.listener()
     async def on_message(self, message):
+        all_hi = ["안녀", "안녕", "안뇽", "안뇨", "어서와", "히사시부리", "하이", "반가워", "오랜만이야", "나 또 왔", 
+                "잘 잤", "좋은 밤", "좋은 저녁", "좋은 점심", "여기야", "반갑다", 
+                "돌아왔", "나 왔어", "나 왔", "갔다 왔", "다녀왔"]
+        all_what = ["뭐해", "뭐하니", "뭐하냐", "뭐하고"]
+        love = ["사랑", "스키", "러브"]
+        good_night=["잘자", "좋은 밤", "굳밤", "굿밤", "오야스미"]
+        good_morning=["좋은 아침", "굿모닝", "굿몬", "오하이요", "오하요", "굳 모닝", "굳모닝", "굿모닝", "굿 몬", "굿 모닝"]
+        sigh = ["하..", "아니..", "아이고..", "슬프다", "우울하"]
         contents = message.content.split(" ")
         if message.author.bot: 
             return None
+        #안녕
         if any(x in message.content for x in all_hi) and "랑이야" in message.content:
-            rangi_hi = [f"헤헤 안녕 하느냐! {message.author.name}(야)아!",
-            f"{message.author.name}(야)아! 안녕하느냐!",
+            rangi_hi = [f"헤헤 안녕 하느냐! {message.author.display_name}(야)아!",
+            f"{message.author.display_name}(야)아! 안녕하느냐!",
             "반갑느니라!!",
-            f"흐냐앗! 왔느냐 {message.author.name}(야)아!",
+            f"흐냐앗! 왔느냐 {message.author.display_name}(야)아!",
             "돌아왔구나! 보고싶었느니라!",
             "너가 없는 동안.. 나는 심심했느니라...ㅠㅠ",
             "헤헤 왔으니 이제 놀아주는 것이느냐!",
             "오늘 하루는 어떠하였느냐!? 평화롭지 않느냐! 헤헤",
-            f"{message.author.name}(이)가 왔으니 같이 놀아주거라아아!! 놀아주거라!!!! 심심하니라!!",
+            f"{message.author.display_name}(이)가 왔으니 같이 놀아주거라아아!! 놀아주거라!!!! 심심하니라!!",
             "너의 하루는 어땠느냐? 나는 낭군님만 기다리고 있었느니라!",
-            f"흐냐아앗!! 내가 얼마나 기다렸는지 알고있느냐!! 하루종일 {message.author.name}(이)만 기다렸느니라!",
+            f"흐냐아앗!! 내가 얼마나 기다렸는지 알고있느냐!! 하루종일 {message.author.display_name}(이)만 기다렸느니라!",
             "사랑 하나 주면 안 잡아 먹느니라-♡ 헤헤"
             ]
             embed=discord.Embed(title=f"{random.choice(rangi_hi)}", color=0xebe6e6)
@@ -902,9 +1067,9 @@ class UserData(commands.Cog):
             "아우우! 반가운거예요!",
             "오라버니!! 아우우우!! 보고싶었던 거예요! 꺄우우..",
             "필요한거 있으시면 말씀하시는 거예요!",
-            f"아우우! 저는 잘지내고 있는거예요! {message.author.name} 오라버니는 잘 지내고 계신가요?",
-            f"부르신 건가요! {message.author.name} 오라버니!",
-            f"아우우! {message.author.name} 오라버니가 인사 해준거예요! 그런거예요!"
+            f"아우우! 저는 잘지내고 있는거예요! {message.author.display_name} 오라버니는 잘 지내고 계신가요?",
+            f"부르신 건가요! {message.author.display_name} 오라버니!",
+            f"아우우! {message.author.display_name} 오라버니가 인사 해준거예요! 그런거예요!"
             ]
             embed=discord.Embed(title=f"{random.choice(chiyee_hi)}", color=0x4b84ce)
             embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
@@ -914,20 +1079,20 @@ class UserData(commands.Cog):
             saehee_hi = ["같이 한잔 하시겠습니까?",
             "인사는 생략 하시지요",
             "안녕 하십니까 로리ㅋ... 크흠 아닙니다",
-            f"오셨습니까 {message.author.name} 도련님",
+            f"오셨습니까 {message.author.display_name} 도련님",
             "인사할 시간 없습니다 ",
             "왠일로 저한테 인사 하신겁니까?",
             f"저 말고 랑이 님이나 찾으시지요...",
-            f"{message.author.name} 도련님이 저에게 인사를 다 하시고 세상 참 좋아졌군요"
+            f"{message.author.display_name} 도련님이 저에게 인사를 다 하시고 세상 참 좋아졌군요"
             ]
             embed=discord.Embed(title=f"{random.choice(saehee_hi)}", color=0x666666)
             embed.set_author(name="세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
             await message.channel.send(embed=embed)
             await self.give_xp(message)
-            
+        #뭐해
         elif any(x in message.content for x in all_what) and "랑이야" in message.content:
             rangi_what =[
-            f"헤헤, {message.author.name}(이)가 오기를 기다리고 있었느니라!! 잘했느냐? 그럼 쓰다듬어 주거라!",
+            f"헤헤, {message.author.display_name}(이)가 오기를 기다리고 있었느니라!! 잘했느냐? 그럼 쓰다듬어 주거라!",
             "냥이랑 놀고 있었느니라!!",
             "심심하느니라... 같이 놀아주거라!!",
             "으냐아아!! 도와주거라!!! 공부하기 싫느니라! 나래가 쫓아오느니라!!!",
@@ -942,18 +1107,16 @@ class UserData(commands.Cog):
         elif any(x in message.content for x in all_what) and "치이야" in message.content:
             chiyee_what = [
             "아우우우....언제오는지 기다리ㄱ.. ㅇ.아니 그냥 있었던거에요! 그런 거예요!",
-            f"심심한거에요 {message.author.name} 오라버니랑 같이 놀고싶....?!? 언제 오신 거예요!?",
+            f"심심한거에요 {message.author.display_name} 오라버니랑 같이 놀고싶....?!? 언제 오신 거예요!?",
             "폐이 놀아주고 있는 거에요!! 같이 노실건가요?",
             "집 정리 한거예요! 힘든거예요!",
             "밥 준비 하는거예요!! 기다리시면 불러 드릴 거예요!",
             "아우우!! 계속 기다리고 있었던 거예요!"
         ]
-            
             embed=discord.Embed(title=f"{random.choice(chiyee_what)}", color=0x4b84ce)
             embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
             await message.channel.send(embed=embed)
             await self.give_xp(message)
-            
         elif any(x in message.content for x in all_what) and "세희야" in message.content:
             saehee_what = [
             "안주인님이랑 놀고 있습니다",
@@ -970,7 +1133,137 @@ class UserData(commands.Cog):
             embed.set_author(name="세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
             await message.channel.send(embed=embed)
             await self.give_xp(message)
-
+        #좋은밤
+        elif any(x in message.content for x in good_night) and "랑이야" in message.content:
+            rangi_good_night = [f"헤헤 잘자거라 {message.author.display_name}(야)아!",
+            f"{message.author.display_name}(야)아! 잘자거라아~!",
+            "흐냐앗! 자려는것이냐? 내 꿈 꾸거라!",
+            f"{message.author.display_name}(야)아 좋은 꿈 꾸거라♡",
+            "좋은 밤되거라~",
+            "흠냐아... 아직 안잔것이냐..? 나도 졸리ㄴ..ㄹ...ㅏ..",
+            "오늘은 같이 자는것이느냐!! 나래는 몰라도 되는 것이니라! 헤헤♡",
+            "오늘 하루도 수고했느니라~ 내일도 화이팅하거라! 잘자야 하느니라!",
+            ]
+            embed=discord.Embed(title=f"{random.choice(rangi_good_night)}", color=0xebe6e6)
+            embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
+            await message.channel.send(embed=embed)
+            await self.give_xp(message)
+        elif any(x in message.content for x in good_night) and "치이야" in message.content:
+            chiyee_good_night = [
+            "꺄우우우! 벌써 주무시는 건가요? 이불 덮고 주무셔야 하는 거예요!",
+            f"좋은밤 되시는 거예요 {message.author.display_name} 오라버니!",
+            "아우우... 오늘도 수고 많으신거예요! ㅈ.. 제 꿈 꾸고 싶으면 꾸시는 거예요!",
+            "내일 아침밥은 걱정 말고 늦잠 자셔도 되는 거예요!",
+            f"피곤하실텐데! 푹 주무시는 거예요! {message.author.display_name} 오라버니",
+            "아우우우.. 랑이님과 주무시는 거라면! ㅈ.. 저도 끼고 싶은 거예요!!"
+        ]
+            embed=discord.Embed(title=f"{random.choice(chiyee_good_night)}", color=0x4b84ce)
+            embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
+            await message.channel.send(embed=embed)
+            await self.give_xp(message)
+        elif any(x in message.content for x in good_night) and "세희야" in message.content:
+            saehee_good_night = [
+            "이제 저도 레이드를 뛰러 갈 수 있겠군요",
+            "맘대로 하시지요",
+            "좋은밤 되십쇼",
+            f"호오..? {message.author.display_name} 도련님도 인사성이 있군요? 실로 놀랍군요",
+            "오늘도 늦잠 주무시겠죠 백수 도련님",
+            "제가 자장가라도 불러 드려야 하는겁니까?",
+            f"{message.author.display_name} 도련님이 저에게 인사를 다 하시고 세상 참 좋아졌군요"
+            ]
+            embed=discord.Embed(title=f"{random.choice(saehee_good_night)}", color=0x666666)
+            embed.set_author(name="세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+            await message.channel.send(embed=embed)
+            await self.give_xp(message)
+        #좋은 아침
+        elif any(x in message.content for x in good_morning) and "랑이야" in message.content:
+            rangi_good_morning = [f"일어났느냐! {message.author.display_name}(야)아! 헤헤 좋은 아침이니라~",
+            f"{message.author.display_name}(이)가 드디어 일어난 것이니라!! 기다렸느니라!",
+            "흠냐아.. 5분ㅁ..ㄷ..ㅓ.. 10분 마..ㄴ..",
+            f"좋은 아침이니라! 오늘도 화이팅 이니라!!!",
+            "흐냐?! 벌써 일어난 것이냐? 더 자야하는거 아니느냐?",
+            f"졸리니라아아.. 나랑 더 자자꾸나아 {message.author.display_name}아",
+            ]
+            embed=discord.Embed(title=f"{random.choice(rangi_good_morning)}", color=0xebe6e6)
+            embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
+            await message.channel.send(embed=embed)
+            await self.give_xp(message)
+        elif any(x in message.content for x in good_morning) and "치이야" in message.content:
+            chiyee_good_morning = [
+            "좋은 아침이에요 오라버니! 아침은 해놨으니 드셔야하는 거예요!",
+            f"좋은 아침인 거예요! {message.author.display_name} 오라버니!",
+            "오늘도 화이팅인 거예요!",
+            "아우우우?!! 왜 랑이님이 오라버니 옆에서 주무시는 거예요?!?!",
+            "굳 모닝인 거예요! (파닥파닥)"
+        ]
+            embed=discord.Embed(title=f"{random.choice(chiyee_what)}", color=0x4b84ce)
+            embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
+            await message.channel.send(embed=embed)
+            await self.give_xp(message)
+        elif any(x in message.content for x in good_morning) and "세희야" in message.content:
+            saehee_good_morning = [
+            "아직 레이드 중이니.. 인사는 나중에 하시지요",
+            "무능한 도련님 뒷처리 하느라 잠을 못 잤습니다",
+            f"좋은 아침입니다 {message.author.display_name} 도련님",
+            f"(열심히 레이드 중이다. 건들면 레이드 당할거 같다)",
+            "이제야 일어나시는군요 백수 도련님. 곰이 겨울잠이라도 자는줄 알았습니다.",
+            ]
+            embed=discord.Embed(title=f"{random.choice(saehee_good_morning)}", color=0x666666)
+            embed.set_author(name="세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+            await message.channel.send(embed=embed)
+            await self.give_xp(message)
+        #사랑
+        elif any(x in message.content for x in love) and "랑이야" in message.content:
+            rangi_love = [
+            f"나도 엄청 사랑하니라♡! {message.author.display_name}(야)아!",
+            f"후냥? 갑자기 나의 사랑을 원하는 것이냐!! 많이 줄 수 있느니라♡♡♡♡♡♡♡♡",
+            "흐냐아앗!! 갑자기 그런말 하면 부끄럽느니라!",
+            "나도! 나도 그렇느니라♡! 사랑 하느니라!!",
+            "흐냐!! 내가 먼저 할려 했느니라!!! 내가 더 많이 할것이니라!! 사랑하니라! 사랑하니라!!!!",
+            ]
+            embed=discord.Embed(title=f"{random.choice(rangi_love)}", color=0xebe6e6)
+            embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
+            await message.channel.send(embed=embed)
+            await message.add_reaction("❤️")
+            await self.give_xp(message)
+        elif any(x in message.content for x in love) and "치이야" in message.content:
+            chiyee_love = [
+            "꺄우우!! 갑자기 그러는건 반칙인 거예요!! 그런거예요!!!",
+            f"저도 {message.author.display_name} 오라버니 많이 사랑하는 거예요!",
+            "아우우우♡♡!!!!!!(파닥파닥파닥파닥파닥파닥)",
+            "저도 사랑하는 거예요!! 더 많이 사랑하는 거예요!!! ",
+            "저도 그런거예요!! 오라버니 보다 더 사랑하는건 없는 거예요!"
+        ]
+            embed=discord.Embed(title=f"{random.choice(chiyee_love)}", color=0x4b84ce)
+            embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
+            await message.channel.send(embed=embed)
+            await message.add_reaction("❤️")
+            await self.give_xp(message)
+        elif any(x in message.content for x in love) and "세희야" in message.content:
+            saehee_love = [
+            "역겹군요 도련님..",
+            "와타시도 스키다요♡♡♡ 라도 원하셨습니까?",
+            f"헛소리 마십쇼 {message.author.display_name} 도련님",
+            "갑자기 왜 그러십니까? 필요한거라도 생기셨는지요?",
+            "..... 이젠 제 몸까지 탐하시나요?",
+            ]
+            embed=discord.Embed(title=f"{random.choice(saehee_love)}", color=0x666666)
+            embed.set_author(name="세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
+            await message.channel.send(embed=embed)
+            await message.add_reaction("❤️")
+            await self.give_xp(message)
+        #한숨
+        elif any(x in message.content for x in sigh):
+            worry = [
+                "흐냐..? 무엇 때문에 그렇게 한숨을 쉬느냐..? 내가 들어 주겠느니라",
+                '걱정거리가 있느냐? 내가 들어 주겠느니라',
+                '근심 걱정이 가득한 얼굴이니라.. 내가 해줄 수 있는게 있으면 꼭 말하거라!',
+                f'다 잘풀릴 것이니라..! 조금만 참아 보거라 {message.author.display_name}(아)야..!'
+            ]
+            embed=discord.Embed(title=f"{random.choice(worry)}", color=0xebe6e6)
+            embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
+            await message.channel.send(embed=embed)
+    #이름 부르기
     @commands.command(name="랑이야")
     async def rangi_call(self, ctx, position = None):
         rangi = [
@@ -1351,6 +1644,82 @@ class UserData(commands.Cog):
             await interaction.response.send_message(embed=embed, view=view)
         else:
             await interaction.response.send_message(content="[돈 부족. 판결. 사기꾼]", ephemeral=True)
+
+    def DigGame_create_img(msg,tier):
+        image = Image.open(os.path.join(f"{__location__}\\DigGame\\DigGameImg{tier}.jpg"))
+        fonts_dir = os.path.join(f"{__location__}\\DigGame")
+        draw = ImageDraw.Draw(image)
+        draw.text((30,25),msg,font=ImageFont.truetype(os.path.join(fonts_dir, 'Dobong_Cultural_Routes(TTF).ttf'), 35), fill=(255,255,255))
+        image.save(os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg"))
+
+    @app_commands.command(name="땅파기", description="땅파기 게임입니다")
+    async def DigGame(self, interaction: discord.Interaction):
+        self.check_user(str(interaction.user.id))
+
+        item_list =[["개량한복", 0x2ecc71, "Common", "rangi_hanbok"], 
+        ["술잔", 0x2ecc71, "Common", "saehee_shotglass"],
+        ["국자", 0x2ecc71, "Common", "chiyee_gookja"],
+        ["저고리", 0x3498db, "Rare", "rangi_jeogorri"],
+        ["깃털 머리띠", 0x3498db, "Rare", "chiyee_hairband"],
+        ["솥뚜껑", 0x3498db, "Rare", "saehee_sotlid"],
+        ["이빨", 0x71368a, "Epic", "rangi_teeth"],
+        ["비녀", 0x71368a, "Epic", "saehee_beenyo"],
+        ["줄무늬 그것", 0x71368a, "Epic", "chiyee_julmuni"],
+        ["대요괴의 침", 0xe67e22, "Legendary", "legendary_saliva"]]
+
+        # image = Image.open(os.path.join(f"{__location__}\\DigGame\\DigGameImgBase.jpg"))
+        # fonts_dir = os.path.join(f"{__location__}\\DigGame")
+        # draw = ImageDraw.Draw(image)
+        # draw.text((360,95),msg,font=ImageFont.truetype(os.path.join(fonts_dir, 'Dobong_Cultural_Routes(TTF).ttf'), 35), fill=(255,255,255))
+        # image.save(os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg"))
+
+        # os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg")
+
+        # embed = discord.Embed(title="땅파기 게임", colour=discord.Colour(0xe67e22))
+        # file = discord.File(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgEdit.jpg"), filename="image.jpg")
+        # embed.set_image(url="attachment://image.jpg")
+        # embed.set_author(name="바둑이", icon_url="https://cdn.discordapp.com/attachments/525940059330052107/1134923364478226505/141298252133.jpg")
+        # await interaction.response.send_message(embed=embed, file=file)
+
+        user_id = interaction.user.id
+        dig_var = DigVars(user_id)
+        view = View()
+        view.add_item(DigGameButtons('파내기', discord.ButtonStyle.gray, "🔍", "pull", dig_var))
+        view.add_item(DigGameButtons('그만두기', discord.ButtonStyle.gray, "❌", "quit", dig_var))
+        embed = DigGameButtons.DigGame_msg(False, "🐶바둑이가 달려간다", "땅파기 시작!")
+        await interaction.response.send_message(embed=embed, view=view)
+
+        DigGame_msg_num = 1
+        await asyncio.sleep(1)
+        while DigGame_msg_num != 8 and DigGame_msg_num != 7 and dig_var.end == False:
+            msg = DigGame_msg_dict[DigGame_msg_num]
+            embed = DigGameButtons.DigGame_msg(False, msg, "기다리는 중...")
+            await interaction.edit_original_response(embed=embed)
+            DigGame_msg_num = random.randint(1,8)
+            await asyncio.sleep(random.randint(1,3))
+        if dig_var.end == False:
+            dig_var.item = True
+            msg = DigGame_msg_dict[DigGame_msg_num]
+            embed = DigGameButtons.DigGame_msg(False, msg, "기다리는 중...")
+            await interaction.edit_original_response(embed=embed)
+
+            av_time = random.randint(1,3)
+            await asyncio.sleep(av_time)
+            if dig_var.caught == False:
+                embed = DigGameButtons.DigGame_msg(False, "💦바둑이가 지친 듯 하다", "땅파기 실패..")
+                await interaction.edit_original_response(embed=embed, view=None)
+            else:
+                num = random.randint(0,1000)
+                if num < 10:
+                    self.data[str(interaction.user.id)]["item"][item_list[num][3]] += 1
+                    UserData.DigGame_create_img(item_list[num][0]+" 교환권", item_list[num][2])
+                    embed = DigGameButtons.DigGame_msg(True, f"{item_list[num][0]} | 등급: {item_list[num][2]}", "❔❔❔ 찾았다!", item_list[num][1])
+                else:
+                    self.data[str(interaction.user.id)]['money'] += num
+                    UserData.DigGame_create_img(str(num)+"원 교환권", "Money")
+                    embed = DigGameButtons.DigGame_msg(True, f"{num}원 | 등급: 몰?루", "💰💰💰 찾았다!")
+                file = discord.File(os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg"), filename="image.jpg")
+                await interaction.edit_original_response(embed=embed, view=None, attachments=[file])
 
 async def setup(bot):
     await bot.add_cog(UserData(bot))
