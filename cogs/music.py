@@ -34,7 +34,6 @@ class Music(commands.Cog):
         await self.join(interaction, channel)
            
     async def join(self, interaction: discord.Interaction, channel: typing.Optional[discord.VoiceChannel]):
-
         if channel is None:
             try:
                 self.server_voicechannel[interaction.guild.id] = interaction.user.voice.channel.id
@@ -91,7 +90,8 @@ class Music(commands.Cog):
                 search = search.split("&")[0]
             except: 
                 pass
-        search = await wavelink.YouTubeTrack.search(search, return_first=True)
+        search = await wavelink.YouTubeTrack.search(search)
+        search = search[0]
 
         if not interaction.guild.voice_client:
             try:
@@ -140,9 +140,11 @@ class Music(commands.Cog):
         msg = ""
         try:
             if len(self.queue[interaction.guild.id]) > 0:
+                play_list = None
                 for num, title in enumerate(self.queue[interaction.guild.id]):
                     msg += f'{num}: {title}\n'
-                    await interaction.response.send_message(msg)
+                    
+                await interaction.response.send_message(msg)
             else:
                 await interaction.response.send_message("재생목록이 비어있습니다")
         except KeyError:
