@@ -1196,7 +1196,7 @@ class UserData(commands.Cog):
             "아우우우?!! 왜 랑이님이 오라버니 옆에서 주무시는 거예요?!?!",
             "굳 모닝인 거예요! (파닥파닥)"
         ]
-            embed=discord.Embed(title=f"{random.choice(chiyee_what)}", color=0x4b84ce)
+            embed=discord.Embed(title=f"{random.choice(chiyee_good_morning)}", color=0x4b84ce)
             embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
             await message.channel.send(embed=embed)
             await self.give_xp(message)

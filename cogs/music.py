@@ -14,8 +14,10 @@ class Music(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
         self.queue = {}
+        self.authors = {}
         self.loops = {}
         self.server_voicechannel = {}
+        self.channels = {}
         self.nodeid = None
         bot.loop.create_task(self.create_nodes())
 
@@ -90,6 +92,8 @@ class Music(commands.Cog):
                 search = search.split("&")[0]
             except: 
                 pass
+
+        search = await wavelink.YouTubeTrack.search(search, return_first=True)
         search = await wavelink.YouTubeTrack.search(search)
         search = search[0]
 
@@ -104,18 +108,39 @@ class Music(commands.Cog):
 
         if interaction.guild.id in self.queue:
             self.queue[interaction.guild.id].append(search)
+            self.authors[interaction.guild.id].append(interaction.user.display_name)
+            self.channels[interaction.guild.id].append(interaction.channel)          
         else:
             self.queue[interaction.guild.id] = []
+            self.authors[interaction.guild.id] = []
+            self.channels[interaction.guild.id] = []         
             self.queue[interaction.guild.id].append(search)
-
+            self.authors[interaction.guild.id].append(interaction.user.display_name)
+            self.channels[interaction.guild.id].append(interaction.channel)
+   
         await interaction.response.send_message(f'{search}이/가 재생목록에 추가되었습니다')
 
         if not vc.is_playing() and not vc.is_paused():
             while len(self.queue[interaction.guild.id]) > 0:
+                
+                duration = self.queue[interaction.guild.id][0].length
+                duration /= 1000
+                durationmin = duration // 60
+                durationsec = duration % 60
+                embed=discord.Embed(title = self.queue[interaction.guild.id][0], url=self.queue[interaction.guild.id][0].uri,description=self.queue[interaction.guild.id][0].author)
+                embed.set_thumbnail(url = self.queue[interaction.guild.id][0].thumbnail)
+                embed.add_field(name=f"00:00 ~ {int(durationmin)}:{int(durationsec)}", value="GUI 준비중", inline=True)
+                embed.set_footer(text=self.authors[interaction.guild.id][0])
+
+                await self.channels[interaction.guild.id][0].send(embed=embed)
                 await vc.play(self.queue[interaction.guild.id][0])
+
+                del self.authors[interaction.guild.id][0]
+                del self.channels[interaction.guild.id][0]
+
                 while vc.is_playing() or vc.is_paused():
-                    await asyncio.sleep(0.1)
-                    #0.1초마다 노래가 끝났는지 아닌지 확인
+                    await asyncio.sleep(5)
+                    #5초마다 노래가 끝났는지 아닌지 확인
                 try:
                     if not self.loops[interaction.guild.id]:
                     #사람이 있는지 없는지 확인 후 통화방 나가기
@@ -124,10 +149,8 @@ class Music(commands.Cog):
                     self.queue[interaction.guild.id].pop(0)
                     #사람이 있는지 없는지 확인 후 통화방 나가기
 
-                        
-
         self.loops[interaction.guild.id] = False
-
+        
     @app_commands.command(name="재생목록", description="재생목록을 불러옵니다")
     async def playlistcommand_kor(self, interaction: discord.Interaction):
         await self.play_list(interaction)
