@@ -6,8 +6,43 @@ import typing
 import wavelink
 import os
 import random
+from discord.ui import Button, View
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+
+class MusicPlayerButtons(Button):
+    def __init__(self, label, button_style, emoji, custom_id, embed):
+        super().__init__(label=label, style=button_style, emoji=emoji, custom_id=custom_id)
+        self.custom_id=str(custom_id)
+        self.embed=embed
+
+    async def pause(self, interaction):
+        await Music.pause(interaction)
+        await interaction.response.edit_message(embed=self.embed)
+
+    async def resume(self, interaction):
+        await Music.resume(interaction)
+        await interaction.response.edit_message(embed=self.embed)
+
+    async def skip(self, interaction):
+        await Music.skip(interaction)
+        await interaction.response.edit_message(embed=self.embed)
+
+    async def loop(self, interaction):
+        await Music.loop(interaction)
+        await interaction.response.edit_message(embed=self.embed)
+
+    async def callback(self, interaction):
+        if self.custom_id == "pause":
+            await MusicPlayerButtons.pause(self, interaction)
+        elif self.custom_id == "resume":
+            await MusicPlayerButtons.resume(self, interaction)
+        elif self.custom_id == "skip":
+            await MusicPlayerButtons.skip(self, interaction)
+        elif self.custom_id == "loop":
+            await MusicPlayerButtons.loop(self, interaction)
+        else:
+            return
 
 class Music(commands.Cog):
     def __init__(self, bot) -> None:
@@ -131,7 +166,13 @@ class Music(commands.Cog):
                 embed.add_field(name=f"00:00 ~ {int(durationmin)}:{int(durationsec)}", value="GUI 준비중", inline=True)
                 embed.set_footer(text=self.authors[interaction.guild.id][0])
 
-                await self.channels[interaction.guild.id][0].send(embed=embed)
+                view = View()
+                view.add_item(MusicPlayerButtons('', discord.ButtonStyle.red, "⏸", "pause", embed))
+                view.add_item(MusicPlayerButtons('', discord.ButtonStyle.blue, "⏵", "resume", embed))
+                view.add_item(MusicPlayerButtons('', discord.ButtonStyle.gray, "⏭", "skip", embed))
+                view.add_item(MusicPlayerButtons('', discord.ButtonStyle.gray, "🔁", "loop", embed))
+
+                await self.channels[interaction.guild.id][0].send(embed=embed, view=view)
                 await vc.play(self.queue[interaction.guild.id][0])
 
                 del self.authors[interaction.guild.id][0]
