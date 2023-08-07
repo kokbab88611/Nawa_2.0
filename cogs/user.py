@@ -10,6 +10,7 @@ import pandas as pd
 from time import gmtime, strftime
 import PIL
 from PIL import Image, ImageFont, ImageDraw
+from discord import ui
 
 import string,array,time
 import asyncio
@@ -625,6 +626,13 @@ class DigGameButtons(Button):
                 await DigGameButtons.pull(self, interaction)
         else:
             await interaction.response.send_message(content="타인의 게임에 관여할 수 없습니다", ephemeral=True)
+
+class GachaModals(ui.Modal, title="가챠 횟수를 입력 해 주십시오"):
+    val = ui.TextInput(label="숫자를 입력해 주십시오 (회당 30000원)")
+
+    async def on_submit(self, interaction: discord.Interaction):
+        self.val = self.children[0].value
+        self.stop()
 
 #___________________________________________________________________________________________________________________________________________
 
@@ -1380,6 +1388,12 @@ class UserData(commands.Cog):
     @app_commands.command(name="가챠", description="호감도템 가챠")
     async def gacha(self, interaction: discord.Interaction):
         self.check_user(str(interaction.user.id))
+
+        gacha_modal = GachaModals()
+        await interaction.response.send_modal(gacha_modal)
+        await gacha_modal.wait()
+        await interaction.response.edit_original_response(content=gacha_modal.val)
+
         pos = {"Common": 40, "Rare": 45, "Epic": 13, "Legendary": 2}
         item_list = {
             "개량한복": {
