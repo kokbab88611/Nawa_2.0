@@ -642,9 +642,6 @@ class UserData(commands.Cog):
         self.data = self.get_json()
         self.repeat_save_user.start()
         self.reset_attendence.start()
-        self.stock_change.start()
-        self.stock_tickers = ['ygn', 'jfb', 'pco', 'chh', 'bbo', 'yls', 'grn', 'sbb', 'ntg', 'nrh', 'ayi', 'rit', 'nhh', 'jns', 'shp',]
-        self.stock_price_df = pd.DataFrame(columns=self.stock_tickers)
         self.self_ = self
         self.stock_list ={
         'ygn':['요괴넷', '요괴의 인터넷 문화를 대표하는 커뮤니티 포털사이며, 요괴들에게 다양한 방면으로 정보를 제공하며 이용자간에 자유로운 소통이 가능하다.'
@@ -663,12 +660,18 @@ class UserData(commands.Cog):
             '일반인들에게는 큰 인기를 얻지 못했지만, 최근 연애를 위해 신청하는 일반인들도 늘어났다.', 1000, 0],
         'ayi':['아야 인더스트리', '전 세계적으로 기술력을 인정받고 있는 모피를 생산하는 피혁 업계의 선두 기업이다.',4000, 0],
         'rit':['랑이 임플란트', '치과용 임플란트 및 치과용 소프트웨어 제조, 판매를 주요 사업으로 영위하고 있다. CEO또한 해당 제품을 사용하는 것으로'
-            '밝혀지면서 유명세를 얻었다',70000, 0],
+            '밝혀지면서 유명세를 얻었다', 70000, 0],
         'nhh':['낳갤', '디시인사이드에 2017년 1월 31일에 개설된 나와 호랑이님의 마이너 갤러리. 페이퍼 컴퍼니다.', 800, 0],
         'jns':['견우성투어', '일반여행업을 주요 사업으로 영위할 목적으로 설립됨. 견우성을 거점으로 한 서비스제공 사업 등을 영위하고 있음.', 700, 0],
         'shp':['성훈노벨', '만화 및 소설 관련 컨텐츠 사업을 영위 하고 있다. CEO가 투잡을 뛴다는 소문이...', 500, 0],
     }
-
+        self.stock_tickers = ['ygn', 'jfb', 'pco', 'chh', 'bbo', 'yls', 'grn', 'sbb', 'ntg', 'nrh', 'ayi', 'rit', 'nhh', 'jns', 'shp']
+        self.stock_prices = [x[-2] for x in self.stock_list.values()]
+        self.stock_price_df = pd.DataFrame(columns=self.stock_tickers)
+        self.stock_dict = dict(zip(self.stock_tickers, self.stock_prices))
+        self.stock_price_df.loc[len(self.stock_price_df)] = self.stock_dict
+        print(self.stock_price_df) 
+        self.stock_change.start()
         @bot.event
         async def on_message(message):
             for i in blacklist_id_list:
@@ -937,10 +940,11 @@ class UserData(commands.Cog):
         for user_id in self.data.items():
             self.data[user_id[0]]["attendence"] = False        
 
-
-    @tasks.loop(seconds=600)
+    @tasks.loop(seconds=10)
     async def stock_change(self):
-        percentage = {"below_one": 90, "below_three": 5.5, "below_five": 3, "below_ten": 1, "event": 0.5}
+        df = {'ygn': None, 'jfb': None, 'pco': None, 'chh': None, 'bbo': None, 'yls': None, 'grn': None, 'sbb': None, 
+                'ntg': None, 'nrh': None, 'ayi': None, 'rit': None, 'nhh': None, 'jns': None, 'shp': None}
+        percentage = {"below_one": 95, "below_three": 3, "below_five": 1, "below_ten": 0.5, "event": 0.5}
         for stock_ticker in self.stock_list.keys():
             change_value = None
             a = random.choices(list(percentage.keys()), weights = list(percentage.values()))[0]
@@ -961,16 +965,20 @@ class UserData(commands.Cog):
                 change_value = random_num / 100
 
             def increase(stock_ticker, change_value):
-                self.stock_list[stock_ticker][-2] = float(self.stock_list[stock_ticker][-2])*(1+change_value)
+                df[stock_ticker] = round(float(self.stock_price_df[stock_ticker].iloc[-1])*(1+change_value),2)
 
             def decrease(stock_ticker, change_value):
-                self.stock_list[stock_ticker][-2] = float(self.stock_list[stock_ticker][-2])*(1-change_value)                                                  
+                df[stock_ticker] = round(float(self.stock_price_df[stock_ticker].iloc[-1])*(1-change_value),2)                                             
 
             alter = random.choice([increase, decrease])
             alter(stock_ticker, change_value)
-            self.stock_price_df[stock_ticker]
 
-    
+        self.stock_price_df.loc[len(self.stock_price_df)] = df
+        length_df = len(self.stock_price_df)
+        if length_df == 16:
+            self.stock_price_df = self.stock_price_df.drop(self.stock_price_df.index[:1])
+            self.stock_price_df = self.stock_price_df.reset_index(drop=True)
+        print(self.stock_price_df)
 
     # @tasks.loop(time= after_ten.time())
     # async def repeat_every_ten(self):
@@ -993,7 +1001,6 @@ class UserData(commands.Cog):
     @app_commands.command(name="생일캐릭터", description="캐릭터변경")
     async def birthday_character(self, interaction: discord.Interaction):
         self.check_user(str(interaction.user.id))
-
 
     @app_commands.command(name="생일", description="생일설정 *변경 불가 /생일 월 일")
     async def birthday(self, interaction: discord.Interaction, month: int, date: int):
