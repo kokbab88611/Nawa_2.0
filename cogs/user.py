@@ -1396,10 +1396,10 @@ class UserData(commands.Cog):
     async def gacha(self, interaction: discord.Interaction):
         self.check_user(str(interaction.user.id))
 
-        gacha_modal = GachaModals()
-        await interaction.response.send_modal(gacha_modal)
-        await gacha_modal.wait()
-        await interaction.response.edit_original_response(content=gacha_modal.val)
+        # gacha_modal = GachaModals()
+        # await interaction.response.send_modal(gacha_modal)
+        # await gacha_modal.wait()
+        # await interaction.response.edit_original_response(content=gacha_modal.val)
 
         pos = {"Common": 40, "Rare": 45, "Epic": 13, "Legendary": 2}
         item_list = {
