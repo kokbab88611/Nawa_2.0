@@ -11,7 +11,8 @@ from time import gmtime, strftime
 import PIL
 from PIL import Image, ImageFont, ImageDraw
 from discord import ui
-
+from matplotlib import pyplot as plt
+import matplotlib.font_manager as fm
 import string,array,time
 import asyncio
 from discord import Interaction,Reaction,InteractionResponse
@@ -22,7 +23,7 @@ from discord.ui import Button, View
 지리산 F&B jfb
 폐이코  pco
 치이 홀딩스 chh
-범이 바이오 bbo
+까미 바이오 kbo
 나호갤  nhg
 염라상조   yls 
 직녀성  jns
@@ -32,7 +33,7 @@ NT&G (냥이 담배 인삼 공사) ntg
 나래 헬스케어    nrh
 아야 인더스트리 ayi
 랑이 임플란트    rit
-성훈피아    shp
+성훈피아    shn
 """
 
 blacklist_id_list = [
@@ -81,6 +82,16 @@ DigGame_msg_dict = {1:"킁킁..  찾고 있을게요! 조금 어렵지만 찾을
 6:"냄새가 나요! 제가 빨리 파고 있을게요 주인님은 쉬고 계세요!",
 7:"❗❗❗주인님이 좋아할 만한걸 찾은거 같아요!",
 8:"❗❗❗찾았어요!! 쓰담쓰담 해주세요!",}
+
+font_location = os.path.join(f'{__location__}\\Stock\\NanumGothic.ttf')
+
+fe = fm.FontEntry(
+    fname=font_location, # ttf 파일이 저장되어 있는 경로
+    name='NanumGothic')                        # 이 폰트의 원하는 이름 설정
+fm.fontManager.ttflist.insert(0, fe)              # Matplotlib에 폰트 추가
+plt.rcParams.update({'font.size': 13, 'font.family': 'NanumGothic'}) #
+plt.style.use('dark_background')
+plt.ylim(bottom=1) 
 
 class Character(discord.ui.View):
     def __init__(self, self_, user_id):
@@ -649,7 +660,7 @@ class UserData(commands.Cog):
         'jfb':['지리산 F&B', '식품 제조 및 판매 업체이다. 지리산에서 수확한 식재료 사용으로 많이 알려져있으며, 국내 친환경 유기농 식품 선두 주자이다', 100000, 0],
         'pco':['폐이코', '결제 데이터를 수집하여 빅데이터 기반의 요괴의 신용평가 모델을 개발하고 제공한다',50000, 0],
         'chh':['치이 홀딩스', '오작교 그룹 계열사 지분을 다수 가지고 있으며, 대한민국 3대 건설사인 오작교 건설사의 최대주주이다',50000, 0],
-        'bbo':['범이 바이오', '특수 한약재를 이용하여 의약품, 화장품 등의 원료 제조 및 판매를 목적으로 설립되었다. 최근 대표 의약품의 주 원료가 "침" 인것으로'
+        'kbo':['까미 바이오', '특수 한약재를 이용하여 의약품, 화장품 등의 원료 제조 및 판매를 목적으로 설립되었다. 최근 대표 의약품의 주 원료가 "침" 인것으로'
             '발각되어 CEO는 도주중이다', 50000, 0],
         'yls':['염라상조', '대한민국 1위 상조 회사이자 관혼상제 전문 행사 기업이다. CEO 염라의 과음으로 인해 주주들의 반발이 심한 회사이다',100000, 0],
         'grn':['기린 미디어', '만화 및 애니메이션 콘텐츠와 관련한 종합 엔터테인먼트 사업을 주 사업으로 운영중이며, 서브컬쳐 문화의 선두주자이다.', 15000, 0],
@@ -663,14 +674,11 @@ class UserData(commands.Cog):
             '밝혀지면서 유명세를 얻었다', 70000, 0],
         'nhh':['낳갤', '디시인사이드에 2017년 1월 31일에 개설된 나와 호랑이님의 마이너 갤러리. 페이퍼 컴퍼니다.', 800, 0],
         'jns':['견우성투어', '일반여행업을 주요 사업으로 영위할 목적으로 설립됨. 견우성을 거점으로 한 서비스제공 사업 등을 영위하고 있음.', 700, 0],
-        'shp':['성훈노벨', '만화 및 소설 관련 컨텐츠 사업을 영위 하고 있다. CEO가 투잡을 뛴다는 소문이...', 500, 0],
+        'shn':['성훈노벨', '만화 및 소설 관련 컨텐츠 사업을 영위 하고 있다. CEO가 투잡을 뛴다는 소문이...', 500, 0],
     }
-        self.stock_tickers = ['ygn', 'jfb', 'pco', 'chh', 'bbo', 'yls', 'grn', 'sbb', 'ntg', 'nrh', 'ayi', 'rit', 'nhh', 'jns', 'shp']
+        self.stock_tickers = ['ygn', 'jfb', 'pco', 'chh', 'kbo', 'yls', 'grn', 'sbb', 'ntg', 'nrh', 'ayi', 'rit', 'nhh', 'jns', 'shn']
         self.stock_prices = [x[-2] for x in self.stock_list.values()]
-        self.stock_price_df = pd.DataFrame(columns=self.stock_tickers)
-        self.stock_dict = dict(zip(self.stock_tickers, self.stock_prices))
-        self.stock_price_df.loc[len(self.stock_price_df)] = self.stock_dict
-        print(self.stock_price_df) 
+        self.stock_price_df = self.get_csv()
         self.stock_change.start()
         @bot.event
         async def on_message(message):
@@ -940,10 +948,17 @@ class UserData(commands.Cog):
         for user_id in self.data.items():
             self.data[user_id[0]]["attendence"] = False        
 
+    @app_commands.command(name="주식", description="주식 거래")
+    async def stock_command(self, interaction: discord.Interaction):
+        image_file = discord.File(os.path.join(f"{__location__}\\Stock\\nrh.png"), filename="nrh.png")
+        embed = discord.Embed() # any kwargs you want here
+        embed.set_image(url="attachment://nrh.png")
+        await interaction.response.send_message(embed=embed, file=image_file)
+
     @tasks.loop(seconds=10)
     async def stock_change(self):
-        df = {'ygn': None, 'jfb': None, 'pco': None, 'chh': None, 'bbo': None, 'yls': None, 'grn': None, 'sbb': None, 
-                'ntg': None, 'nrh': None, 'ayi': None, 'rit': None, 'nhh': None, 'jns': None, 'shp': None}
+        df = {'ygn': None, 'jfb': None, 'pco': None, 'chh': None, 'kbo': None, 'yls': None, 'grn': None, 'sbb': None, 
+                'ntg': None, 'nrh': None, 'ayi': None, 'rit': None, 'nhh': None, 'jns': None, 'shn': None}
         percentage = {"below_one": 95, "below_three": 3, "below_five": 1, "below_ten": 0.5, "event": 0.5}
         for stock_ticker in self.stock_list.keys():
             change_value = None
@@ -978,7 +993,32 @@ class UserData(commands.Cog):
         if length_df == 16:
             self.stock_price_df = self.stock_price_df.drop(self.stock_price_df.index[:1])
             self.stock_price_df = self.stock_price_df.reset_index(drop=True)
-        print(self.stock_price_df)
+            
+        self.set_csv()
+
+        for stock_ticker in self.stock_list.keys():
+            self.stock_price_df[stock_ticker].plot()
+            plt.title(f'{stock_ticker} 주가')
+            plt.tight_layout()
+            plt.savefig(os.path.join(f"{__location__}\\Stock\\{stock_ticker}.png"))
+            plt.clf()
+
+    def set_csv(self):
+        try:
+            self.stock_price_df.to_csv(os.path.join(f"{__location__}\\Stock\\stock_price.csv"), index=False)
+        except TypeError:
+            pass
+
+    def get_csv(self):
+        try:
+            with open(os.path.join(f"{__location__}\\Stock\\stock_price.csv"),'r') as f:
+                return pd.read_csv(f)
+        except:
+            self.stock_price_df = pd.DataFrame()
+            self.stock_dict = dict(zip(self.stock_tickers, self.stock_prices))
+            self.stock_price_df.loc[len(self.stock_price_df)] = self.stock_dict
+            return pd.DataFrame(columns=self.stock_tickers)
+            
 
     # @tasks.loop(time= after_ten.time())
     # async def repeat_every_ten(self):

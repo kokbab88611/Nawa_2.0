@@ -21,7 +21,6 @@ async def load_cogs():
     synced = await bot.tree.sync()
     print(f"{len(synced)}개의 커맨드를 sync했느니라!")
 
-
 @bot.event
 async def setup_hook():
     """ 
@@ -29,7 +28,6 @@ async def setup_hook():
     해당 코드가 없으면 슬래시 커맨드가 작동되지 않을뿐더러 자동완성 기능또한 사용불가
     """
     await load_cogs()
-
 
 @bot.event
 async def on_ready():
