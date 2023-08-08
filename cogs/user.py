@@ -756,10 +756,26 @@ class UserData(commands.Cog):
                         "chiyee_julmuni" : 0,
                         "legendary_saliva" : 0
                     },
+                    "stock_list": {'ygn': 0, 
+                        'jfb': 0, 
+                        'pco': 0, 
+                        'chh': 0, 
+                        'kbo': 0, 
+                        'yls': 0, 
+                        'grn': 0, 
+                        'sbb': 0, 
+                        'ntg': 0, 
+                        'nrh': 0, 
+                        'ayi': 0, 
+                        'rit': 0, 
+                        'nhh': 0, 
+                        'jns': 0, 
+                        'shn': 0
+                    },
                     "attendence": False,
                     "birthday": False,
-                    "birthday_character": "rangi"
-                }
+                    "birthday_character": "rangi",
+                    }
         else:
             pass
 
@@ -951,9 +967,20 @@ class UserData(commands.Cog):
     @app_commands.command(name="주식", description="주식 거래")
     async def stock_command(self, interaction: discord.Interaction):
         image_file = discord.File(os.path.join(f"{__location__}\\Stock\\nrh.png"), filename="nrh.png")
-        embed = discord.Embed() # any kwargs you want here
-        embed.set_image(url="attachment://nrh.png")
+        embed = discord.Embed() 
+        embed.set_image(url=f"attachment://{}.png") #종목 고르고 차트 확인가능 종목 티커를 안에 넣기. 종목 티커 목록은 init참고
         await interaction.response.send_message(embed=embed, file=image_file)
+
+    async def stock_trade(self, user_id: str, ticker, amount, option):  
+        if option == "buy":
+            self.data[user_id][ticker] += amount
+            self.data[user_id]["money"] -= amount * self.stock_price_df[ticker].iloc[-1]
+
+        elif option == "sell":
+            self.data[user_id][ticker] -= amount     
+            self.data[user_id]["money"] += amount * self.stock_price_df[ticker].iloc[-1]
+
+    #티커는 아래 df
 
     @tasks.loop(seconds=10)
     async def stock_change(self):
@@ -990,6 +1017,7 @@ class UserData(commands.Cog):
 
         self.stock_price_df.loc[len(self.stock_price_df)] = df
         length_df = len(self.stock_price_df)
+
         if length_df == 16:
             self.stock_price_df = self.stock_price_df.drop(self.stock_price_df.index[:1])
             self.stock_price_df = self.stock_price_df.reset_index(drop=True)
@@ -1054,7 +1082,6 @@ class UserData(commands.Cog):
             embed_birthday = discord.Embed(title= f"생일을 {date_time_obj.month}월 {date_time_obj.day}일로 설정 하실건가요!", description="다시는 바꾸실 수 없는거예요! 아시겠나요!",color=0x0aa40f)
             embed_birthday.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
             await interaction.response.send_message(view=view, embed=embed_birthday)
-
         else:
             embed_reject = discord.Embed(title=f"이미 생일을 설정 하신 거예요!!", description="생일은 바꾸실 수 없는 거예요!!",color=0x0aa40f)
             embed_reject.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
