@@ -280,11 +280,11 @@ class StockSelect(discord.ui.Select):
         self.user_id = user_id
         self.self_ = self_
         self.choice = None
-        lst = ['ygn', 'jfb', 'pco', 'chh', 'kbo', 'yls', 'grn', 'sbb',  'ntg', 'nrh', 'ayi', 'rit', 'nhh', 'jns', 'shn']
+        self.lst = ['ygn', 'jfb', 'pco', 'chh', 'kbo', 'yls', 'grn', 'sbb',  'ntg', 'nrh', 'ayi', 'rit', 'nhh', 'jns', 'shn']
         options=[]
         
-        for i in range(len(lst)):
-            options.append(discord.SelectOption(label=lst[i], description=f"{UserData.get_user_stock(self_, user_id, lst[i])}주 보유", value=i))
+        for i in range(len(self.lst)):
+            options.append(discord.SelectOption(label=self.lst[i], description=f"{UserData.get_user_stock(self_, user_id, self.lst[i])}주 보유", value=i))
 
         super().__init__(
             placeholder="주식 종목", options=options, min_values=1, max_values=1
@@ -292,9 +292,9 @@ class StockSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         if str(interaction.user.id) == self.user_id:
-            self.choice = lst[self.values[0]]
+            self.choice = self.lst[int(self.values[0])]
             embed=discord.Embed(title=f"{self.choice}을 선택하셨습니다", description="", color=0xe8dbff)
-            await interaction.response.edit_message(view=view, embed=embed)
+            await interaction.response.edit_message(embed=embed)
         else:
             await interaction.response.send_message(content="주식을 하고 싶으시면 /주식 을 하시면 됩니다 쓰레기 주인님", ephemeral=True)
         
@@ -990,15 +990,12 @@ class UserData(commands.Cog):
     @app_commands.command(name="주식", description="주식 거래")
     async def stock_command(self, interaction: discord.Interaction):
         user_id = str(interaction.user.id)
-        UserData.check_user(user_id)
+        self.check_user(user_id)
         view=View()
         Select = StockSelect(self, user_id)
         view.add_item(Select)
         await interaction.response.send_message(view=view)
-
-        choice = Select.choice
-
-        print(chocie)
+        
         # image_file = discord.File(os.path.join(f"{__location__}\\Stock\\nrh.png"), filename="nrh.png")
         # embed = discord.Embed()
         # embed.set_image(url=f"attachment://{var}.png") #종목 고르고 차트 확인가능 종목 티커를 안에 넣기. 종목 티커 목록은 init참고

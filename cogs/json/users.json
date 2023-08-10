@@ -26,5 +26,50 @@
         "attendence": false,
         "birthday": false,
         "birthday_character": "rangi"
+    },
+    "474389454262370314": {
+        "level": {
+            "main": 1,
+            "xp": 0,
+            "rangi": 1,
+            "rangi_xp": 0,
+            "chiyee": 1,
+            "chiyee_xp": 0,
+            "saehee": 1,
+            "saehee_xp": 0
+        },
+        "money": 30000,
+        "item": {
+            "rangi_teeth": 0,
+            "rangi_jeogorri": 0,
+            "rangi_hanbok": 0,
+            "saehee_sotlid": 0,
+            "saehee_beenyo": 0,
+            "saehee_shotglass": 0,
+            "chiyee_hairband": 0,
+            "chiyee_gookja": 0,
+            "chiyee_julmuni": 0,
+            "legendary_saliva": 0
+        },
+        "stock_list": {
+            "ygn": 0,
+            "jfb": 0,
+            "pco": 0,
+            "chh": 0,
+            "kbo": 0,
+            "yls": 0,
+            "grn": 0,
+            "sbb": 0,
+            "ntg": 0,
+            "nrh": 0,
+            "ayi": 0,
+            "rit": 0,
+            "nhh": 0,
+            "jns": 0,
+            "shn": 0
+        },
+        "attendence": false,
+        "birthday": false,
+        "birthday_character": "rangi"
     }
 }
