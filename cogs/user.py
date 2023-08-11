@@ -275,12 +275,81 @@ class CharacterButton(discord.ui.Button):
 
         await interaction.response.edit_message(view=view, embed=embed)
 
+class StockModals(discord.ui.Modal):
+    def __init__(self, max_sell, max_buy):
+        self.max_sell = max_sell
+        self.max_buy = max_buy
+        super().__init__(
+            title="주식"
+        )
+        self.amount = ui.TextInput(label=f"매수/매도 수량을 입력해 주십시오(정수)", placeholder=f"매수 가능 수: {self.max_buy}주 | 매도 가능 수: {self.max_sell}주")
+        self.add_item(self.amount)
+
+    async def on_submit(self, interaction:discord.Interaction):
+        # self.amount = self.children[0].value
+        self.amount = self.amount.value
+        self.av = False
+        if self.amount.isdigit():
+            self.amount = int(self.amount)
+            if self.amount > 0:
+                embed = discord.Embed(title=f"{self.amount}주 선택", color=0xe8dbff)
+                self.av = True
+            else:
+                embed = discord.Embed(title=f"최소 입력 값은 1입니다", color=0xe8dbff)
+        else:
+            embed = discord.Embed(title=f"정수를 입력하십시오", color=0xe8dbff)
+        await interaction.response.edit_message(view=None, embed=embed, attachments=[])
+        self.stop
+
+class StockButtons(discord.ui.Button):
+    def __init__(self, self_, button_style, label, custom_id, user_id, choice) -> None:
+        self.user_id = user_id
+        self.self_ = self_
+        self.choice = choice
+        super().__init__(
+            style=button_style, label=label, custom_id=custom_id
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) == self.user_id:
+            view=View()
+            if self.custom_id == "return":
+                view.add_item(StockSelect(self.self_, self.user_id))
+                await interaction.response.edit_message(view=view)
+            else:
+                max_sell = self.self_.data[str(self.user_id)]["stock_list"][self.choice]
+                max_buy = int(self.self_.data[str(self.user_id)]["money"] // self.self_.stock_price_df[self.choice].iloc[-1])
+                stock_modal = StockModals(max_sell, max_buy)
+                await interaction.response.send_modal(stock_modal)
+                await stock_modal.wait()
+                amount = stock_modal.amount
+
+                if stock_modal.av:
+                    if self.custom_id == "sell":
+                        if self.self_.data[str(self.user_id)]["stock_list"][self.choice] >= amount:
+                            await UserData.stock_trade(self.self_, self.user_id, self.choice, amount, self.custom_id)
+                            embed = discord.Embed(title=f"{self.choice} {amount}주 매도 완료\n{int(round(amount * self.self_.stock_price_df[self.choice].iloc[-1], 0))}원 (매도가 {int(round(self.self_.stock_price_df[self.choice].iloc[-1], 0))}원)", color=0xe8dbff)
+                        else:
+                            max_sell = self.self_.data[str(self.user_id)]["stock_list"][self.choice]
+                            embed = discord.Embed(title=f"주식이 충분하지 않았습니다 (최대 매도: {max_sell}주)", color=0xe8dbff)
+                    else:
+                        if self.self_.data[str(self.user_id)]["money"] >= amount * self.self_.stock_price_df[self.choice].iloc[-1]:
+                            await UserData.stock_trade(self.self_, self.user_id, self.choice, amount, self.custom_id)
+                            embed = discord.Embed(title=f"{self.choice} {amount}주 매수 완료\n{int(round(amount * self.self_.stock_price_df[self.choice].iloc[-1], 0))}원 (매수가 {int(round(self.self_.stock_price_df[self.choice].iloc[-1], 0))}원)", color=0xe8dbff)
+                        else:
+                            max_buy = int(self.self_.data[str(self.user_id)]["money"] // self.self_.stock_price_df[self.choice].iloc[-1])
+                            embed = discord.Embed(title=f"돈이 충분하지 않았습니다 (최대 매수: {max_buy}주)", color=0xe8dbff)
+
+                    await interaction.edit_original_response(embed=embed)
+        else:
+            await interaction.response.send_message(content="주식을 하고 싶으시면 /주식 을 하시면 됩니다 쓰레기 주인님", ephemeral=True)
+
 class StockSelect(discord.ui.Select):
     def __init__(self, self_, user_id):
         self.user_id = user_id
         self.self_ = self_
         self.choice = None
-        self.lst = ['ygn', 'jfb', 'pco', 'chh', 'kbo', 'yls', 'grn', 'sbb',  'ntg', 'nrh', 'ayi', 'rit', 'nhh', 'jns', 'shn']
+        self.lst = ['ygn', 'jfb', 'pco', 'chh', 'kbo', 'yls', 'grn', 'sbb', 'ntg', 'nrh', 'ayi', 'rit', 'nhh', 'jns', 'shn']
         options=[]
         
         for i in range(len(self.lst)):
@@ -293,8 +362,18 @@ class StockSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         if str(interaction.user.id) == self.user_id:
             self.choice = self.lst[int(self.values[0])]
-            embed=discord.Embed(title=f"{self.choice}을 선택하셨습니다", description="", color=0xe8dbff)
-            await interaction.response.edit_message(embed=embed)
+
+            image_file = discord.File(os.path.join(f"{__location__}\\Stock\\{self.choice}.png"), filename="image.png")
+            embed = discord.Embed(title=f"{self.choice}", color=0xe8dbff)
+            embed.description = f"보유: {UserData.get_user_stock(self.self_, self.user_id, self.choice)}주\n현 주가: {self.self_.stock_price_df[self.choice].iloc[-1]}"
+            embed.set_image(url=f"attachment://image.png")
+
+            view=View()
+            view.add_item(StockButtons(self.self_, discord.ButtonStyle.gray, "뒤로가기", "return", self.user_id, self.choice))
+            view.add_item(StockButtons(self.self_, discord.ButtonStyle.gray, "매수", "buy", self.user_id, self.choice))
+            view.add_item(StockButtons(self.self_, discord.ButtonStyle.gray, "매도", "sell", self.user_id, self.choice))
+
+            await interaction.response.edit_message(embed=embed, attachments=[image_file], view=view)
         else:
             await interaction.response.send_message(content="주식을 하고 싶으시면 /주식 을 하시면 됩니다 쓰레기 주인님", ephemeral=True)
         
@@ -992,8 +1071,7 @@ class UserData(commands.Cog):
         user_id = str(interaction.user.id)
         self.check_user(user_id)
         view=View()
-        Select = StockSelect(self, user_id)
-        view.add_item(Select)
+        view.add_item(StockSelect(self, user_id))
         await interaction.response.send_message(view=view)
         
         # image_file = discord.File(os.path.join(f"{__location__}\\Stock\\nrh.png"), filename="nrh.png")
@@ -1003,12 +1081,12 @@ class UserData(commands.Cog):
 
     async def stock_trade(self, user_id: str, ticker, amount, option):
         if option == "buy":
-            self.data[user_id][ticker] += amount
-            self.data[user_id]["money"] -= amount * self.stock_price_df[ticker].iloc[-1]
+            self.data[user_id]["stock_list"][ticker] += amount
+            self.data[user_id]["money"] -= int(round(amount * self.stock_price_df[ticker].iloc[-1], 0))
 
         elif option == "sell":
-            self.data[user_id][ticker] -= amount
-            self.data[user_id]["money"] += amount * self.stock_price_df[ticker].iloc[-1]
+            self.data[user_id]["stock_list"][ticker] -= amount
+            self.data[user_id]["money"] += int(round(amount * self.stock_price_df[ticker].iloc[-1], 0))
 
     def get_user_stock(self, user_id: str, ticker):
         return self.data[str(user_id)]["stock_list"][ticker]
