@@ -781,6 +781,7 @@ class UserData(commands.Cog):
         current_lvl = self.data[user_id]["level"][character]
 
         if current_xp >= round(((current_lvl+1)/0.3)**2)+40:
+            self.data[user_id]["money"] += 300000+ (current_lvl*200000)
             self.data[user_id]["level"][character] += 1
             self.data[user_id]["level"][character+"_xp"] = 0
             return True
@@ -830,7 +831,7 @@ class UserData(commands.Cog):
         """
         current_xp = self.data[user_id]["level"]["xp"]
         current_lvl = self.data[user_id]["level"]["main"]
-
+        self.data[user_id]["money"] += 10000+ (current_lvl*20000)
         if current_xp >= round((4 * (current_lvl ** 3)) / 5):
             return True
         return False
@@ -871,6 +872,19 @@ class UserData(commands.Cog):
         money = self.data[str(interaction.user.id)]['money']
         money = format(money, ',d')
         embed=discord.Embed(title="지갑", description=f"{money}원", color=0xafc2f3)
+        await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name="레벨", description="현재 호감도와 레벨을 확인합니다")
+    async def check_money(self, interaction: discord.Interaction):
+        self.check_user(str(interaction.user.id))
+        main = self.data[str(interaction.user.id)]['main']
+        rangi_level = self.data[str(interaction.user.id)]['rangi']
+        chiyee_level = self.data[str(interaction.user.id)]['chiyee']
+        saehee_level = self.data[str(interaction.user.id)]['saehee']
+        embed=discord.Embed(title="메인", description=main)
+        embed.add_field(name="랑이", value=rangi_level, inline=False)
+        embed.add_field(name="치이", value=chiyee_level, inline=False)
+        embed.add_field(name="세희", value=saehee_level, inline=True)
         await interaction.response.send_message(embed=embed)
 
     async def give_money(self, user_id, money: int):

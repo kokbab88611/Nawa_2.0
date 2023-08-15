@@ -991,6 +991,26 @@ class UserData(commands.Cog):
         embed=discord.Embed(title="지갑", description=f"{money}원", color=0xafc2f3)
         await interaction.response.send_message(embed=embed)
 
+    @app_commands.command(name="레벨", description="현재 호감도와 레벨을 확인합니다")
+    async def check_level(self, interaction: discord.Interaction):
+        self.check_user(str(interaction.user.id))
+        
+        main = self.data[str(interaction.user.id)]['level']['main']
+        main_xp = self.data[str(interaction.user.id)]['level']['xp']
+        rangi_level = self.data[str(interaction.user.id)]['level']['rangi']
+        rangi_xp = self.data[str(interaction.user.id)]["level"]['rangi_xp']
+        chiyee_level = self.data[str(interaction.user.id)]['level']['chiyee']
+        chiyee_xp = self.data[str(interaction.user.id)]["level"]['chiyee_xp']
+        saehee_level = self.data[str(interaction.user.id)]['level']['saehee']
+        saehee_xp = self.data[str(interaction.user.id)]["level"]['saehee_xp']
+
+        embed=discord.Embed(title=f"메인 || {main_xp} / {round((4 * (main ** 3)) / 5)}", description=main)
+        embed.add_field(name=f"랑이 || {rangi_xp} / {round(((rangi_level+1)/0.3)**2)+40}", value=rangi_level, inline=False)
+        embed.add_field(name=f"치이 || {chiyee_xp} / {round(((chiyee_level+1)/0.3)**2)+40}", value=chiyee_level, inline=False)
+        embed.add_field(name=f"세희 || {saehee_xp} / {round(((saehee_level+1)/0.3)**2)+40}", value=saehee_level, inline=True)
+
+        await interaction.response.send_message(embed=embed)
+
     async def give_money(self, user_id, money: int):
         """_summary_
             user 돈 지급용 function
