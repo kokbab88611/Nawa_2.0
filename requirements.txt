@@ -1,3 +1,5 @@
+matplotlib
 discord.py
-pymongo
-git+https://github.com/PythonistaGuild/Wavelink
+Wavelink
+pandas
+Pillow

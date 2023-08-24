@@ -3,6 +3,8 @@ from discord import app_commands
 from discord.ext import commands, tasks
 import json
 import os
+import warnings
+warnings.filterwarnings("ignore")
 import random
 import datetime
 import csv
@@ -10,7 +12,9 @@ import pandas as pd
 from time import gmtime, strftime
 import PIL
 from PIL import Image, ImageFont, ImageDraw
-
+from discord import ui
+from matplotlib import pyplot as plt
+import matplotlib.font_manager as fm
 import string,array,time
 import asyncio
 from discord import Interaction,Reaction,InteractionResponse
@@ -21,7 +25,7 @@ from discord.ui import Button, View
 지리산 F&B jfb
 폐이코  pco
 치이 홀딩스 chh
-범이 바이오 bbo
+까미 바이오 kbo
 나호갤  nhg
 염라상조   yls 
 직녀성  jns
@@ -31,7 +35,7 @@ NT&G (냥이 담배 인삼 공사) ntg
 나래 헬스케어    nrh
 아야 인더스트리 ayi
 랑이 임플란트    rit
-성훈피아    shp
+성훈피아    shn
 """
 
 blacklist_id_list = [
@@ -80,6 +84,16 @@ DigGame_msg_dict = {1:"킁킁..  찾고 있을게요! 조금 어렵지만 찾을
 6:"냄새가 나요! 제가 빨리 파고 있을게요 주인님은 쉬고 계세요!",
 7:"❗❗❗주인님이 좋아할 만한걸 찾은거 같아요!",
 8:"❗❗❗찾았어요!! 쓰담쓰담 해주세요!",}
+
+font_location = os.path.join(f'{__location__}/Stock/NanumGothic.ttf')
+
+fe = fm.FontEntry(
+    fname=font_location, # ttf 파일이 저장되어 있는 경로
+    name='NanumGothic')                        # 이 폰트의 원하는 이름 설정
+fm.fontManager.ttflist.insert(0, fe)              # Matplotlib에 폰트 추가
+plt.rcParams.update({'font.size': 13, 'font.family': 'NanumGothic'}) #
+plt.style.use('dark_background')
+plt.ylim(bottom=1) 
 
 class Character(discord.ui.View):
     def __init__(self, self_, user_id):
@@ -626,6 +640,13 @@ class DigGameButtons(Button):
         else:
             await interaction.response.send_message(content="타인의 게임에 관여할 수 없습니다", ephemeral=True)
 
+class GachaModals(ui.Modal, title="가챠 횟수를 입력 해 주십시오"):
+    val = ui.TextInput(label="숫자를 입력해 주십시오 (회당 30000원)")
+
+    async def on_submit(self, interaction: discord.Interaction):
+        self.val = self.children[0].value
+        self.stop()
+
 #___________________________________________________________________________________________________________________________________________
 
 class UserData(commands.Cog):
@@ -634,9 +655,6 @@ class UserData(commands.Cog):
         self.data = self.get_json()
         self.repeat_save_user.start()
         self.reset_attendence.start()
-        self.stock_change.start()
-        self.stock_tickers = ['ygn', 'jfb', 'pco', 'chh', 'bbo', 'yls', 'grn', 'sbb', 'ntg', 'nrh', 'ayi', 'rit', 'nhh', 'jns', 'shp',]
-        self.stock_price_df = pd.DataFrame(columns=self.stock_tickers)
         self.self_ = self
         self.stock_list ={
         'ygn':['요괴넷', '요괴의 인터넷 문화를 대표하는 커뮤니티 포털사이며, 요괴들에게 다양한 방면으로 정보를 제공하며 이용자간에 자유로운 소통이 가능하다.'
@@ -644,7 +662,7 @@ class UserData(commands.Cog):
         'jfb':['지리산 F&B', '식품 제조 및 판매 업체이다. 지리산에서 수확한 식재료 사용으로 많이 알려져있으며, 국내 친환경 유기농 식품 선두 주자이다', 100000, 0],
         'pco':['폐이코', '결제 데이터를 수집하여 빅데이터 기반의 요괴의 신용평가 모델을 개발하고 제공한다',50000, 0],
         'chh':['치이 홀딩스', '오작교 그룹 계열사 지분을 다수 가지고 있으며, 대한민국 3대 건설사인 오작교 건설사의 최대주주이다',50000, 0],
-        'bbo':['범이 바이오', '특수 한약재를 이용하여 의약품, 화장품 등의 원료 제조 및 판매를 목적으로 설립되었다. 최근 대표 의약품의 주 원료가 "침" 인것으로'
+        'kbo':['까미 바이오', '특수 한약재를 이용하여 의약품, 화장품 등의 원료 제조 및 판매를 목적으로 설립되었다. 최근 대표 의약품의 주 원료가 "침" 인것으로'
             '발각되어 CEO는 도주중이다', 50000, 0],
         'yls':['염라상조', '대한민국 1위 상조 회사이자 관혼상제 전문 행사 기업이다. CEO 염라의 과음으로 인해 주주들의 반발이 심한 회사이다',100000, 0],
         'grn':['기린 미디어', '만화 및 애니메이션 콘텐츠와 관련한 종합 엔터테인먼트 사업을 주 사업으로 운영중이며, 서브컬쳐 문화의 선두주자이다.', 15000, 0],
@@ -655,12 +673,15 @@ class UserData(commands.Cog):
             '일반인들에게는 큰 인기를 얻지 못했지만, 최근 연애를 위해 신청하는 일반인들도 늘어났다.', 1000, 0],
         'ayi':['아야 인더스트리', '전 세계적으로 기술력을 인정받고 있는 모피를 생산하는 피혁 업계의 선두 기업이다.',4000, 0],
         'rit':['랑이 임플란트', '치과용 임플란트 및 치과용 소프트웨어 제조, 판매를 주요 사업으로 영위하고 있다. CEO또한 해당 제품을 사용하는 것으로'
-            '밝혀지면서 유명세를 얻었다',70000, 0],
+            '밝혀지면서 유명세를 얻었다', 70000, 0],
         'nhh':['낳갤', '디시인사이드에 2017년 1월 31일에 개설된 나와 호랑이님의 마이너 갤러리. 페이퍼 컴퍼니다.', 800, 0],
         'jns':['견우성투어', '일반여행업을 주요 사업으로 영위할 목적으로 설립됨. 견우성을 거점으로 한 서비스제공 사업 등을 영위하고 있음.', 700, 0],
-        'shp':['성훈노벨', '만화 및 소설 관련 컨텐츠 사업을 영위 하고 있다. CEO가 투잡을 뛴다는 소문이...', 500, 0],
+        'shn':['성훈노벨', '만화 및 소설 관련 컨텐츠 사업을 영위 하고 있다. CEO가 투잡을 뛴다는 소문이...', 500, 0],
     }
-
+        self.stock_tickers = ['ygn', 'jfb', 'pco', 'chh', 'kbo', 'yls', 'grn', 'sbb', 'ntg', 'nrh', 'ayi', 'rit', 'nhh', 'jns', 'shn']
+        self.stock_prices = [x[-2] for x in self.stock_list.values()]
+        self.stock_price_df = self.get_csv()
+        self.stock_change.start()
         @bot.event
         async def on_message(message):
             for i in blacklist_id_list:
@@ -762,6 +783,7 @@ class UserData(commands.Cog):
         current_lvl = self.data[user_id]["level"][character]
 
         if current_xp >= round(((current_lvl+1)/0.3)**2)+40:
+            self.data[user_id]["money"] += 300000+ (current_lvl*200000)
             self.data[user_id]["level"][character] += 1
             self.data[user_id]["level"][character+"_xp"] = 0
             return True
@@ -811,7 +833,7 @@ class UserData(commands.Cog):
         """
         current_xp = self.data[user_id]["level"]["xp"]
         current_lvl = self.data[user_id]["level"]["main"]
-
+        self.data[user_id]["money"] += 10000+ (current_lvl*20000)
         if current_xp >= round((4 * (current_lvl ** 3)) / 5):
             return True
         return False
@@ -852,6 +874,19 @@ class UserData(commands.Cog):
         money = self.data[str(interaction.user.id)]['money']
         money = format(money, ',d')
         embed=discord.Embed(title="지갑", description=f"{money}원", color=0xafc2f3)
+        await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name="레벨", description="현재 호감도와 레벨을 확인합니다")
+    async def check_money(self, interaction: discord.Interaction):
+        self.check_user(str(interaction.user.id))
+        main = self.data[str(interaction.user.id)]['main']
+        rangi_level = self.data[str(interaction.user.id)]['rangi']
+        chiyee_level = self.data[str(interaction.user.id)]['chiyee']
+        saehee_level = self.data[str(interaction.user.id)]['saehee']
+        embed=discord.Embed(title="메인", description=main)
+        embed.add_field(name="랑이", value=rangi_level, inline=False)
+        embed.add_field(name="치이", value=chiyee_level, inline=False)
+        embed.add_field(name="세희", value=saehee_level, inline=True)
         await interaction.response.send_message(embed=embed)
 
     async def give_money(self, user_id, money: int):
@@ -929,10 +964,18 @@ class UserData(commands.Cog):
         for user_id in self.data.items():
             self.data[user_id[0]]["attendence"] = False        
 
+    @app_commands.command(name="주식", description="주식 거래")
+    async def stock_command(self, interaction: discord.Interaction):
+        image_file = discord.File(os.path.join(f"{__location__}/Stock/nrh.png"), filename="nrh.png")
+        embed = discord.Embed() # any kwargs you want here
+        embed.set_image(url="attachment://nrh.png")
+        await interaction.response.send_message(embed=embed, file=image_file)
 
-    @tasks.loop(seconds=600)
+    @tasks.loop(seconds=10)
     async def stock_change(self):
-        percentage = {"below_one": 90, "below_three": 5.5, "below_five": 3, "below_ten": 1, "event": 0.5}
+        df = {'ygn': None, 'jfb': None, 'pco': None, 'chh': None, 'kbo': None, 'yls': None, 'grn': None, 'sbb': None, 
+                'ntg': None, 'nrh': None, 'ayi': None, 'rit': None, 'nhh': None, 'jns': None, 'shn': None}
+        percentage = {"below_one": 95, "below_three": 3, "below_five": 1, "below_ten": 0.5, "event": 0.5}
         for stock_ticker in self.stock_list.keys():
             change_value = None
             a = random.choices(list(percentage.keys()), weights = list(percentage.values()))[0]
@@ -953,16 +996,45 @@ class UserData(commands.Cog):
                 change_value = random_num / 100
 
             def increase(stock_ticker, change_value):
-                self.stock_list[stock_ticker][-2] = float(self.stock_list[stock_ticker][-2])*(1+change_value)
+                df[stock_ticker] = round(float(self.stock_price_df[stock_ticker].iloc[-1])*(1+change_value),2)
 
             def decrease(stock_ticker, change_value):
-                self.stock_list[stock_ticker][-2] = float(self.stock_list[stock_ticker][-2])*(1-change_value)                                                  
+                df[stock_ticker] = round(float(self.stock_price_df[stock_ticker].iloc[-1])*(1-change_value),2)                                             
 
             alter = random.choice([increase, decrease])
             alter(stock_ticker, change_value)
-            self.stock_price_df[stock_ticker]
 
-    
+        self.stock_price_df.loc[len(self.stock_price_df)] = df
+        length_df = len(self.stock_price_df)
+        if length_df == 16:
+            self.stock_price_df = self.stock_price_df.drop(self.stock_price_df.index[:1])
+            self.stock_price_df = self.stock_price_df.reset_index(drop=True)
+            
+        self.set_csv()
+
+        for stock_ticker in self.stock_list.keys():
+            self.stock_price_df[stock_ticker].plot()
+            plt.title(f'{stock_ticker} 주가')
+            plt.tight_layout()
+            plt.savefig(os.path.join(f"{__location__}/Stock/{stock_ticker}.png"))
+            plt.clf()
+
+    def set_csv(self):
+        try:
+            self.stock_price_df.to_csv(os.path.join(f"{__location__}/Stock/stock_price.csv"), index=False)
+        except TypeError:
+            pass
+
+    def get_csv(self):
+        try:
+            with open(os.path.join(f"{__location__}/Stock/stock_price.csv"),'r') as f:
+                return pd.read_csv(f)
+        except:
+            self.stock_price_df = pd.DataFrame()
+            self.stock_dict = dict(zip(self.stock_tickers, self.stock_prices))
+            self.stock_price_df.loc[len(self.stock_price_df)] = self.stock_dict
+            return pd.DataFrame(columns=self.stock_tickers)
+            
 
     # @tasks.loop(time= after_ten.time())
     # async def repeat_every_ten(self):
@@ -985,7 +1057,6 @@ class UserData(commands.Cog):
     @app_commands.command(name="생일캐릭터", description="캐릭터변경")
     async def birthday_character(self, interaction: discord.Interaction):
         self.check_user(str(interaction.user.id))
-
 
     @app_commands.command(name="생일", description="생일설정 *변경 불가 /생일 월 일")
     async def birthday(self, interaction: discord.Interaction, month: int, date: int):
@@ -1196,7 +1267,7 @@ class UserData(commands.Cog):
             "아우우우?!! 왜 랑이님이 오라버니 옆에서 주무시는 거예요?!?!",
             "굳 모닝인 거예요! (파닥파닥)"
         ]
-            embed=discord.Embed(title=f"{random.choice(chiyee_what)}", color=0x4b84ce)
+            embed=discord.Embed(title=f"{random.choice(chiyee_good_morning)}", color=0x4b84ce)
             embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
             await message.channel.send(embed=embed)
             await self.give_xp(message)
@@ -1263,105 +1334,86 @@ class UserData(commands.Cog):
             embed=discord.Embed(title=f"{random.choice(worry)}", color=0xebe6e6)
             embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
             await message.channel.send(embed=embed)
-    #이름 부르기
-    @commands.command(name="랑이야")
-    async def rangi_call(self, ctx, position = None):
-        rangi = [
-            '으냐앗! 왜 부르느냐?',
-            '으에!?...갑자기 왜 그러느냐?.',
-            '내가 보고 싶었느냐?',
-            '놀아주는 것이느냐!! ',
-            '내가 보고 싶었느냐?',
-            'ㄴ..내가 필요한 것이냐!',
-            '나는 사랑 받고 싶느니라~!',
-            '흐에에에?! 불렀느냐?!',
-            '으냣!? 내가 도와줄게 있느냐?!',
-            '여기있느니라!',
-            '네 곁에 항상 있느니라!',
-            '언제든 말만 하거라! 내가 다~ 들어주겠느니라!!',
-            '나는 네 곁에 있느니라! 말만 하거라!',
-            '웅? 불렀느냐?',
-        ]
-        if position == None:
+        elif message.content == "랑이야":
+            rangi = [
+                '으냐앗! 왜 부르느냐?',
+                '으에!?...갑자기 왜 그러느냐?.',
+                '내가 보고 싶었느냐?',
+                '놀아주는 것이느냐!! ',
+                '내가 보고 싶었느냐?',
+                'ㄴ..내가 필요한 것이냐!',
+                '나는 사랑 받고 싶느니라~!',
+                '흐에에에?! 불렀느냐?!',
+                '으냣!? 내가 도와줄게 있느냐?!',
+                '여기있느니라!',
+                '네 곁에 항상 있느니라!',
+                '언제든 말만 하거라! 내가 다~ 들어주겠느니라!!',
+                '나는 네 곁에 있느니라! 말만 하거라!',
+                '웅? 불렀느냐?',
+            ]
             embed=discord.Embed(title=f"{random.choice(rangi)}", color=0xebe6e6)
             embed.set_author(name="랑이", icon_url="https://i.imgur.com/huDPd5o.jpg")
-            await self.give_xp(ctx)
-            await ctx.send(embed=embed)
-        else:
-            pass
-
-    @commands.command(name="범이야")
-    async def rangi_realname(self, ctx):
-        rangi = [
-            "으냐아아앗!!",
-            "문제가 생긴 것이냐!!!",
-            "무슨 일 이느냐!!!",
-            "낭군님아!! 불렀느냐!!",
-            "헤..헤헤 바로 옆에 있느니라!",
-        ]
-        embed=discord.Embed(title=f"{random.choice(rangi)}", color=0xebe6e6)
-        embed.set_author(name="범이", icon_url="https://i.imgur.com/huDPd5o.jpg")
-        await self.give_xp(ctx)
-        await ctx.send(embed=embed)
-
-    @commands.command(name="치이야")
-    async def chiyee_call(self, ctx, position = None):
-        chiyee = [
-            '꺄우우? 왜 부르시는 건가요?',
-            '드디어 절 불러주신 거예요!',
-            '무슨 일 있는거예요!?!',
-            '도움이 필요한 건가요?',
-            '아우우? 무슨일인 건가요!?',
-            '저는 항상 오라버니 옆에 있는거예요',
-            '놀아 주시는 건가요?',
-            '폐이 놀아줘야 되는거예요!',
-            '어디 안가고 잘 지내는 거예요!',
-            '필요하신게 있으면 말씀 하시는거예요!',
-            '그 짧은 시간에 제가 보고싶었던 건가요?',
-        ]
-        if position == None:
+            await self.give_xp(message)
+            await message.channel.send(embed=embed)
+        elif message.content == "범이야":
+            rangi = [
+                "으냐아아앗!!",
+                "문제가 생긴 것이냐!!!",
+                "무슨 일 이느냐!!!",
+                "낭군님아!! 불렀느냐!!",
+                "헤..헤헤 바로 옆에 있느니라!",
+            ]
+            embed=discord.Embed(title=f"{random.choice(rangi)}", color=0xebe6e6)
+            embed.set_author(name="범이", icon_url="https://i.imgur.com/huDPd5o.jpg")
+            await self.give_xp(message)
+            await message.channel.send(embed=embed)
+        elif message.content == "치이야":
+            chiyee = [
+                '꺄우우? 왜 부르시는 건가요?',
+                '드디어 절 불러주신 거예요!',
+                '무슨 일 있는거예요!?!',
+                '도움이 필요한 건가요?',
+                '아우우? 무슨일인 건가요!?',
+                '저는 항상 오라버니 옆에 있는거예요',
+                '놀아 주시는 건가요?',
+                '폐이 놀아줘야 되는거예요!',
+                '어디 안가고 잘 지내는 거예요!',
+                '필요하신게 있으면 말씀 하시는거예요!',
+                '그 짧은 시간에 제가 보고싶었던 건가요?',
+            ]
             embed=discord.Embed(title=f"{random.choice(chiyee)}", color=0x4b84ce)
             embed.set_author(name="치이", icon_url="https://i.imgur.com/aApUYMj.jpg")
-            await self.give_xp(ctx)
-            await ctx.send(embed=embed)  
-        else:
-            pass
-
-    @commands.command(name="연리야")
-    async def chiyee_realname(self, ctx):
-        chiyee = [
-            "꺄우우우우우?!!",
-            "오라버니! 너무 막 부르시는 거예요!!",
-            "진명이 있는건 좋은거예요!!",
-            "꺄우?! 갑자기 무슨 일이 신가요!",
-            "ㅊ...창피하게 막 부르시면 안되는거예요!!",
-        ]
-        embed=discord.Embed(title=f"{random.choice(chiyee)}", color=0x4b84ce)
-        embed.set_author(name="연리", icon_url="https://i.imgur.com/aApUYMj.jpg")
-        await self.give_xp(ctx)
-        await ctx.send(embed=embed)
-        
-    @commands.command(name="세희야")
-    async def saehee_call(self, ctx, position = None):
-        saehee = [  
-            '예 주인님',
-            '부르셨습니까?',
-            '말씀하시면 됩니다',
-            '문제라도 있으십니까?',
-            '또 제가 필요한겁니까?',
-            '또 뭡니까?',
-            '썪ㅇ... 크흠 아닙니다 뭐.... 필요한게 있으십니까?',
-            '안주인님이랑 놀아주시죠',
-            '크게 안부르셔도 들립니다',
-            '계속 듣고 있습니다',
-        ]
-        if position == None:
+            await self.give_xp(message)
+            await message.channel.send(embed=embed) 
+        elif message.content == "연리야":
+            chiyee = [
+                "꺄우우우우우?!!",
+                "오라버니! 너무 막 부르시는 거예요!!",
+                "진명이 있는건 좋은거예요!!",
+                "꺄우?! 갑자기 무슨 일이 신가요!",
+                "ㅊ...창피하게 막 부르시면 안되는거예요!!",
+            ]
+            embed=discord.Embed(title=f"{random.choice(chiyee)}", color=0x4b84ce)
+            embed.set_author(name="연리", icon_url="https://i.imgur.com/aApUYMj.jpg")
+            await self.give_xp(message)
+            await message.channel.send(embed=embed)
+        elif message.content == "세희야":
+            saehee = [  
+                '예 주인님',
+                '부르셨습니까?',
+                '말씀하시면 됩니다',
+                '문제라도 있으십니까?',
+                '또 제가 필요한겁니까?',
+                '또 뭡니까?',
+                '썪ㅇ... 크흠 아닙니다 뭐.... 필요한게 있으십니까?',
+                '안주인님이랑 놀아주시죠',
+                '크게 안부르셔도 들립니다',
+                '계속 듣고 있습니다',
+            ]
             embed=discord.Embed(title=f"{random.choice(saehee)}", color=0x666666)
             embed.set_author(name="강세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
-            await self.give_xp(ctx)
-            await ctx.send(embed=embed)
-        else:
-            pass
+            await self.give_xp(message)
+            await message.channel.send(embed=embed)     
             
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -1379,6 +1431,12 @@ class UserData(commands.Cog):
     @app_commands.command(name="가챠", description="호감도템 가챠")
     async def gacha(self, interaction: discord.Interaction):
         self.check_user(str(interaction.user.id))
+
+        gacha_modal = GachaModals()
+        await interaction.response.send_modal(gacha_modal)
+        await gacha_modal.wait()
+        await interaction.response.edit_original_response(content=gacha_modal.val)
+
         pos = {"Common": 40, "Rare": 45, "Epic": 13, "Legendary": 2}
         item_list = {
             "개량한복": {
@@ -1646,11 +1704,11 @@ class UserData(commands.Cog):
             await interaction.response.send_message(content="[돈 부족. 판결. 사기꾼]", ephemeral=True)
 
     def DigGame_create_img(msg,tier):
-        image = Image.open(os.path.join(f"{__location__}\\DigGame\\DigGameImg{tier}.jpg"))
-        fonts_dir = os.path.join(f"{__location__}\\DigGame")
+        image = Image.open(os.path.join(f"{__location__}/DigGame/DigGameImg{tier}.jpg"))
+        fonts_dir = os.path.join(f"{__location__}/DigGame")
         draw = ImageDraw.Draw(image)
         draw.text((30,25),msg,font=ImageFont.truetype(os.path.join(fonts_dir, 'Dobong_Cultural_Routes(TTF).ttf'), 35), fill=(255,255,255))
-        image.save(os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg"))
+        image.save(os.path.join(f"{__location__}/DigGame/DigGameImgEdit.jpg"))
 
     @app_commands.command(name="땅파기", description="땅파기 게임입니다")
     async def DigGame(self, interaction: discord.Interaction):
@@ -1666,21 +1724,7 @@ class UserData(commands.Cog):
         ["비녀", 0x71368a, "Epic", "saehee_beenyo"],
         ["줄무늬 그것", 0x71368a, "Epic", "chiyee_julmuni"],
         ["대요괴의 침", 0xe67e22, "Legendary", "legendary_saliva"]]
-
-        # image = Image.open(os.path.join(f"{__location__}\\DigGame\\DigGameImgBase.jpg"))
-        # fonts_dir = os.path.join(f"{__location__}\\DigGame")
-        # draw = ImageDraw.Draw(image)
-        # draw.text((360,95),msg,font=ImageFont.truetype(os.path.join(fonts_dir, 'Dobong_Cultural_Routes(TTF).ttf'), 35), fill=(255,255,255))
-        # image.save(os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg"))
-
-        # os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg")
-
-        # embed = discord.Embed(title="땅파기 게임", colour=discord.Colour(0xe67e22))
-        # file = discord.File(os.path.join(f"{__location__}\\DigGame\\DailyLuckImgEdit.jpg"), filename="image.jpg")
-        # embed.set_image(url="attachment://image.jpg")
-        # embed.set_author(name="바둑이", icon_url="https://cdn.discordapp.com/attachments/525940059330052107/1134923364478226505/141298252133.jpg")
-        # await interaction.response.send_message(embed=embed, file=file)
-
+        
         user_id = interaction.user.id
         dig_var = DigVars(user_id)
         view = View()
@@ -1718,7 +1762,7 @@ class UserData(commands.Cog):
                     self.data[str(interaction.user.id)]['money'] += num
                     UserData.DigGame_create_img(str(num)+"원 교환권", "Money")
                     embed = DigGameButtons.DigGame_msg(True, f"{num}원 | 등급: 몰?루", "💰💰💰 찾았다!")
-                file = discord.File(os.path.join(f"{__location__}\\DigGame\\DigGameImgEdit.jpg"), filename="image.jpg")
+                file = discord.File(os.path.join(f"{__location__}/DigGame/DigGameImgEdit.jpg"), filename="image.jpg")
                 await interaction.edit_original_response(embed=embed, view=None, attachments=[file])
 
 async def setup(bot):

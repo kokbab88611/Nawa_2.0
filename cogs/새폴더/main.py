@@ -4,7 +4,7 @@ from discord.ext.commands import Context
 from discord import app_commands
 import os
 
-token = 'NDY0MDk4MzA3MjcxMDMyODQy.GCLAvK.ByV_tr0qtC7vLvMQQRQxKtsHncttjUO0DlMeJ4'
+token = 'NTE1NDE2ODQ4NDc3NTg1NDEw.GYje9-.J12NOzBJHPo4UN9Sixd-ELSG3laAdIDuLgCLzQ'
 
 class Nawa(commands.Bot):
   def __init__(self):
