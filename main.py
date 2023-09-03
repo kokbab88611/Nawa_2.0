@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import os
 
-token = 'NTE1NDE2ODQ4NDc3NTg1NDEw.GYje9-.J12NOzBJHPo4UN9Sixd-ELSG3laAdIDuLgCLzQ'
+token = None #Token
 intents=discord.Intents.all()
 intents.presences = False
 bot = commands.Bot(

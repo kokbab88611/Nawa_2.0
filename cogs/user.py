@@ -1,5 +1,7 @@
 import discord
 from discord import app_commands
+import warnings
+warnings.filterwarnings("ignore")
 from discord.ext import commands, tasks
 import json
 import os

@@ -159,7 +159,7 @@ class Music(commands.Cog):
                 durationsec = duration % 60
                 embed=discord.Embed(title = self.queue[interaction.guild.id][0], url=self.queue[interaction.guild.id][0].uri,description=self.queue[interaction.guild.id][0].author)
                 embed.set_thumbnail(url = self.queue[interaction.guild.id][0].thumbnail)
-                embed.add_field(name=f"00:00 ~ {int(durationmin)}:{int(durationsec)}", inline=True)
+                embed.add_field(name=f"00:00 ~ {int(durationmin)}:{int(durationsec)}", value='', inline=True)
                 embed.set_footer(text=self.authors[interaction.guild.id][0])
 
                 view = View()
