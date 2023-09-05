@@ -784,20 +784,6 @@ class UserData(commands.Cog):
         self.stock_prices = [x[-2] for x in self.stock_list.values()]
         self.stock_price_df = self.get_csv()
         self.stock_change.start()
-        @bot.event
-        async def on_message(message):
-            for i in blacklist_id_list:
-                if str(message.author.id) == i:
-                    return
-            if isinstance(message.channel, discord.DMChannel) and message.content != "" and "!문의" in message.content:
-                channel = bot.get_channel(1137051717058433055)
-                await channel.send(message.content)
-                user = bot.get_user(message.author.id)
-                await user.send("피드백 감사합니다")
-            else:
-                if not isinstance(message.channel, discord.DMChannel) and message.content != "" and "!문의" in message.content:
-                    user = bot.get_user(message.author.id)
-                    await user.send("문의는 DM으로 보내주십시오")
 
         #UserData.self_
     @commands.Cog.listener()
@@ -1530,7 +1516,15 @@ class UserData(commands.Cog):
             embed.set_author(name="강세희", icon_url="https://i.imgur.com/7a4oeOi.jpg")
             await self.give_xp(message)
             await message.channel.send(embed=embed)     
-            
+        if isinstance(message.channel, discord.DMChannel) and message.content != "" and "!문의" in message.content:
+            channel = self.bot.get_channel(1137051717058433055)
+            await channel.send(message.content)
+            user = self.bot.get_user(message.author.id)
+            await user.send("피드백 감사합니다")
+        else:
+            if not isinstance(message.channel, discord.DMChannel) and message.content != "" and "!문의" in message.content:
+                user = self.bot.get_user(message.author.id)
+                await user.send("문의는 DM으로 보내주십시오")
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         pass

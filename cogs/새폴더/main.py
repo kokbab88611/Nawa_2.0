@@ -4,8 +4,7 @@ from discord.ext.commands import Context
 from discord import app_commands
 import os
 
-token = None #Token
-
+token = None
 class Nawa(commands.Bot):
   def __init__(self):
     super().__init__(
