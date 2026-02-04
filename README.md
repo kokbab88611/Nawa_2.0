@@ -1,3 +1,59 @@
+# Nawa 2.0 – Discord Bot
+
+Nawa 2.0 is a Discord bot built with `discord.py` that recreates the personalities of characters from the Korean light novel “Nawa Horang-nim” in a Discord server.
+
+## Features
+
+### Mini-games and engagement
+
+- Several interactive mini-games.
+- Level and experience system for active users.
+- Character-based responses that reflect the personalities of Rangi, Chii, and Sehee.
+
+### Music
+
+- Music playback using Wavelink and Lavalink.
+- Supports standard queue controls (play, skip, pause, resume, etc.).
+- Updated as needed to stay compatible with recent Discord changes.
+
+### Server and user management
+
+- Basic moderation and utility commands to help manage a server.
+- User-related commands for simple management tasks.
+- Most commands are implemented as slash commands.
+
+### Virtual stock market
+
+- In-server virtual stock system where users can buy and sell simulated assets.
+- Designed to give users something persistent to interact with over time.
+
+## Chatbot behavior
+
+- The bot defines different speaking styles for Rangi, Chii, and Sehee.
+- Uses `on_message` to listen to user messages and reply in character, not only to explicit commands.
+
+## Data storage
+
+- User and server data are stored as per-server JSON files.
+- Each guild has its own JSON file so configuration and user state are kept separate per server.
+
+## Tech stack
+
+- Language: Python
+- Library: `discord.py`
+- Audio: Wavelink, Lavalink
+- Storage: JSON files (per server)
+
+## Getting started
+
+_Example setup steps — adjust to match your actual project structure._
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/your-username/Nawa_2.0.git
+   cd Nawa_2.0
+
 # Nawa_2.0
 나와 아해들 2.0 디스코드 봇은 discord py를 기반으로 뒀으며 대한민국 라이트노벨 "나와 호랑이님" 캐릭터들의 성격을 재현한 디스코드 봇입니다.
 
