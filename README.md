@@ -58,7 +58,6 @@ _Example setup steps — adjust to match your actual project structure._
 
    ```bash
    pip install -r requirements.txt
-   Configure environment:
 
 3. Configure environment:
 
@@ -73,8 +72,6 @@ _Example setup steps — adjust to match your actual project structure._
 
    ```bash
    python3 bot.py
-
-
 
 # Nawa_2.0
 나와 아해들 2.0 디스코드 봇은 discord py를 기반으로 뒀으며 대한민국 라이트노벨 "나와 호랑이님" 캐릭터들의 성격을 재현한 디스코드 봇입니다.
